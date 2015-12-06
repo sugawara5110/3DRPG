@@ -44,6 +44,7 @@ private:
 		Sound_(int no);
 		void sound(bool repeat, long volume);//volume -10000Å`0
 		void soundoff();
+		void soundloop(bool repeat, long volume, REFTIME start, REFTIME end);
 	};
 
 	static Movie *mo;
@@ -55,6 +56,8 @@ private:
 	static Sound_ *die_so;
 	static Sound_ *att_so, *flame_so, *heal_so, *magic_so;
 	static Sound_ *select_so, *enter_so;
+	static Sound_ *ending_so;
+	static Sound_ *bosslost_so;
 	
 	MovieSoundManager();
 
@@ -66,6 +69,8 @@ public:
 	static void ObjDelete_map();
 	static void ObjCreate_battle(int n);
 	static void ObjDelete_battle();
+	static void ObjCreate_ending();
+	static void ObjDelete_ending();
 	static void ObjDelete();
 	static int **Torch_GetFrame(int width, int height);
 	static int **FireWall_GetFrame(int width, int height);
@@ -75,8 +80,10 @@ public:
 	static void Rain_soundoff();
 	static void Enemy_sound(bool repeat);
 	static void Enemy_soundoff();
+	static void Bosslost_sound(bool repeat);
 	static void Title_sound(bool repeat);
 	static void Title_soundoff();
+	static void Ending_sound(bool repeat);
 	static void Die_sound(bool repeat);
 	static void Die_soundoff();
 	static void Att_sound(bool repeat);

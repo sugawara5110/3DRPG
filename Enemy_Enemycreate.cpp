@@ -24,6 +24,7 @@ Enemy::Enemy(int t_no, int no){
 	theta_recov = 0.0f;
 	effect_f = FALSE;
 	tx = ty = 0.0f;
+	cr = cg = cb = 255;
 
 	dx->GetTexture(&effect, 81);
 	effect.tex_no = 1;
@@ -35,32 +36,44 @@ Enemy::Enemy(int t_no, int no){
 	dx->GetVBarray(SQUARE, &effect, 1);
 }
 
-void Enemy::Enemycreate(float x, float y){
+void Enemy::Enemycreate(float x, float y, int r, int g, int b){
 
 	//“G¶‘O
-	en.d3varrayI[0] = en.d3varrayI[3] = 0;
-	en.d3varray[0].p = D3DXVECTOR3((float)-(x / 2), (float)0.0f, y);
-	en.d3varray[0].color = (255 << 16) + (255 << 8) + 255;
-	en.d3varray[0].tex = D3DXVECTOR2(0.0f, 0.0f);
+	en.SetVertex(0, 3, 0,
+		(float)-(x / 2), (float)0.0f, y,
+		0.0f, 0.0f, 0.0f,
+		r, g, b,
+		0.0f, 0.0f);
 
 	//“G¶‰œ
-	en.d3varrayI[4] = 2;
-	en.d3varray[2].p = D3DXVECTOR3((float)-(x / 2), (float)0.0f, 0.0f);
-	en.d3varray[2].color = (255 << 16) + (255 << 8) + 255;
-	en.d3varray[2].tex = D3DXVECTOR2(0.0f, 1.0f);
+	en.SetVertex(4, 2,
+		(float)-(x / 2), (float)0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f,
+		r, g, b,
+		0.0f, 1.0f);
 
 	//“G‰E‰œ
-	en.d3varrayI[2] = en.d3varrayI[5] = 3;
-	en.d3varray[3].p = D3DXVECTOR3((float)(x / 2), (float)0.0f, 0.0f);
-	en.d3varray[3].color = (255 << 16) + (255 << 8) + 255;
-	en.d3varray[3].tex = D3DXVECTOR2(1.0f, 1.0f);
+	en.SetVertex(2, 5, 3,
+		(float)(x / 2), (float)0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f,
+		r, g, b,
+		1.0f, 1.0f);
 
 	//“G‰E‘O
-	en.d3varrayI[1] = 1;
-	en.d3varray[1].p = D3DXVECTOR3((float)(x / 2), (float)0.0f, y);
-	en.d3varray[1].color = (255 << 16) + (255 << 8) + 255;
-	en.d3varray[1].tex = D3DXVECTOR2(1.0f, 0.0f);
+	en.SetVertex(1, 1,
+		(float)(x / 2), (float)0.0f, y,
+		0.0f, 0.0f, 0.0f,
+		r, g, b,
+		1.0f, 0.0f);
 }
+
+void Enemy::DamageAction(){}
+
+void Enemy::RecoverActionInit(){}
+
+void Enemy::RecoverAction(){}
+
+bool Enemy::LostAction(float x, float y, float z){ return TRUE; }
 
 bool Enemy::Magiccreate(float x, float y, float z){ return TRUE; }
 
@@ -95,28 +108,32 @@ bool Enemy::Effectdraw(Battle *battle, int *E_select_obj){
 	else ver = 25;
 
 	//¶‘O
-	effect.d3varrayI[0] = effect.d3varrayI[3] = 0;
-	effect.d3varray[0].p = D3DXVECTOR3((float)-ver, (float)0.0f, ver * 2);
-	effect.d3varray[0].color = (255 << 16) + (255 << 8) + 255;
-	effect.d3varray[0].tex = D3DXVECTOR2(tx, ty);
+	effect.SetVertex(0, 3, 0,
+		(float)-ver, (float)0.0f, ver * 2,
+		0.0f, 0.0f, 0.0f,
+		255, 255, 255,
+		tx, ty);
 
 	//¶‰œ
-	effect.d3varrayI[4] = 2;
-	effect.d3varray[2].p = D3DXVECTOR3((float)-ver, (float)0.0f, 0.0f);
-	effect.d3varray[2].color = (255 << 16) + (255 << 8) + 255;
-	effect.d3varray[2].tex = D3DXVECTOR2(tx, ty + py);
+	effect.SetVertex(4, 2,
+		(float)-ver, (float)0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f,
+		255, 255, 255,
+		tx, ty + py);
 
 	//‰E‰œ
-	effect.d3varrayI[2] = effect.d3varrayI[5] = 3;
-	effect.d3varray[3].p = D3DXVECTOR3((float)ver, (float)0.0f, 0.0f);
-	effect.d3varray[3].color = (255 << 16) + (255 << 8) + 255;
-	effect.d3varray[3].tex = D3DXVECTOR2(tx + px, ty + py);
+	effect.SetVertex(2, 5, 3,
+		(float)ver, (float)0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f,
+		255, 255, 255,
+		tx + px, ty + py);
 
 	//‰E‘O
-	effect.d3varrayI[1] = 1;
-	effect.d3varray[1].p = D3DXVECTOR3((float)ver, (float)0.0f, ver * 2);
-	effect.d3varray[1].color = (255 << 16) + (255 << 8) + 255;
-	effect.d3varray[1].tex = D3DXVECTOR2(tx + px, ty);
+	effect.SetVertex(1, 1,
+		(float)ver, (float)0.0f, ver * 2,
+		0.0f, 0.0f, 0.0f,
+		255, 255, 255,
+		tx + px, ty);
 
 	if ((tx += px) + px > 1.0f){
 		tx = 0; return FALSE;

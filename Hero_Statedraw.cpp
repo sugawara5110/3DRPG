@@ -18,10 +18,10 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 	static bool clr_f = TRUE;
 	static DWORD r = 0x99;
 	float x;
-	if (o_no == 0)x = 0.0f;
-	if (o_no == 1)x = 170.0f;
-	if (o_no == 2)x = 350.0f;
-	if (o_no == 3)x = 520.0f;
+	if (o_no == 0)x = 20.0f;
+	if (o_no == 1)x = 190.0f;
+	if (o_no == 2)x = 370.0f;
+	if (o_no == 3)x = 540.0f;
 
 	//NORMAL以外のアクション中にNORMAL以外のアクション発生時の初期化
 	if (action != NORMAL){
@@ -142,11 +142,11 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 
 	Statecreate(command_run);
 	sprintf(str, "囚人№ %d", o_no);
-	dx->text(str, 5 + (int)(x + mov_x), (int)(470 + mov_y), TRUE, 0xff00ffff);
+	dx->text(str, (int)(x + mov_x), (int)(470 + mov_y), TRUE, 0xff00ffff);
 	sprintf(str, "HP %d/%d", p_data.HP, s_MHP());
-	dx->text(str, 5 + (int)(x + mov_x), (int)(490 + mov_y), TRUE, 0xff00ffff);
+	dx->text(str, (int)(x + mov_x) - 5, (int)(490 + mov_y), TRUE, 0xff00ffff);
 	sprintf(str, "MP %d/%d", p_data.MP, s_MMP());
-	dx->text(str, 5 + (int)(x + mov_x), (int)(510 + mov_y), TRUE, 0xff00ffff);
+	dx->text(str, (int)(x + mov_x) - 5, (int)(510 + mov_y), TRUE, 0xff00ffff);
 	if (p_data.HP <= 0){
 		dx->text("戦闘不能", (int)(x + mov_x), (int)(525 + mov_y), FALSE, 0xffff0000);
 		return NOT_FIN;

@@ -168,8 +168,13 @@ HRESULT Dx9Process::Initialize(HWND hWnd){//DirectX9初期化
 	pD3DDevice->SetTransform(D3DTS_PROJECTION, &m_proj);
 	pD3DDevice->SetTransform(D3DTS_WORLD, &m_world);
 	pTexture = (LPDIRECT3DTEXTURE9*)malloc(sizeof(LPDIRECT3DTEXTURE9) * 100);
-	for (int i = 0; i < 100; i++)pTexture[i] = NULL;
-	GetTexture();
+	binary_ch = (char**)malloc(sizeof(char*) * 100);
+	binary_size = (int*)malloc(sizeof(int) * 100);
+	for (int i = 0; i < 100; i++){
+		pTexture[i] = NULL;
+		binary_ch[i] = NULL;
+		binary_size[i] = 0;
+	}
 	return S_OK;
 }
 
@@ -281,7 +286,7 @@ void Dx9Process::TextureInit(PolygonData *pd, int width, int height){
 		);
 }
 
-void Dx9Process::TextureBinaryDecode(char *Bpass, LPDIRECT3DTEXTURE9 *pTexture){
+void Dx9Process::TextureBinaryDecode(char *Bpass, int i){
 
 	//暗号化時コード↓
 	/*
@@ -299,91 +304,45 @@ void Dx9Process::TextureBinaryDecode(char *Bpass, LPDIRECT3DTEXTURE9 *pTexture){
 	int bk = 0;
 
 	while (1){
-		scanf_s("%s", fname, 64);
-		len = strlen(fname);
-		if (len == 0 || len > 64)break;
-		i1 = 0;
-		do{
-			strncpy(&fname_out[i1], &fname[i1], 1);
-			i1++;
-		} while (fname[i1] != '.');
-		strncpy(&fname_out[i1++], ".", 1);
-		strncpy(&fname_out[i1++], "d", 1);
-		strncpy(&fname_out[i1++], "a", 1);
-		strncpy(&fname_out[i1], "\0", 1);
+	scanf_s("%s", fname, 64);
+	len = strlen(fname);
+	if (len == 0 || len > 64)break;
+	i1 = 0;
+	do{
+	strncpy(&fname_out[i1], &fname[i1], 1);
+	i1++;
+	} while (fname[i1] != '.');
+	strncpy(&fname_out[i1++], ".", 1);
+	strncpy(&fname_out[i1++], "d", 1);
+	strncpy(&fname_out[i1++], "a", 1);
+	strncpy(&fname_out[i1], "\0", 1);
 
-		i1 = 0;
-		if (strncmp(fname, "enemy.", 6) == 0)enemy_no = 1;
-		if (strncmp(fname, "boss.", 5) == 0)boss_no = 1;
+	i1 = 0;
+	if (strncmp(fname, "enemy.", 6) == 0)enemy_no = 1;
+	if (strncmp(fname, "boss.", 5) == 0)boss_no = 1;
 
-		do{
-			if (enemy_no >= 1){
-				sprintf(fname, "enemy%d.png", enemy_no);
-				sprintf(fname_out, "enemy%d.da", enemy_no);
-			}
-			if (boss_no >= 1){
-				sprintf(fname, "boss%d.png", boss_no);
-				sprintf(fname_out, "boss%d.da", boss_no);
-			}
-			fp = NULL;
-			fp2 = NULL;
-			binary = NULL;
-			binary_change = NULL;
-			size = 0;
-
-			fp = fopen(fname, "rb");
-			if (fp == NULL){
-				bk = 1; break;
-			}
-
-			while (!feof(fp)){
-				size++; fgetc(fp);
-			}
-			size++;//終端文字含めた個数
-
-			//ポインタを先頭に戻す
-			fseek(fp, 0, SEEK_SET);
-
-			binary = (char*)malloc(sizeof(char) * size);
-			binary_change = (char*)malloc(sizeof(char) * size);
-
-			for (int i = 0; i < size; i++){
-				binary[i] = fgetc(fp);//終端文字まで読み込み
-			}
-
-			for (int i = 0; i < 100; i++){
-				strncpy(&binary_change[i], &binary[99 - i], 1);
-			}
-			for (int i = 100; i < size; i++){
-				strncpy(&binary_change[i], &binary[i], 1);
-			}
-
-			fp2 = fopen(fname_out, "wb");
-
-			fwrite(binary_change, size, 1, fp2);
-
-			free(binary);
-			free(binary_change);
-			fclose(fp);
-			fclose(fp2);
-			if (enemy_no >= 1)enemy_no++;
-			if (boss_no >= 1)boss_no++;
-		} while (enemy_no >= 1 || boss_no >= 1);
-		enemy_no = boss_no = 0;
-		if (bk == 1)break;
+	do{
+	if (enemy_no >= 1){
+	sprintf(fname, "enemy%d.png", enemy_no);
+	sprintf(fname_out, "enemy%d.da", enemy_no);
 	}
-	*/
+	if (boss_no >= 1){
+	sprintf(fname, "boss%d.png", boss_no);
+	sprintf(fname_out, "boss%d.da", boss_no);
+	}
+	fp = NULL;
+	fp2 = NULL;
+	binary = NULL;
+	binary_change = NULL;
+	size = 0;
 
-	//復号コード↓
-	FILE *fp;
-	int size = 0;
-	char *binary = NULL;
-	char *binary_decode = NULL;
-
-	fp = fopen(Bpass, "rb");
+	fp = fopen(fname, "rb");
+	if (fp == NULL){
+	bk = 1; break;
+	}
 
 	while (!feof(fp)){
-		size++; fgetc(fp);
+	size++; fgetc(fp);
 	}
 	size++;//終端文字含めた個数
 
@@ -391,95 +350,141 @@ void Dx9Process::TextureBinaryDecode(char *Bpass, LPDIRECT3DTEXTURE9 *pTexture){
 	fseek(fp, 0, SEEK_SET);
 
 	binary = (char*)malloc(sizeof(char) * size);
-	binary_decode = (char*)malloc(sizeof(char) * size);
+	binary_change = (char*)malloc(sizeof(char) * size);
 
 	for (int i = 0; i < size; i++){
-		binary[i] = fgetc(fp);
+	binary[i] = fgetc(fp);//終端文字まで読み込み
 	}
+
 	for (int i = 0; i < 100; i++){
-		strncpy(&binary_decode[i], &binary[99 - i], 1);
+	strncpy(&binary_change[i], &binary[99 - i], 1);
 	}
 	for (int i = 100; i < size; i++){
-		strncpy(&binary_decode[i], &binary[i], 1);
+	strncpy(&binary_change[i], &binary[i], 1);
+	}
+
+	fp2 = fopen(fname_out, "wb");
+
+	fwrite(binary_change, size, 1, fp2);
+
+	free(binary);
+	free(binary_change);
+	fclose(fp);
+	fclose(fp2);
+	if (enemy_no >= 1)enemy_no++;
+	if (boss_no >= 1)boss_no++;
+	} while (enemy_no >= 1 || boss_no >= 1);
+	enemy_no = boss_no = 0;
+	if (bk == 1)break;
+	}
+	*/
+
+	//復号コード↓
+	FILE *fp;
+	fp = fopen(Bpass, "rb");
+
+	while (!feof(fp)){
+		binary_size[i]++; fgetc(fp);
+	}
+	binary_size[i]++;//終端文字含めた個数
+
+	//ポインタを先頭に戻す
+	fseek(fp, 0, SEEK_SET);
+
+	binary_ch[i] = (char*)malloc(sizeof(char) * binary_size[i]);
+
+	for (int j = 99; j >= 0; j--){
+		binary_ch[i][j] = fgetc(fp);
+	}
+
+	for (int j = 100; j < binary_size[i]; j++){
+		binary_ch[i][j] = fgetc(fp);
 	}
 
 	fclose(fp);
-	free(binary);
-	binary = NULL;
+}
 
-	D3DXCreateTextureFromFileInMemory(pD3DDevice, binary_decode, size, pTexture);
-
-	free(binary_decode);
-	binary_decode = NULL;
+void Dx9Process::TextureBinaryDecodeAll(){
+	//マップ0
+	TextureBinaryDecode("./dat/texture/map/wall1.da", 0);
+	TextureBinaryDecode("./dat/texture/map/ground1.da", 1);
+	TextureBinaryDecode("./dat/texture/map/ceiling1.da", 2);
+	TextureBinaryDecode("./dat/texture/map/EXIT1.da", 3);
+	//マップ1
+	TextureBinaryDecode("./dat/texture/map/wall2.da", 4);
+	TextureBinaryDecode("./dat/texture/map/ground2.da", 5);
+	TextureBinaryDecode("./dat/texture/map/ceiling2.da", 6);
+	TextureBinaryDecode("./dat/texture/map/EXIT2.da", 7);
+	TextureBinaryDecode("./dat/texture/map/wall2-1.da", 8);
+	TextureBinaryDecode("./dat/texture/map/ENTER2.da", 9);
+	TextureBinaryDecode("./dat/texture/map/background.da", 10);
+	//マップ2
+	TextureBinaryDecode("./dat/texture/map/ceiling3_wall3.da", 11);
+	TextureBinaryDecode("./dat/texture/map/ground3.da", 12);
+	TextureBinaryDecode("./dat/texture/map/ENTER3.da", 13);
+	TextureBinaryDecode("./dat/texture/map/EXIT3.da", 14);
+	//マップ3
+	TextureBinaryDecode("./dat/texture/map/ceiling4_ground4.da", 15);
+	TextureBinaryDecode("./dat/texture/map/ENTER4.da", 16);
+	//マップ4
+	TextureBinaryDecode("./dat/texture/map/wall5.da", 26);
+	TextureBinaryDecode("./dat/texture/map/ground5.da", 27);
+	TextureBinaryDecode("./dat/texture/map/ceiling5.da", 28);
+	TextureBinaryDecode("./dat/texture/map/ENTER5.da", 29);
+	//通常敵
+	TextureBinaryDecode("./dat/texture/enemy/enemy1.da", 30);
+	TextureBinaryDecode("./dat/texture/enemy/enemy2.da", 31);
+	TextureBinaryDecode("./dat/texture/enemy/enemy3.da", 32);
+	TextureBinaryDecode("./dat/texture/enemy/enemy4.da", 33);
+	TextureBinaryDecode("./dat/texture/enemy/enemy5.da", 34);
+	TextureBinaryDecode("./dat/texture/enemy/enemy6.da", 35);
+	TextureBinaryDecode("./dat/texture/enemy/enemy7.da", 36);
+	TextureBinaryDecode("./dat/texture/enemy/enemy8.da", 37);
+	TextureBinaryDecode("./dat/texture/enemy/enemy9.da", 38);
+	TextureBinaryDecode("./dat/texture/enemy/enemy10.da", 39);
+	TextureBinaryDecode("./dat/texture/enemy/enemy11.da", 40);
+	TextureBinaryDecode("./dat/texture/enemy/enemy12.da", 41);
+	TextureBinaryDecode("./dat/texture/enemy/enemy13.da", 42);
+	TextureBinaryDecode("./dat/texture/enemy/enemy14.da", 43);
+	TextureBinaryDecode("./dat/texture/enemy/enemy15.da", 44);
+	TextureBinaryDecode("./dat/texture/enemy/enemy16.da", 45);
+	TextureBinaryDecode("./dat/texture/enemy/enemy17.da", 46);
+	TextureBinaryDecode("./dat/texture/enemy/enemy18.da", 47);
+	TextureBinaryDecode("./dat/texture/enemy/enemy19.da", 48);
+	TextureBinaryDecode("./dat/texture/enemy/enemy20.da", 49);
+	//ボス
+	TextureBinaryDecode("./dat/texture/enemy/boss1.da", 50);
+	TextureBinaryDecode("./dat/texture/enemy/boss2.da", 51);
+	TextureBinaryDecode("./dat/texture/enemy/boss3.da", 52);
+	TextureBinaryDecode("./dat/texture/enemy/boss4.da", 53);
+	//ラストボス
+	TextureBinaryDecode("./dat/texture/enemy/lastboss.da", 59);
+	//魔方陣通常
+	TextureBinaryDecode("./dat/texture/magic/side_magic.da", 60);
+	//魔方陣ボス
+	TextureBinaryDecode("./dat/texture/magic/boss_magic.da", 61);
+	//回復ポイント
+	TextureBinaryDecode("./dat/texture/magic/recover.da", 70);
+	//エフェクト
+	TextureBinaryDecode("./dat/texture/effect/e_att.da", 80);
+	TextureBinaryDecode("./dat/texture/effect/h_att.da", 81);
+	TextureBinaryDecode("./dat/texture/effect/flame.da", 82);
+	TextureBinaryDecode("./dat/texture/effect/healing.da", 83);
+	TextureBinaryDecode("./dat/texture/effect/recov.da", 84);
 }
 
 void Dx9Process::GetTexture(){
-	//マップ0
-	TextureBinaryDecode("./dat/texture/map/wall1.da", &pTexture[0]);
-	TextureBinaryDecode("./dat/texture/map/ground1.da", &pTexture[1]);
-	TextureBinaryDecode("./dat/texture/map/ceiling1.da", &pTexture[2]);
-	TextureBinaryDecode("./dat/texture/map/EXIT1.da", &pTexture[3]);
-	//マップ1
-	TextureBinaryDecode("./dat/texture/map/wall2.da", &pTexture[4]);
-	TextureBinaryDecode("./dat/texture/map/ground2.da", &pTexture[5]);
-	TextureBinaryDecode("./dat/texture/map/ceiling2.da", &pTexture[6]);
-	TextureBinaryDecode("./dat/texture/map/EXIT2.da", &pTexture[7]);
-	TextureBinaryDecode("./dat/texture/map/wall2-1.da", &pTexture[8]);
-	TextureBinaryDecode("./dat/texture/map/ENTER2.da", &pTexture[9]);
-	TextureBinaryDecode("./dat/texture/map/background.da", &pTexture[10]);
-	//マップ2
-	TextureBinaryDecode("./dat/texture/map/ceiling3_wall3.da", &pTexture[11]);
-	TextureBinaryDecode("./dat/texture/map/ground3.da", &pTexture[12]);
-	TextureBinaryDecode("./dat/texture/map/ENTER3.da", &pTexture[13]);
-	TextureBinaryDecode("./dat/texture/map/EXIT3.da", &pTexture[14]);
-	//マップ3
-	TextureBinaryDecode("./dat/texture/map/ceiling4_ground4.da", &pTexture[15]);
-	TextureBinaryDecode("./dat/texture/map/ENTER4.da", &pTexture[16]);
-	//マップ4
-	TextureBinaryDecode("./dat/texture/map/wall5.da", &pTexture[26]);
-	TextureBinaryDecode("./dat/texture/map/ground5.da", &pTexture[27]);
-	TextureBinaryDecode("./dat/texture/map/ceiling5.da", &pTexture[28]);
-	TextureBinaryDecode("./dat/texture/map/ENTER5.da", &pTexture[29]);
-	//通常敵
-	TextureBinaryDecode("./dat/texture/enemy/enemy1.da", &pTexture[30]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy2.da", &pTexture[31]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy3.da", &pTexture[32]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy4.da", &pTexture[33]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy5.da", &pTexture[34]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy6.da", &pTexture[35]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy7.da", &pTexture[36]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy8.da", &pTexture[37]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy9.da", &pTexture[38]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy10.da", &pTexture[39]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy11.da", &pTexture[40]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy12.da", &pTexture[41]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy13.da", &pTexture[42]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy14.da", &pTexture[43]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy15.da", &pTexture[44]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy16.da", &pTexture[45]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy17.da", &pTexture[46]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy18.da", &pTexture[47]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy19.da", &pTexture[48]);
-	TextureBinaryDecode("./dat/texture/enemy/enemy20.da", &pTexture[49]);
-	//ボス
-	TextureBinaryDecode("./dat/texture/enemy/boss1.da", &pTexture[50]);
-	TextureBinaryDecode("./dat/texture/enemy/boss2.da", &pTexture[51]);
-	TextureBinaryDecode("./dat/texture/enemy/boss3.da", &pTexture[52]);
-	TextureBinaryDecode("./dat/texture/enemy/boss4.da", &pTexture[53]);
-	//ラストボス
-	TextureBinaryDecode("./dat/texture/enemy/lastboss.da", &pTexture[59]);
-	//魔方陣通常
-	TextureBinaryDecode("./dat/texture/magic/side_magic.da", &pTexture[60]);
-	//魔方陣ボス
-	TextureBinaryDecode("./dat/texture/magic/boss_magic.da", &pTexture[61]);
-	//回復ポイント
-	TextureBinaryDecode("./dat/texture/magic/recover.da", &pTexture[70]);
-	//エフェクト
-	TextureBinaryDecode("./dat/texture/effect/e_att.da", &pTexture[80]);
-	TextureBinaryDecode("./dat/texture/effect/h_att.da", &pTexture[81]);
-	TextureBinaryDecode("./dat/texture/effect/flame.da", &pTexture[82]);
-	TextureBinaryDecode("./dat/texture/effect/healing.da", &pTexture[83]);
-	TextureBinaryDecode("./dat/texture/effect/recov.da", &pTexture[84]);
+	for (int i = 0; i < 100; i++){
+		if (binary_size[i] == 0)continue;
+		D3DXCreateTextureFromFileInMemory(pD3DDevice, binary_ch[i], binary_size[i], &pTexture[i]);
+	}
+	for (int i = 0; i < 100; i++){
+		if (binary_ch[i] == NULL)continue;
+		free(binary_ch[i]);
+		binary_ch[i] = NULL;
+	}
+	free(binary_ch);
+	free(binary_size);
 }
 
 void Dx9Process::GetTexture(PolygonData *pd, int no){
@@ -487,7 +492,7 @@ void Dx9Process::GetTexture(PolygonData *pd, int no){
 	pd->load_tex_no[pd->tex_no] = no;
 }
 
-void Dx9Process::GetTexturePixelArray(PolygonData *pd, T_xyz *p_arr, int size){
+void Dx9Process::GetTexturePixelArray(PolygonData *pd, T_xyz *p_arr, int size_x, int size_y, int z){
 
 	D3DSURFACE_DESC desc;//サーフェイス
 	D3DLOCKED_RECT  rect;//サーフェイスのピッチ,ビットへのポインタ 
@@ -502,12 +507,12 @@ void Dx9Process::GetTexturePixelArray(PolygonData *pd, T_xyz *p_arr, int size){
 	int height = desc.Height;
 
 	BYTE *pPixel;
-	//元画像を調整size×sizeにしz方向に3コピー
-	for (int k = 0; k < 3; k++){
-		for (int j = 0; j < size; j++){
-			for (int i = 0; i < size; i++){
-				pPixel = ((BYTE*)rect.pBits) + ((int)(i * (float)width / size) * 4) + ((int)(j * (float)height / size) * rect.Pitch);
-				int ind = k * size * size + j * size + i;
+	//元画像を調整size×sizeにしz方向にzコピー
+	for (int k = 0; k < z; k++){
+		for (int j = 0; j < size_y; j++){
+			for (int i = 0; i < size_x; i++){
+				pPixel = ((BYTE*)rect.pBits) + ((int)(i * (float)width / size_x) * 4) + ((int)(j * (float)height / size_y) * rect.Pitch);
+				int ind = k * size_x * size_y + j * size_x + i;
 				p_arr[ind].color = ((int)(*(pPixel + 0)) << 24) + ((int)(*(pPixel + 1)) << 16) + (int)(*(pPixel + 2) << 8) + (int)(*(pPixel + 3));
 				p_arr[ind].x = (float)i / 5;
 				p_arr[ind].y = (float)j / 5;
@@ -711,6 +716,7 @@ Dx9Process::~Dx9Process(){
 		pTexture[i]->Release();
 		pTexture[i] = NULL;
 	}
+
 	pD3DFont_s->Release();     //ID3DXFontコンポーネント
 	pD3DFont_s = NULL;
 	pD3DFont_l->Release();   //ID3DXFontコンポーネント
@@ -744,4 +750,35 @@ Dx9Process::PolygonData::~PolygonData(){
 		pTexture->Release();
 		pTexture = NULL;
 	}
+}
+
+void Dx9Process::PolygonData::SetVertex(int I1, int I2, int i,
+	float vx, float vy, float vz,
+	float nx, float ny, float nz,
+	int r, int g, int b,
+	float u, float v){
+
+	d3varrayI[I1] = i;
+	d3varrayI[I2] = i;
+	d3varray[i].x = vx;
+	d3varray[i].y = vy;
+	d3varray[i].z = vz;
+	d3varray[i].normal = D3DXVECTOR3(nx, ny, nz);
+	d3varray[i].color = (r << 16) + (g << 8) + b;
+	d3varray[i].tex = D3DXVECTOR2(u, v);
+}
+
+void Dx9Process::PolygonData::SetVertex(int I1, int i,
+	float vx, float vy, float vz,
+	float nx, float ny, float nz,
+	int r, int g, int b,
+	float u, float v){
+
+	d3varrayI[I1] = i;
+	d3varray[i].x = vx;
+	d3varray[i].y = vy;
+	d3varray[i].z = vz;
+	d3varray[i].normal = D3DXVECTOR3(nx, ny, nz);
+	d3varray[i].color = (r << 16) + (g << 8) + b;
+	d3varray[i].tex = D3DXVECTOR2(u, v);
 }

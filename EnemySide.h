@@ -13,6 +13,10 @@ class EnemySide :public Enemy{
 
 protected:
 	//@Override
+	virtual void DamageAction();
+	virtual void RecoverActionInit();
+	virtual void RecoverAction();
+	virtual bool LostAction(float x, float y, float z);
 	virtual bool Magiccreate(float x, float y, float z);
 
 public:

@@ -87,13 +87,19 @@ enum Encount{
 enum MapState{
 	NORMAL_MAP,
 	RECOV_MAP,
-	CHANGE_MAP
+	CHANGE_MAP,
+	GAMECLEAR
 };
 
 enum MapStPos{
 	POS_ST,
 	POS_EN1,
 	POS_EN2
+};
+
+enum TemplateType{
+	E_ATT,
+	H_ATT
 };
 
 #endif

@@ -117,7 +117,6 @@ char *MovieSoundManager::Movie::MovieBinaryDecode(char *bpass){
 	static char decfname[64];
 	int size = 0;
 	char *binary = NULL;
-	char *binary_decode = NULL;
 
 	int i1 = 0;
 	do{
@@ -141,31 +140,24 @@ char *MovieSoundManager::Movie::MovieBinaryDecode(char *bpass){
 	fseek(fp, 0, SEEK_SET);
 
 	binary = (char*)malloc(sizeof(char) * size);
-	binary_decode = (char*)malloc(sizeof(char) * size);
 
-	for (int i = 0; i < size; i++){
+	for (int i = 99; i >= 0; i--){
 		binary[i] = fgetc(fp);
 	}
-	for (int i = 0; i < 100; i++){
-		strncpy(&binary_decode[i], &binary[99 - i], 1);
-	}
-	for (int i = 100; i < size+1; i++){
-		strncpy(&binary_decode[i], &binary[i], 1);
+	for (int i = 100; i < size; i++){
+		binary[i] = fgetc(fp);
 	}
 
 	fclose(fp);
-	free(binary);
-	binary = NULL;
-
 	fp2 = fopen(decfname, "wb");
 
-	for (int i = 0; i < size+1; i++){
-		fputc(binary_decode[i], fp2);
+	for (int i = 0; i < size + 1; i++){
+		fputc(binary[i], fp2);
 	}
 
 	fclose(fp2);
-	free(binary_decode);
-	binary_decode = NULL;
+	free(binary);
+	binary = NULL;
 
 	return decfname;
 }

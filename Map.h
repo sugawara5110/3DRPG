@@ -96,8 +96,9 @@ public:
 	static void SetMapNo(int no);
 	static void SetBossKilled(int i, int f);
 	static int *GetBossKilled();
+	static int GetBossKilled(int map_no);
 	Map(Position::H_Pos *h_p);
-	Encount Mapdraw(MapState *mapstate, Directionkey direction, Encount encount, bool menu, bool title);
+	Encount Mapdraw(MapState *mapstate, Directionkey direction, Encount encount, bool menu, bool title, bool ending);
 	Position::E_Pos *Getposition(int p);
 	Position::H_Pos *Getposition();
 	~Map();

@@ -394,35 +394,83 @@ EnemySide::EnemySide(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 	dx->GetTexture(mag, 60);
 	dx->GetVBarray(SQUARE, mag, 1);
 
-	Enemycreate(size_x, size_y);
+	Enemycreate(size_x, size_y, cr, cg, cb);
+}
+
+//@Override
+void EnemySide::DamageAction(){
+
+	if (count++ < 10){
+		int rnd = rand() % 20;
+		rnd -= 10;
+		mov_x = (float)rnd;
+		rnd = rand() % 20;
+		rnd -= 10;
+		mov_y = (float)rnd;
+		rnd = rand() % 20;
+		rnd -= 10;
+		mov_z = (float)rnd;
+	}
+	else {
+		count = 0;
+		act_f = normal_action;
+		mov_x = mov_y = mov_z = 0.0f;
+	}
+}
+
+//@Override
+void EnemySide::RecoverActionInit(){
+	theta_recov = 90.0f;
+	act_f = RECOVER;
+}
+
+//@Override
+void EnemySide::RecoverAction(){
+	if (theta_recov-- < 0){
+		theta_recov = 0;
+		act_f = normal_action;
+	}
+}
+
+//@Override
+bool EnemySide::LostAction(float x, float y, float z){
+	if (mov_z-- < -100.0f){
+		mov_z = 0.0f; return TRUE;
+	}
+	return FALSE;
 }
 
 //@Override
 bool EnemySide::Magiccreate(float x, float y, float z){
 
 	//マジック左上
-	mag->d3varrayI[0] = mag->d3varrayI[3] = 0;
-	mag->d3varray[0].p = D3DXVECTOR3((float)-35.0f, (float)-35.0f, 1.0f);
-	mag->d3varray[0].color = (255 << 16) + (255 << 8) + 255;
-	mag->d3varray[0].tex = D3DXVECTOR2(0.0f, 0.0f);
+	mag->SetVertex(0, 3, 0,
+		(float)-35.0f, (float)-35.0f, 1.0f,
+		0.0f, 0.0f, 0.0f,
+		255, 255, 255,
+		0.0f, 0.0f);
 
 	//マジック左下
-	mag->d3varrayI[4] = 2;
-	mag->d3varray[2].p = D3DXVECTOR3((float)-35.0f, (float)35.0f, 1.0f);
-	mag->d3varray[2].color = (255 << 16) + (255 << 8) + 255;
-	mag->d3varray[2].tex = D3DXVECTOR2(0.0f, 1.0f);
+	mag->SetVertex(4, 2,
+		(float)-35.0f, (float)35.0f, 1.0f,
+		0.0f, 0.0f, 0.0f,
+		255, 255, 255,
+		0.0f, 1.0f);
 
 	//マジック右下
-	mag->d3varrayI[2] = mag->d3varrayI[5] = 3;
-	mag->d3varray[3].p = D3DXVECTOR3((float)35.0f, (float)35.0f, 1.0f);
-	mag->d3varray[3].color = (255 << 16) + (255 << 8) + 255;
-	mag->d3varray[3].tex = D3DXVECTOR2(1.0f, 1.0f);
+	mag->SetVertex(2, 5, 3,
+		(float)35.0f, (float)35.0f, 1.0f,
+		0.0f, 0.0f, 0.0f,
+		255, 255, 255,
+		1.0f, 1.0f);
 
 	//マジック右上
-	mag->d3varrayI[1] = 1;
-	mag->d3varray[1].p = D3DXVECTOR3((float)35.0f, (float)-35.0f, 1.0f);
-	mag->d3varray[1].color = (255 << 16) + (255 << 8) + 255;
-	mag->d3varray[1].tex = D3DXVECTOR2(1.0f, 0.0f);
+	mag->SetVertex(1, 1,
+		(float)35.0f, (float)-35.0f, 1.0f,
+		0.0f, 0.0f, 0.0f,
+		255, 255, 255,
+		1.0f, 0.0f);
+
 	MovieSoundManager::Magic_sound(TRUE);
 	dx->D3primitive(SQUARE, mag, 1, x + mov_x, y + mov_y, z + 1.0f + mov_z, (float)count, TRUE, FALSE, FALSE);
 

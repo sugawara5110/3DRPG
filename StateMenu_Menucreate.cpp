@@ -14,6 +14,7 @@ StateMenu::StateMenu(){
 
 	dx = Dx9Process::GetInstance();
 	MovieSoundManager::ObjCreate_title();
+	MovieSoundManager::Title_sound(FALSE);
 	state = (Dx9Process::MY_VERTEX2*)malloc(sizeof(Dx9Process::MY_VERTEX2) * 4);
 	s_state = (Dx9Process::MY_VERTEX2*)malloc(sizeof(Dx9Process::MY_VERTEX2) * 4);
 	r_state = (Dx9Process::MY_VERTEX2*)malloc(sizeof(Dx9Process::MY_VERTEX2) * 4);

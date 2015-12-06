@@ -14,6 +14,9 @@
 #include "Battle.h"
 #include "Hero.h"
 #include "StateMenu.h"
+#include <Process.h>
+#include "NowLoading.h"
+#include "Ending.h"
 
 //-------------------------------------------------------------
 // メッセージ処理用コールバック関数
@@ -128,20 +131,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//DirectX初期化
 	if (dx->Initialize(hWnd) == E_FAIL)return -1;
 
+	bool loop = TRUE;
+	HANDLE now_loading_h = (HANDLE)_beginthreadex(NULL, 0, NowLoading, &loop, 0, NULL);
+	dx->TextureBinaryDecodeAll();
 	MovieSoundManager::ObjInit();
+	loop = FALSE;
+	WaitForSingleObject(now_loading_h, INFINITE);//スレッドが終了するまで待つ
+	CloseHandle(now_loading_h);//ハンドルを閉じる
+
+	dx->GetTexture();
 	Control control;
-	StateMenu statemenu;
 	Hero *hero = NULL;
 	Battle *battle = NULL;
 	Map *map = NULL;
 	Map::SetBossKilled(-1, 0);//ボス撃破履歴初期化
 	int map_no = 0;
 	map = new Map(NULL);
+	StateMenu statemenu;
 	Encount encount = NOENCOUNT;
 	bool menu = FALSE;
 	bool title = TRUE;
 	Result result = WIN;
 	MapState mapstate = NORMAL_MAP;
+	Ending *ending = NULL;
+	bool endingflg = FALSE;
 	int  rnd;
 
 	while (1){//アプリ実行中ループ
@@ -173,7 +186,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 		}
 
-		encount = map->Mapdraw(&mapstate, control.Direction(TRUE), encount, menu, title);
+		encount = map->Mapdraw(&mapstate, control.Direction(TRUE), encount, menu, title, endingflg);
 
 		if (mapstate == CHANGE_MAP){
 			delete map;
@@ -189,9 +202,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			mapstate = NORMAL_MAP;
 		}
 
-		if (title == FALSE && encount == NOENCOUNT && menu == FALSE && control.Direction() == ENTER)menu = TRUE;
+		if (endingflg == FALSE && title == FALSE && encount == NOENCOUNT && menu == FALSE && control.Direction() == ENTER)menu = TRUE;
 
-		if (title == FALSE && encount != NOENCOUNT && menu == FALSE){
+		if (endingflg == FALSE && title == FALSE && encount != NOENCOUNT && menu == FALSE){
 			if (battle == NULL){
 				if (encount == SIDE){
 					int LV = (hero[0].s_LV() + hero[1].s_LV() + hero[2].s_LV() + hero[3].s_LV()) / 4;
@@ -202,13 +215,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					if ((map_no + 1) * 7 < LV)rnd = rand() % 4;
 				}
 				else rnd = 0;
-				battle = new Battle(map->Getposition(rnd), map->Getposition(), encount, map_no);
+				battle = new Battle(map->Getposition(rnd), map->Getposition(), encount, map_no, rnd + 1);
 			}
 			if (battle != NULL)result = battle->Fight(hero, control.Direction(), result);
 			if (result == WIN && battle != NULL){
 				delete battle;
 				battle = NULL;
-				if (encount == BOSS)Map::SetBossKilled(map_no, TRUE);//ボス撃破履歴更新
+				if (encount == BOSS)Map::SetBossKilled(map_no, 1);//ボス撃破履歴更新
 				encount = NOENCOUNT;
 			}
 			if (result == DIE){
@@ -216,7 +229,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 		}
 
-		if (title == FALSE && encount == NOENCOUNT && menu == TRUE){
+		if (endingflg == FALSE && Map::GetBossKilled(4) == 1){
+			endingflg = TRUE;
+			ending = new Ending();
+		}
+		if (endingflg == TRUE)ending->StaffRoll();
+
+		if (endingflg == FALSE && title == FALSE && encount == NOENCOUNT && menu == TRUE){
 			menu = statemenu.Menudraw(map->Getposition(), map_no, Map::GetBossKilled(), hero, control.Direction());
 		}
 
@@ -236,6 +255,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (hero != NULL){
 		delete[] hero;
 		hero = NULL;
+	}
+	if (ending != NULL){
+		delete ending;
+		ending = NULL;
 	}
 	Dx9Process::DeleteInstance();
 	return (int)msg.wParam;

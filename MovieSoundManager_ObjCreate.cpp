@@ -19,6 +19,8 @@ MovieSoundManager::Sound_ *MovieSoundManager::heal_so;
 MovieSoundManager::Sound_ *MovieSoundManager::magic_so;
 MovieSoundManager::Sound_ *MovieSoundManager::select_so;
 MovieSoundManager::Sound_ *MovieSoundManager::enter_so;
+MovieSoundManager::Sound_ *MovieSoundManager::ending_so;
+MovieSoundManager::Sound_ *MovieSoundManager::bosslost_so;
 
 MovieSoundManager::MovieSoundManager(){}
 
@@ -29,8 +31,10 @@ void MovieSoundManager::ObjInit(){
 	dungeon_so = NULL;
 	rain_so = NULL;
 	enemy_so = NULL;
+	bosslost_so = NULL;
 	title_so = NULL;
 	die_so = NULL;
+	ending_so = NULL;
 	att_so = new Sound_(0);
 	flame_so = new Sound_(1);
 	heal_so = new Sound_(2);
@@ -100,6 +104,7 @@ void MovieSoundManager::ObjCreate_battle(int n){
 	if (n == 1 && enemy_so == NULL)enemy_so = new Sound_(32);
 	if (n == 2 && enemy_so == NULL)enemy_so = new Sound_(33);
 	if (n == 3 && enemy_so == NULL)enemy_so = new Sound_(34);
+	if (n > 0 && bosslost_so == NULL)bosslost_so = new Sound_(36);
 }
 
 void MovieSoundManager::ObjDelete_battle(){
@@ -112,6 +117,23 @@ void MovieSoundManager::ObjDelete_battle(){
 		delete enemy_so;
 		enemy_so = NULL;
 	}
+	if (bosslost_so != NULL){
+		delete bosslost_so;
+		bosslost_so = NULL;
+	}
+}
+
+void MovieSoundManager::ObjCreate_ending(){
+
+	if (ending_so == NULL)ending_so = new Sound_(35);
+}
+
+void MovieSoundManager::ObjDelete_ending(){
+
+	if (ending_so != NULL){
+		delete ending_so;
+		ending_so = NULL;
+	}
 }
 
 void MovieSoundManager::ObjDelete(){
@@ -119,7 +141,8 @@ void MovieSoundManager::ObjDelete(){
 	ObjDelete_title();
 	ObjDelete_map();
 	ObjDelete_battle();
-	
+	ObjDelete_ending();
+
 	if (att_so != NULL){
 		delete att_so;
 		att_so = NULL;
@@ -178,12 +201,20 @@ void MovieSoundManager::Enemy_soundoff(){
 	enemy_so->soundoff();
 }
 
+void MovieSoundManager::Bosslost_sound(bool repeat){
+	bosslost_so->soundloop(repeat, -700, 5, 30);
+}
+
 void MovieSoundManager::Title_sound(bool repeat){
 	title_so->sound(repeat, -1000);
 }
 
 void MovieSoundManager::Title_soundoff(){
 	title_so->soundoff();
+}
+
+void MovieSoundManager::Ending_sound(bool repeat){
+	ending_so->sound(repeat, -1000);
 }
 
 void MovieSoundManager::Die_sound(bool repeat){

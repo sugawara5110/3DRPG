@@ -29,6 +29,7 @@ private:
 	Enemy *enemy;
 	EnemySide *enemyside;
 	EnemyBoss *enemyboss;
+	int e_num;            //敵出現数
 	bool command_run_first_flg;//コマンド選択権無の状態 == FALSE
 	bool time_stop_flg;       //バトル中時間ストップフラグ
 	int Escape_f;            //エスケープ表示フラグ,座標
@@ -87,7 +88,17 @@ private:
 	}
 
 	template<typename T_dm, typename T_att>
-	void MAGprocess(T_dm *p_dm, T_att *p_att, T_att *att, Draw *at, Draw *p_at, Draw *p_d, int *select_ob, MagicSelect *select_M){
+	void MAGprocess(T_dm *p_dm, T_att *p_att, T_att *att, Draw *at, Draw *p_at, Draw *p_d, int *select_ob, MagicSelect *select_M, TemplateType type){
+		int att_n;
+		int dm_n;
+		if (type == E_ATT){
+			att_n = e_num;
+			dm_n = 4;
+		}
+		if (type == H_ATT){
+			att_n = 4;
+			dm_n = e_num;
+		}
 		int cnt = 0;
 		at->action = MAGIC;
 		//MP処理
@@ -104,10 +115,10 @@ private:
 			att->s_Fp(1);
 			//全体攻撃
 			if (*select_ob == 4){
-				for (int i = 0; i < 4; i++){
+				for (int i = 0; i < dm_n; i++){
 					if (p_dm[i].Dieflg() == FALSE)cnt++;
 				}
-				for (int i = 0; i < 4; i++){
+				for (int i = 0; i < dm_n; i++){
 					if (p_dm[i].Dieflg() == TRUE)continue;
 					p_d[i].DMdata = att->GetMagic(FLAME, cnt);
 				}
@@ -125,10 +136,10 @@ private:
 			att->s_Hp(1);
 			//全体攻撃
 			if (*select_ob == 4){
-				for (int i = 0; i < 4; i++){
+				for (int i = 0; i < att_n; i++){
 					if (p_att[i].Dieflg() == FALSE)cnt++;
 				}
-				for (int i = 0; i < 4; i++){
+				for (int i = 0; i < att_n; i++){
 					if (p_att[i].Dieflg() == TRUE)continue;
 					p_at[i].RCVdata = att->GetMagic(HEAL, cnt);
 				}
@@ -202,7 +213,7 @@ private:
 	}
 
 public:
-	Battle(Position::E_Pos *e_pos, Position::H_Pos *h_pos, Encount encount, int no);
+	Battle(Position::E_Pos *e_pos, Position::H_Pos *h_pos, Encount encount, int no, int e_nu);
 	Result Fight(Hero *he, Directionkey direction, Result result);
 	bool GetH_DM(int element);
 	bool GetH_RCV(int element);

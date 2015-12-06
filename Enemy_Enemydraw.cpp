@@ -45,8 +45,7 @@ Act_fin_flg Enemy::Enemydraw(Battle *battle, int *E_select_obj, Action action, M
 		break;
 
 	case RECOVER:
-		theta_recov = 90.0f;
-		act_f = RECOVER;
+		RecoverActionInit();
 		break;
 	}
 
@@ -155,34 +154,16 @@ Act_fin_flg Enemy::Enemydraw(Battle *battle, int *E_select_obj, Action action, M
 		break;
 
 	case DAMAGE:
-		if (count++ < 10){
-			int rnd = rand() % 20;
-			rnd -= 10;
-			mov_x = (float)rnd;
-			rnd = rand() % 20;
-			rnd -= 10;
-			mov_y = (float)rnd;
-			rnd = rand() % 20;
-			rnd -= 10;
-			mov_z = (float)rnd;
-		}
-		else {
-			count = 0;
-			act_f = normal_action;
-			mov_x = mov_y = mov_z = 0.0f;
-		}
+		DamageAction();
 		break;
 
 	case RECOVER:
-		if (theta_recov-- < 0){
-			theta_recov = 0;
-			act_f = normal_action;
-		}
+		RecoverAction();
 		break;
 
 	case LOST:
-		if (mov_z-- < -100.0f){
-			mov_z = 0.0f; return LOST_FIN;
+		if (LostAction(e_pos[o_no].x, e_pos[o_no].y, e_pos[o_no].z) == TRUE){
+			return LOST_FIN;
 		}
 		break;
 	}

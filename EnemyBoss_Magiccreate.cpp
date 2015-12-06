@@ -131,14 +131,14 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 	dx->GetVBarray(SQUARE, &en, 1);
 	mag = new Dx9Process::PolygonData[50];
 	dx->GetTexture(&mag[0], 61);//[0]番目にテクスチャを保管(1枚しか使用しない)
-	//テクスチャピクセルデータ一時確保用(使うクラス内で確保する事)
+	//テクスチャピクセルデータ一時確保用(ボス用なのでボスクラス内で確保する事)
 	p_array = (Dx9Process::T_xyz*)malloc(sizeof(Dx9Process::T_xyz) * 3 * mag_size * mag_size);
 	//ピクセル移動用Z座標初期化
 	for (int i = 0; i < 50; i++)mv[i] = (float)i;
 	//ピクセル個数初期化
 	for (int i = 0; i < 50; i++)ver_pcs[i] = 0;
 	//ピクセルデータ取り出し
-	dx->GetTexturePixelArray(&mag[0], p_array, mag_size);
+	dx->GetTexturePixelArray(&mag[0], p_array, mag_size, mag_size, 3);
 	//描画対象ピクセル個数カウント(各グループ50個飛びでピクセル取得する為50個飛びでカウント)
 
 	for (int p = 0; p < 50; p++){
@@ -164,16 +164,121 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 				for (int i = p; i < mag_size; i += 50){
 					int ind = k1 * mag_size * mag_size + j * mag_size + i;
 					if ((p_array[ind].color & 0xff) < 10 || k >= ver_pcs[p])continue;
-					mag[p].d3varrayI[k] = k;
-					mag[p].d3varray[k].p = D3DXVECTOR3(p_array[ind].x - mag_size / 10,
-						p_array[ind].y - mag_size / 10, p_array[ind].z);
-					mag[p].d3varray[k++].color = (p_array[ind].color >> 8) / 2;//アルファ値抜かす
+
+					mag[p].SetVertex(k, k,
+						p_array[ind].x - mag_size / 10,
+						p_array[ind].y - mag_size / 10,
+						p_array[ind].z,
+						0.0f, 0.0f, 0.0f,
+						(p_array[ind].color >> 24) & 0xff, //アルファ値抜かす
+						(p_array[ind].color >> 16) & 0xff,
+						(p_array[ind].color >> 8) & 0xff,
+						0.0f, 0.0f);
+					k++;
 				}
 			}
 		}
 	}
 
-	Enemycreate(size_x, size_y);
+	dx->GetTexture(&lost, e);
+	//テクスチャピクセルデータ一時確保用(ボス用なのでボスクラス内で確保する事)
+	p_array2 = (Dx9Process::T_xyz*)malloc(sizeof(Dx9Process::T_xyz) * 1 * (int)size_x * 5 * (int)size_y * 5);
+	ver_pcs2 = 0;
+	//ピクセルデータ取り出し
+	dx->GetTexturePixelArray(&lost, p_array2, (int)size_x * 5, (int)size_y * 5, 1);
+	for (int j = 0; j < (int)size_y * 5; j++){
+		for (int i = 0; i < (int)size_x * 5; i++){
+			if ((p_array2[j * (int)size_x * 5 + i].color & 0xff) >= 10)ver_pcs2++;//描画ピクセル個数カウント
+		}
+	}
+	//頂点バッファ
+	dx->GetVBarray(POINt, &lost, ver_pcs2);
+	//頂点座標設定
+	int k = 0;
+	for (int j = 0; j < (int)size_y * 5; j++){
+		for (int i = 0; i < (int)size_x * 5; i++){
+			int ind = j * (int)size_x * 5 + i;
+			if ((p_array2[ind].color & 0xff) < 10 || k >= ver_pcs2)continue;
+
+			lost.SetVertex(k, k,
+				p_array2[ind].x - size_x / 2,
+				0,
+				size_y - p_array2[ind].y,
+				0.0f, 0.0f, 0.0f,
+				(p_array2[ind].color >> 24) & 0xff, //アルファ値抜かす
+				(p_array2[ind].color >> 16) & 0xff,
+				(p_array2[ind].color >> 8) & 0xff,
+				0.0f, 0.0f);
+			p_array2[ind].z = (float)(rand() / 32767.0f) + 0.05f;//ピクセル移動量を格納
+			k++;
+		}
+	}
+
+	Enemycreate(size_x, size_y, cr, cg, cb);
+}
+
+//@Override
+void EnemyBoss::DamageAction(){
+
+	if (cg < 10){
+		cg = cb = 255;
+		Enemycreate(size_x, size_y, cr, cg, cb);
+		en.lock = FALSE;
+		act_f = normal_action;
+	}
+	else{
+		Enemycreate(size_x, size_y, cr, cg, cb);
+		en.lock = FALSE;
+		cg -= 10;
+		cb -= 10;
+	}
+}
+
+//@Override
+void EnemyBoss::RecoverActionInit(){
+	cr = cg = cb = 0;
+	act_f = RECOVER;
+}
+
+//@Override
+void EnemyBoss::RecoverAction(){
+	if (cr > 255){
+		cr = cg = cb = 255;
+		act_f = normal_action;
+	}
+	else{
+		Enemycreate(size_x, size_y, cr, cg, cb);
+		en.lock = FALSE;
+		cr += 5;
+		cg += 5;
+		cb += 5;
+	}
+}
+
+//@Override
+bool EnemyBoss::LostAction(float x, float y, float z){
+
+	MovieSoundManager::Bosslost_sound(TRUE);
+	//ピクセル座標移動
+	int k = 0;
+	for (int j = 0; j < (int)size_y * 5; j++){
+		for (int i = 0; i < (int)size_x * 5; i++){
+			int ind = j * (int)size_x * 5 + i;
+			if ((p_array2[ind].color & 0xff) < 10 || k >= ver_pcs2)continue;
+
+			lost.d3varray[k].z -= p_array2[ind].z;
+			k++;
+		}
+	}
+	mov_z = -300.0f;//通常のテクスチャ画像消す
+	dx->D3primitive(POINt, &lost, ver_pcs2, x, y, z, e_pos[o_no].theta, FALSE, TRUE, FALSE);
+
+	for (int i = 0; i < ver_pcs2; i++){
+		if (lost.d3varray[i].z > 0.0f){
+			return FALSE;
+		}
+	}
+	return TRUE;
 }
 
 //@Override
@@ -274,7 +379,9 @@ EnemyBoss::~EnemyBoss(){
 
 	delete[] mag;
 	mag = NULL;
-
+	
 	free(p_array);
 	p_array = NULL;
+	free(p_array2);
+	p_array2 = NULL;
 }

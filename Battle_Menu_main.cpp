@@ -115,7 +115,7 @@ CommandSelect Battle::Menu_AT(int i, Directionkey direction){
 
 	//元選択中の敵がLOSTした場合の選択対象切り替え
 	if (enemy[h_draw[i].A_select].Dieflg() == TRUE){
-		for (int i1 = 0; i1 < 4; i1++)if (enemy[i1].Dieflg() == FALSE){
+		for (int i1 = 0; i1 < e_num; i1++)if (enemy[i1].Dieflg() == FALSE){
 			h_draw[i].A_select = i1; break;
 		}
 	}
@@ -125,15 +125,15 @@ CommandSelect Battle::Menu_AT(int i, Directionkey direction){
 	switch (direction){
 	case LEFT:
 		MovieSoundManager::Select_sound(FALSE);
-		if (enemy[1].Dieflg() == FALSE)h_draw[i].A_select = 1;
+		if (e_pos[1].element == TRUE && enemy[1].Dieflg() == FALSE)h_draw[i].A_select = 1;
 		break;
 	case RIGHT:
 		MovieSoundManager::Select_sound(FALSE);
-		if (enemy[3].Dieflg() == FALSE)h_draw[i].A_select = 3;
+		if (e_pos[3].element == TRUE && enemy[3].Dieflg() == FALSE)h_draw[i].A_select = 3;
 		break;
 	case UP:
 		MovieSoundManager::Select_sound(FALSE);
-		if (enemy[2].Dieflg() == FALSE)h_draw[i].A_select = 2;
+		if (e_pos[2].element == TRUE && enemy[2].Dieflg() == FALSE)h_draw[i].A_select = 2;
 		break;
 	case DOWN:
 		MovieSoundManager::Select_sound(FALSE);
@@ -155,14 +155,14 @@ CommandSelect Battle::Menu_MAG_AT(int i, Directionkey direction){
 
 	//元選択中の敵がLOSTした場合の選択対象切り替え(全体攻撃の場合は切り替えしない)
 	if (h_draw[i].MA_select != 4 && enemy[h_draw[i].MA_select].Dieflg() == TRUE){
-		for (int i1 = 0; i1 < 4; i1++)if (enemy[i1].Dieflg() == FALSE){
+		for (int i1 = 0; i1 < e_num; i1++)if (enemy[i1].Dieflg() == FALSE){
 			h_draw[i].MA_select = i1; break;
 		}
 	}
 
 	if (h_draw[i].MA_select != 4)Cursor_e(h_draw[i].MA_select);//単体選択
 	else{
-		for (int i1 = 0; i1 < 4; i1++){
+		for (int i1 = 0; i1 < e_num; i1++){
 			if (enemy[i1].Dieflg() == TRUE)continue;
 			Cursor_e(i1);//全体選択(h_draw[i].A_select == 4)
 		}
@@ -171,15 +171,15 @@ CommandSelect Battle::Menu_MAG_AT(int i, Directionkey direction){
 	switch (direction){
 	case LEFT:
 		MovieSoundManager::Select_sound(FALSE);
-		if (enemy[1].Dieflg() == FALSE)h_draw[i].MA_select = 1;
+		if (e_pos[1].element == TRUE && enemy[1].Dieflg() == FALSE)h_draw[i].MA_select = 1;
 		break;
 	case RIGHT:
 		MovieSoundManager::Select_sound(FALSE);
-		if (enemy[3].Dieflg() == FALSE)h_draw[i].MA_select = 3;
+		if (e_pos[3].element == TRUE && enemy[3].Dieflg() == FALSE)h_draw[i].MA_select = 3;
 		break;
 	case UP:
 		MovieSoundManager::Select_sound(FALSE);
-		if (enemy[2].Dieflg() == FALSE)h_draw[i].MA_select = 2;
+		if (e_pos[2].element == TRUE && enemy[2].Dieflg() == FALSE)h_draw[i].MA_select = 2;
 		break;
 	case DOWN:
 		MovieSoundManager::Select_sound(FALSE);

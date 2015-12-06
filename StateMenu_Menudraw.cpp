@@ -17,10 +17,6 @@ bool StateMenu::TitleMenu(Directionkey direction){
 
 	dx->text("NEW GAME", 330, 250, FALSE, 0xffffffff);
 	dx->text("CONTINUE", 330, 290, FALSE, 0xffffffff);
-	dx->text("タイトルBGM,効果音提供 : 魔王魂様", 10, 450, FALSE, 0xffffffff);
-	dx->text("戦闘,マップBGM    提供 : Wingless Seraph様", 10, 475, FALSE, 0xffffffff);
-	dx->text("敵画像            提供 : HI-TIME様, Folce-zero様", 10, 500, FALSE, 0xffffffff);
-	dx->text("エフェクト画像    提供 : ぴぽや様", 10, 525, FALSE, 0xffffffff);
 
 	switch (select){
 	case 0:
@@ -52,8 +48,8 @@ bool StateMenu::TitleMenu(Directionkey direction){
 				savedata.p_data[i].Exp = 10;
 				savedata.p_data[i].LV = 1;
 				savedata.p_data[i].ParameterPoint = 0;
-				savedata.p_data[i].HP = MAX_HP;
-				savedata.p_data[i].MP = MAX_MP;
+				savedata.p_data[i].HP = s_MAX_HP;
+				savedata.p_data[i].MP = s_MAX_MP;
 				savedata.p_data[i].FlameATT_LV = 0;
 				savedata.p_data[i].Fpoint = 10;
 				savedata.p_data[i].Healing_LV = 0;
@@ -61,21 +57,23 @@ bool StateMenu::TitleMenu(Directionkey direction){
 				savedata.p_data[i].Recover_LV = 0;
 				savedata.p_data[i].Rpoint = 10;
 				*/
-				savedata.p_data[i].Attack = 50;
-				savedata.p_data[i].Magic = 50;
-				savedata.p_data[i].Agility = 50;
-				savedata.p_data[i].Vitality = 50;
-				savedata.p_data[i].Exp = 700;
-				savedata.p_data[i].LV = 70;
+				
+				savedata.p_data[i].Attack = 100;
+				savedata.p_data[i].Magic = 100;
+				savedata.p_data[i].Agility = 100;
+				savedata.p_data[i].Vitality = 100;
+				savedata.p_data[i].Exp = 1000;
+				savedata.p_data[i].LV = 100;
 				savedata.p_data[i].ParameterPoint = 0;
 				savedata.p_data[i].HP = s_MAX_HP;
 				savedata.p_data[i].MP = s_MAX_MP;
-				savedata.p_data[i].FlameATT_LV = 50;
-				savedata.p_data[i].Fpoint = 500;
-				savedata.p_data[i].Healing_LV = 50;
-				savedata.p_data[i].Hpoint = 500;
-				savedata.p_data[i].Recover_LV = 50;
-				savedata.p_data[i].Rpoint = 500;
+				savedata.p_data[i].FlameATT_LV = 100;
+				savedata.p_data[i].Fpoint = 1000;
+				savedata.p_data[i].Healing_LV = 100;
+				savedata.p_data[i].Hpoint = 1000;
+				savedata.p_data[i].Recover_LV = 100;
+				savedata.p_data[i].Rpoint = 1000;
+				
 			}
 
 			savedata.h_pos.cx1 = 1150.0f;
@@ -110,7 +108,7 @@ bool StateMenu::TitleMenu(Directionkey direction){
 			savedata.h_pos.theta = 0.0f;
 			savedata.map_no = 3;
 			*/
-			/*
+			
 			//ラスダン
 			savedata.h_pos.cx1 = 1150.0f;
 			savedata.h_pos.cx2 = 1150.0f;
@@ -118,10 +116,10 @@ bool StateMenu::TitleMenu(Directionkey direction){
 			savedata.h_pos.cy2 = 2700.0f;
 			savedata.h_pos.px = 11;
 			savedata.h_pos.py = 27;
-			savedata.h_pos.pz = 0;
+			savedata.h_pos.pz = 6;
 			savedata.h_pos.theta = 0.0f;
 			savedata.map_no = 4;
-			*/
+			
 		}
 		if (select == 1){
 			FILE *fp = fopen("./dat/save/save.da1", "rb");

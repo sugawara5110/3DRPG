@@ -73,6 +73,12 @@ MovieSoundManager::Sound_::Sound_(int no){
 	case 34:
 		fname = SoundBinaryDecode("./dat/movie/lastboss.da");
 		break;
+	case 35:
+		fname = SoundBinaryDecode("./dat/movie/ending.da");
+		break;
+	case 36:
+		fname = SoundBinaryDecode("./dat/movie/bosslost.da");
+		break;
 	}
 
 	LPSTR lstr = fname;
@@ -123,7 +129,6 @@ char *MovieSoundManager::Sound_::SoundBinaryDecode(char *bpass){
 	static char decfname[64];
 	int size = 0;
 	char *binary = NULL;
-	char *binary_decode = NULL;
 
 	int i1 = 0;
 	do{
@@ -147,31 +152,24 @@ char *MovieSoundManager::Sound_::SoundBinaryDecode(char *bpass){
 	fseek(fp, 0, SEEK_SET);
 
 	binary = (char*)malloc(sizeof(char) * size);
-	binary_decode = (char*)malloc(sizeof(char) * size);
 
-	for (int i = 0; i < size; i++){
+	for (int i = 99; i >= 0; i--){
 		binary[i] = fgetc(fp);
 	}
-	for (int i = 0; i < 100; i++){
-		strncpy(&binary_decode[i], &binary[99 - i], 1);
-	}
-	for (int i = 100; i < size + 1; i++){
-		strncpy(&binary_decode[i], &binary[i], 1);
+	for (int i = 100; i < size; i++){
+		binary[i] = fgetc(fp);
 	}
 
 	fclose(fp);
-	free(binary);
-	binary = NULL;
-
 	fp2 = fopen(decfname, "wb");
 
 	for (int i = 0; i < size + 1; i++){
-		fputc(binary_decode[i], fp2);
+		fputc(binary[i], fp2);
 	}
 
 	fclose(fp2);
-	free(binary_decode);
-	binary_decode = NULL;
+	free(binary);
+	binary = NULL;
 
 	return decfname;
 }
@@ -194,4 +192,23 @@ void MovieSoundManager::Sound_::sound(bool repeat, long volume){
 
 void MovieSoundManager::Sound_::soundoff(){
 	pBasicAudio->put_Volume(-10000);//音声OFF
+}
+
+void MovieSoundManager::Sound_::soundloop(bool repeat, long volume, REFTIME start, REFTIME end){
+
+	REFTIME s = time2 * start / 100.0;
+	REFTIME e = time2 * end / 100.0;
+
+	pBasicAudio->put_Volume(volume);//音声ON
+
+	if (repeat == FALSE){
+		pMediaPosition->put_CurrentPosition(s);//再生位置をスタート位置にセット
+	}
+	else{
+		//ストリームの合計時間幅を基準とする、現在の位置を取得する。
+		pMediaPosition->get_CurrentPosition(&time1);
+
+		//現位置と終了位置が同じ場合スタート位置にセット
+		if (time1 >= e)pMediaPosition->put_CurrentPosition(s);
+	}
 }
