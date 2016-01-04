@@ -33,8 +33,10 @@ public:
 	}P_Data;
 
 protected:
-	Dx9Process *dx;
+	Dx11Process *dx;
 	P_Data p_data;
+	DxText *text;
+	T_float tfloat;
 
 	Parameter();
 	

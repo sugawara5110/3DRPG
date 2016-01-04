@@ -8,7 +8,8 @@
 
 Ending::Ending(){
 
-	dx = Dx9Process::GetInstance();
+	dx = Dx11Process::GetInstance();
+	text = DxText::GetInstance();
 	str_y = 600;
 	MovieSoundManager::ObjCreate_ending();
 	MovieSoundManager::Ending_sound(FALSE);
@@ -17,21 +18,22 @@ Ending::Ending(){
 void Ending::StaffRoll(){
 
 	MovieSoundManager::Ending_sound(TRUE);
-	dx->text("   タイトル,エンディングBGM,効果音 提供", 150, str_y, FALSE, 0xffffffff);
-	dx->text("                魔王魂様", 150, str_y + 30, FALSE, 0xffffffff);
-	dx->text("          戦闘,マップBGM 提供", 150, str_y + 200, FALSE, 0xffffffff);
-	dx->text("           Wingless Seraph様", 150, str_y + 230, FALSE, 0xffffffff);
-	dx->text("              敵画像 提供", 150, str_y + 400, FALSE, 0xffffffff);
-	dx->text("               HI-TIME様", 150, str_y + 430, FALSE, 0xffffffff);
-	dx->text("              Folce-zero様", 150, str_y + 460, FALSE, 0xffffffff);
-	dx->text("           エフェクト画像 提供", 150, str_y + 600, FALSE, 0xffffffff);
-	dx->text("                ぴぽや様", 150, str_y + 630, FALSE, 0xffffffff);
-	dx->text("            メインプログラマー", 150, str_y + 1200, FALSE, 0xffffffff);
-	dx->text("                   俺", 150, str_y + 1230, FALSE, 0xffffffff);
-	dx->text("       エグゼクティブ・プロデューサー", 150, str_y + 1600, FALSE, 0xffffffff);
-	dx->text("                   俺", 150, str_y + 1630, FALSE, 0xffffffff);
-	dx->text("                THE END", 150, str_y + 2500, FALSE, 0xffffffff);
-	if (str_y > -2200)str_y--;
+	text->Drawtext(L"タイトル、エンディングＢＧＭ、効果音提供", 110.0f, str_y, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"魔王魂様", 340.0f, str_y + 30.0f, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"戦闘、マップＢＧＭ提供", 250.0f, str_y + 200.0f, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"ＷｉｎｇｌｅｓｓＳｅｒａｐｈ様", 170.0f, str_y + 230.0f, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"敵画像提供", 320.0f, str_y + 400.0f, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"ＨＩ－ＴＩＭＥ様", 290.0f, str_y + 430.0f, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"Ｆｏｌｃｅ－ｚｅｒｅ様", 250.0f, str_y + 460.0f, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"エフェクト画像提供", 260.0f, str_y + 600.0f, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"ぴぽや様", 340.0f, str_y + 630.0f, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"メインプログラマー", 260.0f, str_y + 1200.0f, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"菅原聡", 350.0f, str_y + 1230.0f, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"エグゼクティブ・プロデューサー", 160.0f, str_y + 1600.0f, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"菅原聡", 350.0f, str_y + 1630.0f, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"ＴＨＥＥＮＤ", 310.0f, str_y + 2500.0f, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+
+	if (str_y > -2200)str_y -= 0.2f;
 }
 
 Ending::~Ending(){

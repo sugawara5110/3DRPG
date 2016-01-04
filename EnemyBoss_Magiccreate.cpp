@@ -4,7 +4,7 @@
 //**                                   Magiccreate関数                                   **//
 //*****************************************************************************************//
 
-#include "Dx9Process.h"
+#include "Dx11Process.h"
 #include "EnemyBoss.h"
 #include <time.h>
 
@@ -14,7 +14,7 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 
 	h_pos = h_po;
 	e_pos = e_po;
-	mag_size = 700;//MAX1600
+	mag_size = 200;
 	//t_no=敵№
 	int e;
 	switch (t_no){
@@ -97,7 +97,7 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 		pos_offset = 30.0f;
 		size_x = 110.0f;
 		size_y = 110.0f;
-		mag_size = 900;
+		mag_size = 300;
 		break;
 	case 4:
 		e = 59;
@@ -118,7 +118,7 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 		pos_offset = 100.0f;
 		size_x = 200.0f;
 		size_y = 135.0f;
-		mag_size = 1600;
+		mag_size = 500;
 		break;
 	}
 	p_data.HP = s_MHP();
@@ -129,90 +129,9 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 
 	dx->GetTexture(&en, e);
 	dx->GetVBarray(SQUARE, &en, 1);
-	mag = new Dx9Process::PolygonData[50];
-	dx->GetTexture(&mag[0], 61);//[0]番目にテクスチャを保管(1枚しか使用しない)
-	//テクスチャピクセルデータ一時確保用(ボス用なのでボスクラス内で確保する事)
-	p_array = (Dx9Process::T_xyz*)malloc(sizeof(Dx9Process::T_xyz) * 3 * mag_size * mag_size);
-	//ピクセル移動用Z座標初期化
-	for (int i = 0; i < 50; i++)mv[i] = (float)i;
-	//ピクセル個数初期化
-	for (int i = 0; i < 50; i++)ver_pcs[i] = 0;
-	//ピクセルデータ取り出し
-	dx->GetTexturePixelArray(&mag[0], p_array, mag_size, mag_size, 3);
-	//描画対象ピクセル個数カウント(各グループ50個飛びでピクセル取得する為50個飛びでカウント)
-
-	for (int p = 0; p < 50; p++){
-		for (int k = 0; k < 3; k++){
-			for (int j = 0; j < mag_size; j++){
-				for (int i = p; i < mag_size; i += 50){
-					if ((p_array[k * mag_size * mag_size + j * mag_size + i].color & 0xff) >= 10)ver_pcs[p]++;//描画ピクセル個数カウント
-				}
-			}
-		}
-	}
-	int cnt = 0;
-	for (int i = 0; i < 50; i++)cnt += ver_pcs[i];
-
-	//頂点バッファ
-	for (int i = 0; i < 50; i++)dx->GetVBarray(POINt, &mag[i], ver_pcs[i]);
-
-	//頂点座標設定
-	for (int p = 0; p < 50; p++){
-		int k = 0;
-		for (int k1 = 0; k1 < 3; k1++){
-			for (int j = 0; j < mag_size; j++){
-				for (int i = p; i < mag_size; i += 50){
-					int ind = k1 * mag_size * mag_size + j * mag_size + i;
-					if ((p_array[ind].color & 0xff) < 10 || k >= ver_pcs[p])continue;
-
-					mag[p].SetVertex(k, k,
-						p_array[ind].x - mag_size / 10,
-						p_array[ind].y - mag_size / 10,
-						p_array[ind].z,
-						0.0f, 0.0f, 0.0f,
-						(p_array[ind].color >> 24) & 0xff, //アルファ値抜かす
-						(p_array[ind].color >> 16) & 0xff,
-						(p_array[ind].color >> 8) & 0xff,
-						0.0f, 0.0f);
-					k++;
-				}
-			}
-		}
-	}
-
-	dx->GetTexture(&lost, e);
-	//テクスチャピクセルデータ一時確保用(ボス用なのでボスクラス内で確保する事)
-	p_array2 = (Dx9Process::T_xyz*)malloc(sizeof(Dx9Process::T_xyz) * 1 * (int)size_x * 5 * (int)size_y * 5);
-	ver_pcs2 = 0;
-	//ピクセルデータ取り出し
-	dx->GetTexturePixelArray(&lost, p_array2, (int)size_x * 5, (int)size_y * 5, 1);
-	for (int j = 0; j < (int)size_y * 5; j++){
-		for (int i = 0; i < (int)size_x * 5; i++){
-			if ((p_array2[j * (int)size_x * 5 + i].color & 0xff) >= 10)ver_pcs2++;//描画ピクセル個数カウント
-		}
-	}
-	//頂点バッファ
-	dx->GetVBarray(POINt, &lost, ver_pcs2);
-	//頂点座標設定
-	int k = 0;
-	for (int j = 0; j < (int)size_y * 5; j++){
-		for (int i = 0; i < (int)size_x * 5; i++){
-			int ind = j * (int)size_x * 5 + i;
-			if ((p_array2[ind].color & 0xff) < 10 || k >= ver_pcs2)continue;
-
-			lost.SetVertex(k, k,
-				p_array2[ind].x - size_x / 2,
-				0,
-				size_y - p_array2[ind].y,
-				0.0f, 0.0f, 0.0f,
-				(p_array2[ind].color >> 24) & 0xff, //アルファ値抜かす
-				(p_array2[ind].color >> 16) & 0xff,
-				(p_array2[ind].color >> 8) & 0xff,
-				0.0f, 0.0f);
-			p_array2[ind].z = (float)(rand() / 32767.0f) + 0.05f;//ピクセル移動量を格納
-			k++;
-		}
-	}
+	mag = new Dx11Process::PolygonData();
+	dx->GetTexture(mag, 61);
+	dx->GetVBarray(SQUARE, mag, 1);
 
 	Enemycreate(size_x, size_y, cr, cg, cb);
 }
@@ -220,8 +139,9 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 //@Override
 void EnemyBoss::DamageAction(){
 
-	if (cg < 10){
-		cg = cb = 255;
+	float m = tfloat.Add(0.01f);
+	if (cg < 0.01f){
+		cg = cb = 1.0f;
 		Enemycreate(size_x, size_y, cr, cg, cb);
 		en.lock = FALSE;
 		act_f = normal_action;
@@ -229,8 +149,8 @@ void EnemyBoss::DamageAction(){
 	else{
 		Enemycreate(size_x, size_y, cr, cg, cb);
 		en.lock = FALSE;
-		cg -= 10;
-		cb -= 10;
+		cg -= m;
+		cb -= m;
 	}
 }
 
@@ -242,62 +162,70 @@ void EnemyBoss::RecoverActionInit(){
 
 //@Override
 void EnemyBoss::RecoverAction(){
-	if (cr > 255){
-		cr = cg = cb = 255;
+
+	float m = 0.005f;
+	if (cr > 1.0f){
+		cr = cg = cb = 1.0f;
 		act_f = normal_action;
 	}
 	else{
 		Enemycreate(size_x, size_y, cr, cg, cb);
 		en.lock = FALSE;
-		cr += 5;
-		cg += 5;
-		cb += 5;
+		cr += m;
+		cg += m;
+		cb += m;
 	}
 }
 
 //@Override
 bool EnemyBoss::LostAction(float x, float y, float z){
 
+	float m = tfloat.Add(0.02f);
 	MovieSoundManager::Bosslost_sound(TRUE);
-	//ピクセル座標移動
-	int k = 0;
-	for (int j = 0; j < (int)size_y * 5; j++){
-		for (int i = 0; i < (int)size_x * 5; i++){
-			int ind = j * (int)size_x * 5 + i;
-			if ((p_array2[ind].color & 0xff) < 10 || k >= ver_pcs2)continue;
-
-			lost.d3varray[k].z -= p_array2[ind].z;
-			k++;
-		}
+	if ((mov_z -= m) < -150.0f){
+		mov_z = 0.0f; return TRUE;
 	}
-	mov_z = -300.0f;//通常のテクスチャ画像消す
-	dx->D3primitive(POINt, &lost, ver_pcs2, x, y, z, e_pos[o_no].theta, FALSE, TRUE, FALSE);
-
-	for (int i = 0; i < ver_pcs2; i++){
-		if (lost.d3varray[i].z > 0.0f){
-			return FALSE;
-		}
-	}
-	return TRUE;
+	return FALSE;
 }
 
 //@Override
 bool EnemyBoss::Magiccreate(float x, float y, float z){
-	
-	//ピクセル座標移動
-	for (int i = 0; i < 50; i++){
-		mv[i] = mv[i] -= 0.5f;
-		if (mv[i] <= 0.0f)mv[i] = 0.0f;
-	}
 
+	float si = mag_size / 2;
+	//マジック左上
+	mag->SetVertex(0, 3, 0,
+		(float)-si, (float)-si, 1.0f,
+		0.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 1.0f,
+		0.0f, 0.0f);
+
+	//マジック左下
+	mag->SetVertex(4, 2,
+		(float)-si, (float)si, 1.0f,
+		0.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 1.0f,
+		0.0f, 1.0f);
+
+	//マジック右下
+	mag->SetVertex(2, 5, 3,
+		(float)si, (float)si, 1.0f,
+		0.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f);
+
+	//マジック右上
+	mag->SetVertex(1, 1,
+		(float)si, (float)-si, 1.0f,
+		0.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f, 0.0f);
+
+	float m = tfloat.Add(0.15f);
 	MovieSoundManager::Magic_sound(TRUE);
-	for (int i = 0; i < 50; i++)
-		dx->D3primitive(POINt, &mag[i], ver_pcs[i], x + mov_x, y + mov_y, z + 10.0f + mov_z + mv[i], (float)count + mv[i], FALSE, FALSE, FALSE);
-		
-	if (count++ > 200){
-		count = 0;
-		//ピクセル移動開始位置初期化
-		for (int i = 0; i < 50; i++)mv[i] = (float)i;
+	dx->D3primitive(SQUARE, mag, 1, x + mov_x, y + mov_y, z + 1.0f + mov_z, count, TRUE, FALSE, FALSE);
+
+	if ((count += m) > 200.0f){
+		count = 0.0f;
 		return FALSE;
 	}
 	return TRUE;
@@ -377,11 +305,6 @@ void EnemyBoss::M_select(int *r, int *r1){
 
 EnemyBoss::~EnemyBoss(){
 
-	delete[] mag;
+	delete mag;
 	mag = NULL;
-	
-	free(p_array);
-	p_array = NULL;
-	free(p_array2);
-	p_array2 = NULL;
 }

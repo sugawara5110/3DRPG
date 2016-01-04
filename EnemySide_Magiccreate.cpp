@@ -4,7 +4,7 @@
 //**                                   Magiccreate関数                                   **//
 //*****************************************************************************************//
 
-#include "Dx9Process.h"
+#include "Dx11Process.h"
 #include "EnemySide.h"
 
 EnemySide::EnemySide(){}
@@ -390,7 +390,7 @@ EnemySide::EnemySide(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 
 	dx->GetTexture(&en, e);
 	dx->GetVBarray(SQUARE, &en, 1);
-	mag = new Dx9Process::PolygonData();
+	mag = new Dx11Process::PolygonData();
 	dx->GetTexture(mag, 60);
 	dx->GetVBarray(SQUARE, mag, 1);
 
@@ -400,7 +400,8 @@ EnemySide::EnemySide(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 //@Override
 void EnemySide::DamageAction(){
 
-	if (count++ < 10){
+	float m = tfloat.Add(0.05f);
+	if ((count += m) < 10){
 		int rnd = rand() % 20;
 		rnd -= 10;
 		mov_x = (float)rnd;
@@ -412,7 +413,7 @@ void EnemySide::DamageAction(){
 		mov_z = (float)rnd;
 	}
 	else {
-		count = 0;
+		count = 0.0f;
 		act_f = normal_action;
 		mov_x = mov_y = mov_z = 0.0f;
 	}
@@ -426,7 +427,9 @@ void EnemySide::RecoverActionInit(){
 
 //@Override
 void EnemySide::RecoverAction(){
-	if (theta_recov-- < 0){
+
+	float m = 0.1f;
+	if ((theta_recov -= m) < 0){
 		theta_recov = 0;
 		act_f = normal_action;
 	}
@@ -434,7 +437,9 @@ void EnemySide::RecoverAction(){
 
 //@Override
 bool EnemySide::LostAction(float x, float y, float z){
-	if (mov_z-- < -100.0f){
+
+	float m = tfloat.Add(0.2f);
+	if ((mov_z -= m) < -100.0f){
 		mov_z = 0.0f; return TRUE;
 	}
 	return FALSE;
@@ -447,35 +452,35 @@ bool EnemySide::Magiccreate(float x, float y, float z){
 	mag->SetVertex(0, 3, 0,
 		(float)-35.0f, (float)-35.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		255, 255, 255,
+		1.0f, 1.0f, 1.0f,
 		0.0f, 0.0f);
 
 	//マジック左下
 	mag->SetVertex(4, 2,
 		(float)-35.0f, (float)35.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		255, 255, 255,
+		1.0f, 1.0f, 1.0f,
 		0.0f, 1.0f);
 
 	//マジック右下
 	mag->SetVertex(2, 5, 3,
 		(float)35.0f, (float)35.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		255, 255, 255,
+		1.0f, 1.0f, 1.0f,
 		1.0f, 1.0f);
 
 	//マジック右上
 	mag->SetVertex(1, 1,
 		(float)35.0f, (float)-35.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		255, 255, 255,
+		1.0f, 1.0f, 1.0f,
 		1.0f, 0.0f);
 
 	MovieSoundManager::Magic_sound(TRUE);
 	dx->D3primitive(SQUARE, mag, 1, x + mov_x, y + mov_y, z + 1.0f + mov_z, (float)count, TRUE, FALSE, FALSE);
-
-	if (count++ > 100){
-		count = 0;
+	float m = tfloat.Add(0.15f);
+	if ((count += m) > 100){
+		count = 0.0f;
 		return FALSE;
 	}
 	return TRUE;

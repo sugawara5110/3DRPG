@@ -4,7 +4,7 @@
 //**                                   Statecreate関数                                   **//
 //*****************************************************************************************//
 
-#include "Dx9Process.h"
+#include "Dx11Process.h"
 #include "Hero.h"
 #include "Battle.h"
 
@@ -15,6 +15,7 @@ Hero::Hero(P_Data *p_dat, int no){
 	o_no = no;
 	effect_f = FALSE;
 	tx = ty = 0.0f;
+	tt = 0;
 	p_data.Attack = p_dat->Attack;
 	p_data.Magic = p_dat->Magic;
 	p_data.Agility = p_dat->Agility;
@@ -31,8 +32,8 @@ Hero::Hero(P_Data *p_dat, int no){
 	p_data.Hpoint = p_dat->Hpoint;
 	p_data.Rpoint = p_dat->Rpoint;
 
-	state = (Dx9Process::MY_VERTEX2*)malloc(sizeof(Dx9Process::MY_VERTEX2) * 4);
-	meter = (Dx9Process::MY_VERTEX2*)malloc(sizeof(Dx9Process::MY_VERTEX2) * 4);
+	dx->GetVBarray2D(&state, 1);
+	dx->GetVBarray2D(&meter, 1);
 
 	dx->GetTexture(&mag, 60);
 	dx->GetVBarray(SQUARE, &mag, 1);
@@ -51,24 +52,24 @@ Hero::Hero(P_Data *p_dat, int no){
 	mov_x = 0.0f;
 	act_f = NORMAL;
 	up = TRUE;
-	count = 0;
+	count = 0.0f;
 }
 
 void Hero::Statecreate(bool command_run){
 
 	static bool clr_f = TRUE;
-	static int r = 255;
-	D3DCOLOR clr;
-
-	if (command_run == FALSE)clr = (0 << 16) + (0 << 8) + 200;
+	static float r = 1.0f;
+	D3DXVECTOR4 clr;
+	float m = tfloat.Add(0.002f);
+	if (command_run == FALSE)clr = D3DXVECTOR4(0.0f, 0.0f, 0.8f, 1.0f);
 	if (command_run == TRUE){
 		if (clr_f){
-			if ((r -= 5) <= 0)clr_f = FALSE;
+			if ((r -= m) <= 0.0f)clr_f = FALSE;
 		}
 		else{
-			if ((r += 5) >= 255)clr_f = TRUE;
+			if ((r += m) >= 1.0f)clr_f = TRUE;
 		}
-		clr = (r << 16) + (r << 8) + 200;
+		clr = D3DXVECTOR4(r, r, 0.8f, 1.0f);
 	}
 
 	float x;
@@ -78,39 +79,27 @@ void Hero::Statecreate(bool command_run){
 	if (o_no == 3)x = 530.0f;
 
 	//ステータスウインドウ
-	state[0].x = x + mov_x;
-	state[0].y = 450.0f + mov_y;
-	state[0].z = 0.0f;
-	state[0].rhw = 0.0f;
-	state[0].color = clr;
-	state[0].tu = 0.0f;
-	state[0].tv = 0.0f;
+	state.d3varray[0].x = x + mov_x;
+	state.d3varray[0].y = 450.0f + mov_y;
+	state.d3varray[0].z = 0.2f;
+	state.d3varray[0].color = clr;
 
-	state[1].x = x + mov_x;
-	state[1].y = 550.0f + mov_y;
-	state[1].z = 0.0f;
-	state[1].rhw = 0.0f;
-	state[1].color = clr;
-	state[1].tu = 0.0f;
-	state[1].tv = 0.0f;
+	state.d3varray[1].x = x + mov_x;
+	state.d3varray[1].y = 550.0f + mov_y;
+	state.d3varray[1].z = 0.2f;
+	state.d3varray[1].color = clr;
 
-	state[2].x = 120.0f + x + mov_x;
-	state[2].y = 550.0f + mov_y;
-	state[2].z = 0.0f;
-	state[2].rhw = 0.0f;
-	state[2].color = clr;
-	state[2].tu = 0.0f;
-	state[2].tv = 0.0f;
+	state.d3varray[2].x = 120.0f + x + mov_x;
+	state.d3varray[2].y = 450.0f + mov_y;
+	state.d3varray[2].z = 0.2f;
+	state.d3varray[2].color = clr;
 
-	state[3].x = 120.0f + x + mov_x;
-	state[3].y = 450.0f + mov_y;
-	state[3].z = 0.0f;
-	state[3].rhw = 0.0f;
-	state[3].color = clr;
-	state[3].tu = 0.0f;
-	state[3].tv = 0.0f;
+	state.d3varray[3].x = 120.0f + x + mov_x;
+	state.d3varray[3].y = 550.0f + mov_y;
+	state.d3varray[3].z = 0.2f;
+	state.d3varray[3].color = clr;
 
-	dx->D2primitive(1, state);
+	dx->D2primitive(&state, 1, TRUE);
 }
 
 void Hero::Metercreate(float me){
@@ -121,59 +110,55 @@ void Hero::Metercreate(float me){
 	if (o_no == 2)x = 360.0f;
 	if (o_no == 3)x = 530.0f;
 
+	D3DXVECTOR4 clr = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+
 	//メーター1
-	meter[0].x = 1.0f + x + mov_x;
-	meter[0].y = 539.0f + mov_y;
-	meter[0].z = 0.0f;
-	meter[0].rhw = 0.0f;
-	meter[0].color = (255 << 16) + (255 << 8) + 255;
-	meter[0].tu = 0.0f;
-	meter[0].tv = 0.0f;
+	meter.d3varray[0].x = 1.0f + x + mov_x;
+	meter.d3varray[0].y = 539.0f + mov_y;
+	meter.d3varray[0].z = 0.1f;
+	meter.d3varray[0].color = clr;
 
-	meter[1].x = 1.0f + x + mov_x;
-	meter[1].y = 549.0f + mov_y;
-	meter[1].z = 0.0f;
-	meter[1].rhw = 0.0f;
-	meter[1].color = (255 << 16) + (255 << 8) + 255;
-	meter[1].tu = 0.0f;
-	meter[1].tv = 0.0f;
+	meter.d3varray[1].x = 1.0f + x + mov_x;
+	meter.d3varray[1].y = 549.0f + mov_y;
+	meter.d3varray[1].z = 0.1f;
+	meter.d3varray[1].color = clr;
 
-	meter[2].x = 119.0f + x + mov_x;
-	meter[2].y = 549.0f + mov_y;
-	meter[2].z = 0.0f;
-	meter[2].rhw = 0.0f;
-	meter[2].color = (255 << 16) + (255 << 8) + 255;
-	meter[2].tu = 0.0f;
-	meter[2].tv = 0.0f;
+	meter.d3varray[2].x = 119.0f + x + mov_x;
+	meter.d3varray[2].y = 539.0f + mov_y;
+	meter.d3varray[2].z = 0.1f;
+	meter.d3varray[2].color = clr;
 
-	meter[3].x = 119.0f + x + mov_x;
-	meter[3].y = 539.0f + mov_y;
-	meter[3].z = 0.0f;
-	meter[3].rhw = 0.0f;
-	meter[3].color = (255 << 16) + (255 << 8) + 255;
-	meter[3].tu = 0.0f;
-	meter[3].tv = 0.0f;
+	meter.d3varray[3].x = 119.0f + x + mov_x;
+	meter.d3varray[3].y = 549.0f + mov_y;
+	meter.d3varray[3].z = 0.1f;
+	meter.d3varray[3].color = clr;
 
-	dx->D2primitive(1, meter);
+	dx->D2primitive(&meter, 1, TRUE);
+
+	clr = D3DXVECTOR4(1.0f, 0.5f, 0.0f, 1.0f);
 
 	//メーター2
-	meter[0].x = 3.0f + x + mov_x;
-	meter[0].y = 541.0f + mov_y;
-	meter[0].color = (255 << 16) + (100 << 8) + 0;
+	meter.d3varray[0].x = 3.0f + x + mov_x;
+	meter.d3varray[0].y = 541.0f + mov_y;
+	meter.d3varray[0].z = 0.0f;
+	meter.d3varray[0].color = clr;
 
-	meter[1].x = 3.0f + x + mov_x;
-	meter[1].y = 547.0f + mov_y;
-	meter[1].color = (255 << 16) + (100 << 8) + 0;
+	meter.d3varray[1].x = 3.0f + x + mov_x;
+	meter.d3varray[1].y = 547.0f + mov_y;
+	meter.d3varray[1].z = 0.0f;
+	meter.d3varray[1].color = clr;
 
-	meter[2].x = 3.0f + 114.0f * me + x + mov_x;
-	meter[2].y = 547.0f + mov_y;
-	meter[2].color = (255 << 16) + (100 << 8) + 0;
+	meter.d3varray[2].x = 3.0f + 114.0f * me + x + mov_x;
+	meter.d3varray[2].y = 541.0f + mov_y;
+	meter.d3varray[2].z = 0.0f;
+	meter.d3varray[2].color = clr;
 
-	meter[3].x = 3.0f + 114.0f * me + x + mov_x;
-	meter[3].y = 541.0f + mov_y;
-	meter[3].color = (255 << 16) + (100 << 8) + 0;
+	meter.d3varray[3].x = 3.0f + 114.0f * me + x + mov_x;
+	meter.d3varray[3].y = 547.0f + mov_y;
+	meter.d3varray[3].z = 0.0f;
+	meter.d3varray[3].color = clr;
 
-	dx->D2primitive(1, meter);
+	dx->D2primitive(&meter, 1, TRUE);
 }
 
 void Hero::Magiccreate(){
@@ -182,28 +167,28 @@ void Hero::Magiccreate(){
 	mag.SetVertex(0, 3, 0,
 		(float)-25.0f, (float)-25.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		255, 255, 255,
+		1.0f, 1.0f, 1.0f,
 		0.0f, 0.0f);
 
 	//マジック左下
 	mag.SetVertex(4, 2,
 		(float)-25.0f, (float)25.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		255, 255, 255,
+		1.0f, 1.0f, 1.0f,
 		0.0f, 1.0f);
 
 	//マジック右下
 	mag.SetVertex(2, 5, 3,
 		(float)25.0f, (float)25.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		255, 255, 255,
+		1.0f, 1.0f, 1.0f,
 		1.0f, 1.0f);
 
 	//マジック右上
 	mag.SetVertex(1, 1,
 		(float)25.0f, (float)-25.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		255, 255, 255,
+		1.0f, 1.0f, 1.0f,
 		1.0f, 0.0f);
 }
 
@@ -241,32 +226,35 @@ bool Hero::Effectdraw(Battle *battle, int *select_obj, Position::H_Pos *h_pos, P
 	effect.SetVertex(0, 3, 0,
 		(float)-ver, (float)0.0f, ver * 2,
 		0.0f, 0.0f, 0.0f,
-		255, 255, 255,
+		1.0f, 1.0f, 1.0f,
 		tx, ty);
 
 	//左奥
 	effect.SetVertex(4, 2,
 		(float)-ver, (float)0.0f, 0.0f,
 		0.0f, 0.0f, 0.0f,
-		255, 255, 255,
+		1.0f, 1.0f, 1.0f,
 		tx, ty + py);
 
 	//右奥
 	effect.SetVertex(2, 5, 3,
 		(float)ver, (float)0.0f, 0.0f,
 		0.0f, 0.0f, 0.0f,
-		255, 255, 255,
+		1.0f, 1.0f, 1.0f,
 		tx + px, ty + py);
 
 	//右前
 	effect.SetVertex(1, 1,
 		(float)ver, (float)0.0f, ver * 2,
 		0.0f, 0.0f, 0.0f,
-		255, 255, 255,
+		1.0f, 1.0f, 1.0f,
 		tx + px, ty);
 
-	if ((tx += px) + px > 1.0f){
-		tx = 0; return FALSE;
+	if ((tt += tfloat.Add(0.8f)) > 10.0f){//速度調整用
+		tt = 0;
+		if ((tx += px) + px > 1.0f){
+			tx = 0; return FALSE;
+		}
 	}
 
 	float ex = 0.0f;
@@ -346,9 +334,5 @@ bool Hero::Effectdraw(Battle *battle, int *select_obj, Position::H_Pos *h_pos, P
 
 Hero::~Hero(){
 
-	free(state);
-	state = NULL;
-	free(meter);
-	meter = NULL;
 }
 

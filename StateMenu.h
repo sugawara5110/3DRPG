@@ -9,14 +9,16 @@
 
 #include "MovieSoundManager.h"
 #include "Position.h"
+#include "DxText.h"
 #define s_MAX_HP (savedata.p_data[i].Vitality * savedata.p_data[i].LV * 2 + 30)
 #define s_MAX_MP (savedata.p_data[i].Magic * savedata.p_data[i].LV + 10)
 
 class StateMenu{
 
 private:
-	Dx9Process *dx;
-	Dx9Process::MY_VERTEX2 *state, *s_state, *r_state, *r_state1;
+	Dx11Process *dx;
+	Dx11Process::PolygonData2D state, s_state, r_state, r_state1;
+	DxText *text;
 	MapMenuSelect menu_select;
 	int main_select;
 	int st_select;

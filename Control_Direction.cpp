@@ -4,7 +4,7 @@
 //**                                     Directionä÷êî                                   **//
 //*****************************************************************************************//
 
-#include "Dx9Process.h"
+#include "Dx11Process.h"
 #include "Control.h"
 
 Directionkey Control::directionkey;

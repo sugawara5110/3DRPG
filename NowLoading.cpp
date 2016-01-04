@@ -4,23 +4,24 @@
 //**                                                                                     **//
 //*****************************************************************************************//
 
-#include "Dx9Process.h"
+#include "Dx11Process.h"
+#include "DxText.h"
 
 unsigned __stdcall NowLoading(void *loop){
 
-	Dx9Process *dx = Dx9Process::GetInstance();
+	Dx11Process *dx = Dx11Process::GetInstance();
 	bool *th_loop = (bool*)loop;
-	int i = 300;
+	double i = 300.0;
 	bool down = TRUE;
 
 	while (*th_loop == TRUE){
 		dx->Sclear();
-		dx->text("Now Loading", 300, i, FALSE, 0xffffffff);
+		DxText::GetInstance()->Drawtext(L"‚m‚‚—‚k‚‚‚„‚‰‚Ž‚‡", 215.0f, (float)i, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
 		dx->Drawscreen();
-		if (down == TRUE)i++;
-		if (down == FALSE)i--;
-		if (i > 320)down = FALSE;
-		if (i < 280)down = TRUE;
+		if (down == TRUE)i += 0.01;
+		if (down == FALSE)i -= 0.01;
+		if (i > 320.0)down = FALSE;
+		if (i < 280.0)down = TRUE;
 	}
 	return 0;
 }

@@ -18,15 +18,16 @@ class Hero:public Parameter{
 
 protected:
 	int o_no;//オブジェクトナンバー
-	Dx9Process::MY_VERTEX2 *state, *meter;
-	Dx9Process::PolygonData mag, effect;
+	Dx11Process::PolygonData2D state, meter;
+	Dx11Process::PolygonData mag, effect;
 	float mov_y;
 	float mov_x;
 	Action act_f;
 	bool up;
-	int count;
+	float count;
 	bool effect_f;//エフェクトON,OFF
 	float tx, ty;//エフェクト用テクスチャ座標
+	float tt;     //エフェクト速度調整用
 
 	void Statecreate(bool command_run);
 	void Metercreate(float me);

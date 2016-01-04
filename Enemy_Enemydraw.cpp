@@ -8,13 +8,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include "Dx9Process.h"
+#include "Dx11Process.h"
+#include "DxText.h"
 #include "Enemy.h"
 #include "Battle.h"
 
 Act_fin_flg Enemy::Enemydraw(Battle *battle, int *E_select_obj, Action action, MagicSelect E_Magrun){
 
-	char str[30];
 	//MOVE,LOST以外のアクション中にMOVE,LOST以外のアクション発生時の初期化
 	if (action != NORMAL && action != MOVE && action != LOST){
 		mov_z = 0.0f;
@@ -49,42 +49,45 @@ Act_fin_flg Enemy::Enemydraw(Battle *battle, int *E_select_obj, Action action, M
 		break;
 	}
 
+	float m;
 	switch (act_f){
 	case MOVE:
-		if (up == TRUE && (mov_z -= 0.05f) < -4.0f)up = FALSE;
-		if (up == FALSE && (mov_z += 0.05f) > 0.0f){
+		m = tfloat.Add(0.005f);
+		if (up == TRUE && (mov_z -= m) < -4.0f)up = FALSE;
+		if (up == FALSE && (mov_z += m) > 0.0f){
 			up = TRUE; mov_z = 0.0f;
 		}
 		break;
 
 	case ATTACK:
+		m = tfloat.Add(0.15f);
 		if (effect_f == FALSE && (e_pos[o_no].theta >= 338.0f || e_pos[o_no].theta <= 22.0f)){
-			if (zoom == TRUE && (mov_y += 1.0f) > 30.0f)zoom = FALSE;
-			if (zoom == FALSE && (mov_y -= 1.0f) < 0.0f){
+			if (zoom == TRUE && (mov_y += m) > 30.0f)zoom = FALSE;
+			if (zoom == FALSE && (mov_y -= m) < 0.0f){
 				zoom = TRUE;
 				mov_y = 0.0f;
 				effect_f = TRUE;
 			}
 		}
 		if (effect_f == FALSE && e_pos[o_no].theta >= 68.0f && e_pos[o_no].theta <= 112.0f){
-			if (zoom == TRUE && (mov_x -= 1.0f) < -30.0f)zoom = FALSE;
-			if (zoom == FALSE && (mov_x += 1.0f) > 0.0f){
+			if (zoom == TRUE && (mov_x -= m) < -30.0f)zoom = FALSE;
+			if (zoom == FALSE && (mov_x += m) > 0.0f){
 				zoom = TRUE;
 				mov_y = 0.0f;
 				effect_f = TRUE;
 			}
 		}
 		if (effect_f == FALSE && e_pos[o_no].theta >= 158.0f && e_pos[o_no].theta <= 202.0f){
-			if (zoom == TRUE && (mov_y -= 1.0f) < -30.0f)zoom = FALSE;
-			if (zoom == FALSE && (mov_y += 1.0f) > 0.0f){
+			if (zoom == TRUE && (mov_y -= m) < -30.0f)zoom = FALSE;
+			if (zoom == FALSE && (mov_y += m) > 0.0f){
 				zoom = TRUE;
 				mov_y = 0.0f;
 				effect_f = TRUE;
 			}
 		}
 		if (effect_f == FALSE && e_pos[o_no].theta >= 248.0f && e_pos[o_no].theta <= 292.0f){
-			if (zoom == TRUE && (mov_x += 1.0f) > 30.0f)zoom = FALSE;
-			if (zoom == FALSE && (mov_x -= 1.0f) < 0.0f){
+			if (zoom == TRUE && (mov_x += m) > 30.0f)zoom = FALSE;
+			if (zoom == FALSE && (mov_x -= m) < 0.0f){
 				zoom = TRUE;
 				mov_y = 0.0f;
 				effect_f = TRUE;
@@ -101,7 +104,7 @@ Act_fin_flg Enemy::Enemydraw(Battle *battle, int *E_select_obj, Action action, M
 		break;
 
 	case MAGIC:
-		int mx, my;
+		float mx, my;
 		switch (o_no){
 		case 0:
 			mx = 400;
@@ -122,22 +125,24 @@ Act_fin_flg Enemy::Enemydraw(Battle *battle, int *E_select_obj, Action action, M
 		}
 		switch (E_Magrun){
 		case FLAME:
-			sprintf(str, "フレイム LV%d", GetFlameATT_LV());
+			text->Drawtext(L"フレイムＬＶ", mx, my, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+			text->Drawtext(text->CreateTextValue(GetFlameATT_LV()), mx + 180.0f, my, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
 			effect.tex_no = 1;
 			break;
 		case HEAL:
-			sprintf(str, "ヒーリング LV%d", GetHealing_LV());
+			text->Drawtext(L"ヒーリングＬＶ", mx, my, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+			text->Drawtext(text->CreateTextValue(GetHealing_LV()), mx + 210.0f, my, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
 			effect.tex_no = 2;
 			break;
 		case RECOV:
-			sprintf(str, "リカバリ LV%d", GetRecover_LV());
+			text->Drawtext(L"リカバリＬＶ", mx, my, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+			text->Drawtext(text->CreateTextValue(GetRecover_LV()), mx + 180.0f, my, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
 			effect.tex_no = 3;
 			break;
 		case NOSEL:
-			sprintf(str, "MPが足りない");
+			text->Drawtext(L"MPが足りない", mx, my, 30.0f, { 1.0f, 0.5f, 0.5f, 1.0f });
 			break;
 		}
-		dx->text(str, mx, my, FALSE, 0xffffffff);
 
 		if (effect_f == FALSE && Magiccreate(e_pos[o_no].x, e_pos[o_no].y, e_pos[o_no].z) == FALSE){
 			if (E_Magrun == NOSEL){

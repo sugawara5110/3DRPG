@@ -6,7 +6,8 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
-#include "Dx9Process.h"
+#include "Dx11Process.h"
+#include "DxText.h"
 #include <new>     //placement new
 #include <stdlib.h>
 #include <time.h>
@@ -18,44 +19,35 @@
 
 CommandSelect Battle::Menu_main(Hero *hero, int i, Directionkey direction){
 
-	char str[30];
-	dx->D2primitive(1, command);
-	dx->text("  攻撃", 10, 10, TRUE, 0xffffffff);
-	if (hero[i].GetFlameATT_LV() >= 1){
-		sprintf(str, "フレイム LV%d", hero[i].GetFlameATT_LV());
-		dx->text(str, 10, 40, TRUE, 0xffffffff);
-	}
-	if (hero[i].GetHealing_LV() >= 1){
-		sprintf(str, "ヒーリング LV%d", hero[i].GetHealing_LV());
-		dx->text(str, 10, 70, TRUE, 0xffffffff);
-	}
-	if (hero[i].GetRecover_LV() >= 1){
-		sprintf(str, "リカバリ LV%d", hero[i].GetRecover_LV());
-		dx->text(str, 10, 100, TRUE, 0xffffffff);
-	}
-	dx->text("  逃げる", 10, 130, TRUE, 0xffffffff);
-	dx->text("→スキップ", 10, 180, TRUE, 0xffffffff);
+	float r[5];
+	float g[5];
+	r[0] = r[1] = r[2] = r[3] = r[4] = 1.0f;
+	g[0] = g[1] = g[2] = g[3] = g[4] = 1.0f;
+	dx->D2primitive(&command, 1, FALSE);
+
 	switch (h_draw[i].M_select){
 	case 0:
-		dx->text("  攻撃", 10, 10, TRUE, 0xff00ffff);
+		r[0] = 0.0f;
+		g[0] = 0.7f;
 		break;
 	case 1:
-		sprintf(str, "フレイム LV%d", hero[i].GetFlameATT_LV());
-		dx->text(str, 10, 40, TRUE, 0xff00ffff);
+		r[1] = 0.0f;
+		g[1] = 0.7f;
 		h_draw[i].Magrun = FLAME;
 		break;
 	case 2:
-		sprintf(str, "ヒーリング LV%d", hero[i].GetHealing_LV());
-		dx->text(str, 10, 70, TRUE, 0xff00ffff);
+		r[2] = 0.0f;
+		g[2] = 0.7f;
 		h_draw[i].Magrun = HEAL;
 		break;
 	case 3:
-		sprintf(str, "リカバリ LV%d", hero[i].GetRecover_LV());
-		dx->text(str, 10, 100, TRUE, 0xff00ffff);
+		r[3] = 0.0f;
+		g[3] = 0.7f;
 		h_draw[i].Magrun = RECOV;
 		break;
 	case 4:
-		dx->text("  逃げる", 10, 130, TRUE, 0xff00ffff);
+		r[4] = 0.0f;
+		g[4] = 0.7f;
 		break;
 	}
 
@@ -108,6 +100,20 @@ CommandSelect Battle::Menu_main(Hero *hero, int i, Directionkey direction){
 		}
 		break;
 	}
+
+	text->Drawtext(L"攻撃", 25.0f, 10.0f, 15.0f, { r[0], g[0], 1.0f, 1.0f });
+	if (hero[i].GetFlameATT_LV() >= 1){
+		text->Drawtext(L"フレイム", 10.0f, 40.0f, 15.0f, { r[1], g[1], 1.0f, 1.0f });
+	}
+	if (hero[i].GetHealing_LV() >= 1){
+		text->Drawtext(L"ヒーリング", 10.0f, 70.0f, 15.0f, { r[2], g[2], 1.0f, 1.0f });
+	}
+	if (hero[i].GetRecover_LV() >= 1){
+		text->Drawtext(L"リカバリ", 10.0f, 100.0f, 15.0f, { r[3], g[3], 1.0f, 1.0f });
+	}
+	text->Drawtext(L"逃げる", 10.0f, 130.0f, 15.0f, { r[4], g[4], 1.0f, 1.0f });
+	text->Drawtext(L"→スキップ", 10.0f, 180.0f, 15.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+
 	return NOSELECT;
 }
 

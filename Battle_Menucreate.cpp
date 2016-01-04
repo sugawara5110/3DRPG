@@ -4,7 +4,7 @@
 //**                                    Menucreate関数                                   **//
 //*****************************************************************************************//
 
-#include "Dx9Process.h"
+#include "Dx11Process.h"
 #include <new>     //placement new
 #include <time.h>
 #include "Enemy.h"
@@ -17,12 +17,13 @@ Battle::Battle(){}
 
 Battle::Battle(Position::E_Pos *e_po, Position::H_Pos *h_po, Encount encount, int no, int e_nu){
 
-	dx = Dx9Process::GetInstance();
+	dx = Dx11Process::GetInstance();
+	text = DxText::GetInstance();
 	e_num = e_nu;//敵出現数
 	e_pos = e_po;//ポジションアドレス
 	h_pos = h_po;//ポジションアドレス
-	command = (Dx9Process::MY_VERTEX2*)malloc(sizeof(Dx9Process::MY_VERTEX2) * 4);
-	h_select = (Dx9Process::MY_VERTEX2*)malloc(sizeof(Dx9Process::MY_VERTEX2) * 4);
+	dx->GetVBarray2D(&command, 1);
+	dx->GetVBarray2D(&h_select, 1);
 	Escape_f = 0;
 	Escape_s = FALSE;
 	dx->GetVBarray(SQUARE, &E_select, 1);
@@ -118,53 +119,44 @@ Battle::Battle(Position::E_Pos *e_po, Position::H_Pos *h_po, Encount encount, in
 
 void Battle::Menucreate(){
 
+	D3DXVECTOR4 clr = D3DXVECTOR4(0.0f, 0.0f, 0.8f, 1.0f);
+
 	//コマンドウインドウ
-	command[0].x = 5.0f;
-	command[0].y = 0.0f;
-	command[0].z = 0.0f;
-	command[0].rhw = 0.0f;
-	command[0].color = (0 << 16) + (0 << 8) + 200;
-	command[0].tu = 0.0f;
-	command[0].tv = 0.0f;
+	command.d3varray[0].x = 5.0f;
+	command.d3varray[0].y = 0.0f;
+	command.d3varray[0].z = 0.9f;
+	command.d3varray[0].color = clr;
 
-	command[1].x = 5.0f;
-	command[1].y = 200.0f;
-	command[1].z = 0.0f;
-	command[1].rhw = 0.0f;
-	command[1].color = (0 << 16) + (0 << 8) + 200;
-	command[1].tu = 0.0f;
-	command[1].tv = 0.0f;
+	command.d3varray[1].x = 5.0f;
+	command.d3varray[1].y = 200.0f;
+	command.d3varray[1].z = 0.9f;
+	command.d3varray[1].color = clr;
 
-	command[2].x = 140.0f;
-	command[2].y = 200.0f;
-	command[2].z = 0.0f;
-	command[2].rhw = 0.0f;
-	command[2].color = (0 << 16) + (0 << 8) + 200;
-	command[2].tu = 0.0f;
-	command[2].tv = 0.0f;
+	command.d3varray[2].x = 140.0f;
+	command.d3varray[2].y = 0.0f;
+	command.d3varray[2].z = 0.9f;
+	command.d3varray[2].color = clr;
 
-	command[3].x = 140.0f;
-	command[3].y = 0.0f;
-	command[3].z = 0.0f;
-	command[3].rhw = 0.0f;
-	command[3].color = (0 << 16) + (0 << 8) + 200;
-	command[3].tu = 0.0f;
-	command[3].tv = 0.0f;
+	command.d3varray[3].x = 140.0f;
+	command.d3varray[3].y = 200.0f;
+	command.d3varray[3].z = 0.9f;
+	command.d3varray[3].color = clr;
 }
-
+	
 void Battle::Cursor_h(int no){
 
 	static bool clr_f = TRUE;
-	static int r = 255;
-	D3DCOLOR clr;
+	static float r = 1.0f;
+	D3DXVECTOR4 clr;
 
+	float m = tfloat.Add(0.002f);
 	if (clr_f){
-		if ((r -= 5) <= 0)clr_f = FALSE;
+		if ((r -= m) <= 0)clr_f = FALSE;
 	}
 	else{
-		if ((r += 5) >= 255)clr_f = TRUE;
+		if ((r += m) >= 1.0f)clr_f = TRUE;
 	}
-	clr = (r << 16) + (r << 8) + 200;
+	clr = D3DXVECTOR4(r, r, 0.7f, 1.0f);
 
 	float x;
 	if (no == 0)x = 10.0f;
@@ -173,186 +165,140 @@ void Battle::Cursor_h(int no){
 	if (no == 3)x = 530.0f;
 
 	//回復対象カーソル左
-	h_select[0].x = x - 10.0f;
-	h_select[0].y = 440.0f;
-	h_select[0].z = 0.0f;
-	h_select[0].rhw = 0.0f;
-	h_select[0].color = clr;
-	h_select[0].tu = 0.0f;
-	h_select[0].tv = 0.0f;
+	h_select.d3varray[0].x = x - 10.0f;
+	h_select.d3varray[0].y = 440.0f;
+	h_select.d3varray[0].z = 0.0f;
+	h_select.d3varray[0].color = clr;
 
-	h_select[1].x = x - 10.0f;
-	h_select[1].y = 560.0f;
-	h_select[1].z = 0.0f;
-	h_select[1].rhw = 0.0f;
-	h_select[1].color = clr;
-	h_select[1].tu = 0.0f;
-	h_select[1].tv = 0.0f;
+	h_select.d3varray[1].x = x - 10.0f;
+	h_select.d3varray[1].y = 560.0f;
+	h_select.d3varray[1].z = 0.0f;
+	h_select.d3varray[1].color = clr;
 
-	h_select[2].x = x - 5.0f;
-	h_select[2].y = 560.0f;
-	h_select[2].z = 0.0f;
-	h_select[2].rhw = 0.0f;
-	h_select[2].color = clr;
-	h_select[2].tu = 0.0f;
-	h_select[2].tv = 0.0f;
+	h_select.d3varray[2].x = x - 5.0f;
+	h_select.d3varray[2].y = 440.0f;
+	h_select.d3varray[2].z = 0.0f;
+	h_select.d3varray[2].color = clr;
 
-	h_select[3].x = x - 5.0f;
-	h_select[3].y = 440.0f;
-	h_select[3].z = 0.0f;
-	h_select[3].rhw = 0.0f;
-	h_select[3].color = clr;
-	h_select[3].tu = 0.0f;
-	h_select[3].tv = 0.0f;
-	dx->D2primitive(1, h_select);
+	h_select.d3varray[3].x = x - 5.0f;
+	h_select.d3varray[3].y = 560.0f;
+	h_select.d3varray[3].z = 0.0f;
+	h_select.d3varray[3].color = clr;
+	dx->D2primitive(&h_select, 1, TRUE);
 
 	//回復対象カーソル右
-	h_select[0].x = x + 125.0f;
-	h_select[0].y = 440.0f;
-	h_select[0].z = 0.0f;
-	h_select[0].rhw = 0.0f;
-	h_select[0].color = clr;
-	h_select[0].tu = 0.0f;
-	h_select[0].tv = 0.0f;
+	h_select.d3varray[0].x = x + 125.0f;
+	h_select.d3varray[0].y = 440.0f;
+	h_select.d3varray[0].z = 0.0f;
+	h_select.d3varray[0].color = clr;
 
-	h_select[1].x = x + 125.0f;
-	h_select[1].y = 560.0f;
-	h_select[1].z = 0.0f;
-	h_select[1].rhw = 0.0f;
-	h_select[1].color = clr;
-	h_select[1].tu = 0.0f;
-	h_select[1].tv = 0.0f;
+	h_select.d3varray[1].x = x + 125.0f;
+	h_select.d3varray[1].y = 560.0f;
+	h_select.d3varray[1].z = 0.0f;
+	h_select.d3varray[1].color = clr;
 
-	h_select[2].x = x + 130.0f;
-	h_select[2].y = 560.0f;
-	h_select[2].z = 0.0f;
-	h_select[2].rhw = 0.0f;
-	h_select[2].color = clr;
-	h_select[2].tu = 0.0f;
-	h_select[2].tv = 0.0f;
+	h_select.d3varray[2].x = x + 130.0f;
+	h_select.d3varray[2].y = 440.0f;
+	h_select.d3varray[2].z = 0.0f;
+	h_select.d3varray[2].color = clr;
 
-	h_select[3].x = x + 130.0f;
-	h_select[3].y = 440.0f;
-	h_select[3].z = 0.0f;
-	h_select[3].rhw = 0.0f;
-	h_select[3].color = clr;
-	h_select[3].tu = 0.0f;
-	h_select[3].tv = 0.0f;
-	dx->D2primitive(1, h_select);
+	h_select.d3varray[3].x = x + 130.0f;
+	h_select.d3varray[3].y = 560.0f;
+	h_select.d3varray[3].z = 0.0f;
+	h_select.d3varray[3].color = clr;
+	dx->D2primitive(&h_select, 1, TRUE);
 
 	//回復対象カーソル上
-	h_select[0].x = x - 5.0f;
-	h_select[0].y = 440.0f;
-	h_select[0].z = 0.0f;
-	h_select[0].rhw = 0.0f;
-	h_select[0].color = clr;
-	h_select[0].tu = 0.0f;
-	h_select[0].tv = 0.0f;
+	h_select.d3varray[0].x = x - 5.0f;
+	h_select.d3varray[0].y = 440.0f;
+	h_select.d3varray[0].z = 0.0f;
+	h_select.d3varray[0].color = clr;
 
-	h_select[1].x = x - 5.0f;
-	h_select[1].y = 445.0f;
-	h_select[1].z = 0.0f;
-	h_select[1].rhw = 0.0f;
-	h_select[1].color = clr;
-	h_select[1].tu = 0.0f;
-	h_select[1].tv = 0.0f;
+	h_select.d3varray[1].x = x - 5.0f;
+	h_select.d3varray[1].y = 445.0f;
+	h_select.d3varray[1].z = 0.0f;
+	h_select.d3varray[1].color = clr;
 
-	h_select[2].x = x + 125.0f;
-	h_select[2].y = 445.0f;
-	h_select[2].z = 0.0f;
-	h_select[2].rhw = 0.0f;
-	h_select[2].color = clr;
-	h_select[2].tu = 0.0f;
-	h_select[2].tv = 0.0f;
+	h_select.d3varray[2].x = x + 125.0f;
+	h_select.d3varray[2].y = 440.0f;
+	h_select.d3varray[2].z = 0.0f;
+	h_select.d3varray[2].color = clr;
 
-	h_select[3].x = x + 125.0f;
-	h_select[3].y = 440.0f;
-	h_select[3].z = 0.0f;
-	h_select[3].rhw = 0.0f;
-	h_select[3].color = clr;
-	h_select[3].tu = 0.0f;
-	h_select[3].tv = 0.0f;
-	dx->D2primitive(1, h_select);
+	h_select.d3varray[3].x = x + 125.0f;
+	h_select.d3varray[3].y = 445.0f;
+	h_select.d3varray[3].z = 0.0f;
+	h_select.d3varray[3].color = clr;
+	dx->D2primitive(&h_select, 1, TRUE);
 
 	//回復対象カーソル下
-	h_select[0].x = x - 5.0f;
-	h_select[0].y = 555.0f;
-	h_select[0].z = 0.0f;
-	h_select[0].rhw = 0.0f;
-	h_select[0].color = clr;
-	h_select[0].tu = 0.0f;
-	h_select[0].tv = 0.0f;
+	h_select.d3varray[0].x = x - 5.0f;
+	h_select.d3varray[0].y = 555.0f;
+	h_select.d3varray[0].z = 0.0f;
+	h_select.d3varray[0].color = clr;
 
-	h_select[1].x = x - 5.0f;
-	h_select[1].y = 560.0f;
-	h_select[1].z = 0.0f;
-	h_select[1].rhw = 0.0f;
-	h_select[1].color = clr;
-	h_select[1].tu = 0.0f;
-	h_select[1].tv = 0.0f;
+	h_select.d3varray[1].x = x - 5.0f;
+	h_select.d3varray[1].y = 560.0f;
+	h_select.d3varray[1].z = 0.0f;
+	h_select.d3varray[1].color = clr;
 
-	h_select[2].x = x + 125.0f;
-	h_select[2].y = 560.0f;
-	h_select[2].z = 0.0f;
-	h_select[2].rhw = 0.0f;
-	h_select[2].color = clr;
-	h_select[2].tu = 0.0f;
-	h_select[2].tv = 0.0f;
+	h_select.d3varray[2].x = x + 125.0f;
+	h_select.d3varray[2].y = 555.0f;
+	h_select.d3varray[2].z = 0.0f;
+	h_select.d3varray[2].color = clr;
 
-	h_select[3].x = x + 125.0f;
-	h_select[3].y = 555.0f;
-	h_select[3].z = 0.0f;
-	h_select[3].rhw = 0.0f;
-	h_select[3].color = clr;
-	h_select[3].tu = 0.0f;
-	h_select[3].tv = 0.0f;
-	dx->D2primitive(1, h_select);
+	h_select.d3varray[3].x = x + 125.0f;
+	h_select.d3varray[3].y = 560.0f;
+	h_select.d3varray[3].z = 0.0f;
+	h_select.d3varray[3].color = clr;
+	dx->D2primitive(&h_select, 1, TRUE);
 }
 
 void Battle::Cursor_e(int select){
 
-	static int theta = 0;
-	static int r = 255;
-	static int b = 0;
+	static float theta = 0.0f;
+	static float r = 1.0f;
+	static float b = 0.0f;
 	static bool clr_f = TRUE;
+	float m = tfloat.Add(0.02f);
 	if (clr_f){
-		b++;
-		if (r-- <= 0)clr_f = FALSE;
+		b += m;
+		if ((r -= m) <= 0.0f)clr_f = FALSE;
 	}
 	else{
-		b--;
-		if (r++ >= 255)clr_f = TRUE;
+		b -= m;
+		if ((r += m) >= 1.0f)clr_f = TRUE;
 	}
 
 	//カーソル左上
 	E_select.SetVertex(0, 3, 0,
 		(float)-25.0f, (float)-25.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		r, 0, b,
+		r, 0.0f, b,
 		0.0f, 0.0f);
 
 	//カーソル左下
 	E_select.SetVertex(4, 2,
 		(float)-25.0f, (float)25.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		b, 0, r,
+		b, 0.0f, r,
 		0.0f, 1.0f);
 
 	//カーソル右下
 	E_select.SetVertex(2, 5, 3,
 		(float)25.0f, (float)25.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		0, r, b,
+		0.0f, r, b,
 		1.0f, 1.0f);
 
 	//カーソル右上
 	E_select.SetVertex(1, 1,
 		(float)25.0f, (float)-25.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		r, b, 0,
+		r, b, 0.0f,
 		1.0f, 0.0f);
-
-	dx->D3primitive(SQUARE, &E_select, 1, e_pos[select].x, e_pos[select].y, e_pos[select].z, (float)(theta = theta % 361 + 1), FALSE, FALSE, FALSE);
+	m = tfloat.Add(0.2f);
+	if ((theta += m) > 360.0f)theta = 0.0f;
+	dx->D3primitive(SQUARE, &E_select, 1, e_pos[select].x, e_pos[select].y, e_pos[select].z, theta, FALSE, FALSE, FALSE);
 }
 
 void Battle::SelectPermissionMove(Hero *hero){
@@ -404,8 +350,4 @@ Battle::~Battle(){
 	e_draw = NULL;
 	delete[] h_draw;
 	h_draw = NULL;
-	free(command);
-	command = NULL;
-	free(h_select);
-	h_select = NULL;
 }

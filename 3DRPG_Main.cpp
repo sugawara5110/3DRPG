@@ -7,7 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "Dx9Process.h"
+#include "Dx11Process.h"
+#include "DxText.h"
 #include <new>
 #include "Map.h"
 #include "Control.h"
@@ -82,7 +83,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow){
 
 	srand((unsigned)time(NULL));
-	char clsName[] = "3DRPG";// ウィンドウクラス名
+	TCHAR clsName[] = L"3DRPG";// ウィンドウクラス名
 
 	HWND hWnd;//ウィンドウハンドル
 	MSG msg; //メッセージ
@@ -124,12 +125,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// WM_PAINTが呼ばれないようにする
 	ValidateRect(hWnd, 0);
 
-	//Dx9Processオブジェクト生成
-	Dx9Process::InstanceCreate();
-	//Dx9Processオブジェクト取得
-	Dx9Process *dx = Dx9Process::GetInstance();
+	//Dx11Processオブジェクト生成
+	Dx11Process::InstanceCreate();
+	//Dx11Processオブジェクト取得
+	Dx11Process *dx = Dx11Process::GetInstance();
 	//DirectX初期化
 	if (dx->Initialize(hWnd) == E_FAIL)return -1;
+	//DxTextオブジェクト生成
+	DxText::InstanceCreate();
 
 	bool loop = TRUE;
 	HANDLE now_loading_h = (HANDLE)_beginthreadex(NULL, 0, NowLoading, &loop, 0, NULL);
@@ -225,7 +228,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				encount = NOENCOUNT;
 			}
 			if (result == DIE){
-				dx->text("GAME_OVER", 300, 300, FALSE, 0xffffffff);
+				DxText::GetInstance()->Drawtext(L"ＧＡＭＥＯＶＥＲ", 280.0f, 300.0f, 35.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
 			}
 		}
 
@@ -239,6 +242,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			menu = statemenu.Menudraw(map->Getposition(), map_no, Map::GetBossKilled(), hero, control.Direction());
 		}
 
+		T_float::GetTime();
 		dx->Drawscreen();
 	}
 
@@ -260,6 +264,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		delete ending;
 		ending = NULL;
 	}
-	Dx9Process::DeleteInstance();
+	DxText::DeleteInstance();
+	Dx11Process::DeleteInstance();
 	return (int)msg.wParam;
 }

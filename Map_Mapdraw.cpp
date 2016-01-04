@@ -15,7 +15,7 @@ Encount Map::Mapdraw(MapState *mapstate, Directionkey direction, Encount encount
 	if (mxy.m[POS_CE] == 51 && boss_killed[map_no] == 1){
 		if (map_no == 3){
 			map_text_f = 200;
-			sprintf(m_tx, "炎壁の封印が解けた!!");
+			_tcscpy_s(m_tx, L"炎壁の封印が解けた！！");
 		}
 		mxy.m[POS_CE] = 48;//ボス撃破後ボス出現ポイント消滅
 		boss_count = 0;   //ポイント全て表示されないようにする。マップ中に複数使用の場合変更必要
@@ -30,9 +30,9 @@ Encount Map::Mapdraw(MapState *mapstate, Directionkey direction, Encount encount
 
 	//ライトに影響する描画, マップ1,3はライト無し
 	if (map_no != 1 && map_no != 3){
-		dx->LightPosSet(0, cax1, cay1, (float)posz * 100.0f + 70.0f + elevator_step, 300.0f, 0.006f); light_f = TRUE;
+		dx->LightPosSet(0, cax1, cay1, (float)posz * 100.0f + 70.0f + elevator_step, 1.0f, 1.0f, 1.0f, 1.0f, 150.0f, 100.0f, 3.0f, TRUE); light_f = TRUE;
 	}
-	if (map_no == 4)dx->LightPosSet(1, 1500.0f, 1000.0f, 650.0f, 600.0f, 0.003f);
+	if (map_no == 4)dx->LightPosSet(1, 1450.0f, 1000.0f, 650.0f, 0.0f, 0.0f, 1.0f, 1.0f, 400.0f, 500.0f, 10.0f, TRUE);
 	if (map_no == 1)dx->SetFog(TRUE, StartPos, EndPos, r, g, b);
 	if (squarecount >= 1)Mapcreate_Wall1();
 	if (blockcount >= 1)dx->D3primitive(SQUARE, &poWall, blockcount * 6, 0, 0, 0, 0, TRUE, FALSE, light_f);
@@ -53,11 +53,11 @@ Encount Map::Mapdraw(MapState *mapstate, Directionkey direction, Encount encount
 
 	//動画テクスチャ
 	if (mo_count >= 1){
-		dx->SetTextureMPixel(&poMo, MovieSoundManager::Torch_GetFrame(128, 128), 0xff, 0xff, 0xff, 200);
+		dx->SetTextureMPixel(&poMo, MovieSoundManager::Torch_GetFrame(128, 128), 0xff, 0xff, 0xff, 255);
 		Mapcreate_Ds();
 	}
 	if (f_wall_count >= 1){
-		dx->SetTextureMPixel(&poF_Wall, MovieSoundManager::FireWall_GetFrame(256, 256), 0xff, 0xff, 0xff, 200);
+		dx->SetTextureMPixel(&poF_Wall, MovieSoundManager::FireWall_GetFrame(256, 256), 0xff, 0xff, 0xff, 255);
 		dx->D3primitive(SQUARE, &poF_Wall, f_wall_count * 4, 0, 0, 0, 0, TRUE, FALSE, FALSE);
 	}
 
@@ -213,7 +213,7 @@ Position::H_Pos *Map::Getposition(){
 }
 
 void Map::Debug(){//デバック用
-
+	/*
 	char str[30];
 	sprintf(str, "src_theta = %f", src_theta);
 	dx->text(str, 100, 10, TRUE, 0xffffffff);
@@ -242,5 +242,5 @@ void Map::Debug(){//デバック用
 	sprintf(str, "bosskil[4] = %d", boss_killed[4]);
 	dx->text(str, 100, 190, TRUE, 0xffffffff);
 	dx->text("開発中画面です", 300, 10, TRUE, 0xffffffff);
-	dx->text("決定:Ctrl  キャンセル:Delete", 300, 25, TRUE, 0xffffffff);
+	dx->text("決定:Ctrl  キャンセル:Delete", 300, 25, TRUE, 0xffffffff);*/
 }

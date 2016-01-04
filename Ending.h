@@ -7,14 +7,16 @@
 #ifndef Class_Ending_Header
 #define Class_Ending_Header
 
-#include "Dx9Process.h"
+#include "Dx11Process.h"
 #include "MovieSoundManager.h"
+#include "DxText.h"
 
 class Ending{
 
 private:
-	Dx9Process *dx;
-	int str_y;
+	Dx11Process *dx;
+	DxText *text;
+	float str_y;
 
 public:
 	Ending();

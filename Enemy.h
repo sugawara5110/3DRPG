@@ -22,13 +22,8 @@ protected:
 	float pos_offset;//
 	Position::H_Pos *h_pos;
 	Position::E_Pos *e_pos;
-	Dx9Process::PolygonData en, *mag, effect, lost;//lost:ボスlost用
-	Dx9Process::T_xyz *p_array;//テクスチャピクセルカラーXYZ配列(ボス用)
-	int ver_pcs[50];            //magの使用するピクセルのグループ毎の個数(白以外)(ボス用)
-	float mv[50];              //Z方向の各グループ座標(ボス用)
-	int mag_size;             //ボス用
-	Dx9Process::T_xyz *p_array2;//テクスチャピクセルカラーXYZ配列(ボスロスト用)
-	int ver_pcs2;
+	Dx11Process::PolygonData en, *mag, effect;
+	float mag_size;             //ボス用
 
 	bool esc;//エスケープ可否 TRUE==エスケープ可
 	float mov_z;
@@ -41,13 +36,14 @@ protected:
 	int M_run_flg_rnd;  //マジック実行フラグ生成用ランダム
 	bool up;
 	bool zoom;
-	int count;
+	float count;
 	float theta_recov;
 	bool effect_f;//エフェクトON,OFF
 	float tx, ty;//エフェクト用テクスチャ座標
-	int cr, cg, cb;//敵画像色
+	float tt;     //エフェクト速度調整用
+	float cr, cg, cb;//敵画像色
 
-	void Enemycreate(float x, float y, int r, int g, int b);
+	void Enemycreate(float x, float y, float r, float g, float b);
 	virtual void DamageAction();
 	virtual void RecoverActionInit();
 	virtual void RecoverAction();

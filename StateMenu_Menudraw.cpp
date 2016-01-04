@@ -6,7 +6,6 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
-#include "Dx9Process.h"
 #include "Hero.h"
 #include "StateMenu.h"
 
@@ -14,16 +13,19 @@ bool StateMenu::TitleMenu(Directionkey direction){
 
 	MovieSoundManager::Title_sound(TRUE);
 	static int select = 0;
-
-	dx->text("NEW GAME", 330, 250, FALSE, 0xffffffff);
-	dx->text("CONTINUE", 330, 290, FALSE, 0xffffffff);
+	float r1, r2, g1, g2;
+	r1 = r2 = g1 = g2 = 0.0f;
 
 	switch (select){
 	case 0:
-		dx->text("NEW GAME", 330, 250, FALSE, 0xff00ffff);
+		r2 = g2 = 1.0f;
+		r1 = 0.0f;
+		g1 = 0.7f;
 		break;
 	case 1:
-		dx->text("CONTINUE", 330, 290, FALSE, 0xff00ffff);
+		r1 = g1 = 1.0f;
+		r2 = 0.0f;
+		g2 = 0.7f;
 		break;
 	}
 
@@ -57,7 +59,7 @@ bool StateMenu::TitleMenu(Directionkey direction){
 				savedata.p_data[i].Recover_LV = 0;
 				savedata.p_data[i].Rpoint = 10;
 				*/
-				
+
 				savedata.p_data[i].Attack = 100;
 				savedata.p_data[i].Magic = 100;
 				savedata.p_data[i].Agility = 100;
@@ -73,7 +75,7 @@ bool StateMenu::TitleMenu(Directionkey direction){
 				savedata.p_data[i].Hpoint = 1000;
 				savedata.p_data[i].Recover_LV = 100;
 				savedata.p_data[i].Rpoint = 1000;
-				
+
 			}
 
 			savedata.h_pos.cx1 = 1150.0f;
@@ -108,7 +110,7 @@ bool StateMenu::TitleMenu(Directionkey direction){
 			savedata.h_pos.theta = 0.0f;
 			savedata.map_no = 3;
 			*/
-			
+			/*
 			//ÉâÉXÉ_Éì
 			savedata.h_pos.cx1 = 1150.0f;
 			savedata.h_pos.cx2 = 1150.0f;
@@ -119,7 +121,7 @@ bool StateMenu::TitleMenu(Directionkey direction){
 			savedata.h_pos.pz = 6;
 			savedata.h_pos.theta = 0.0f;
 			savedata.map_no = 4;
-			
+			*/
 		}
 		if (select == 1){
 			FILE *fp = fopen("./dat/save/save.da1", "rb");
@@ -231,6 +233,8 @@ bool StateMenu::TitleMenu(Directionkey direction){
 		return FALSE;
 		break;
 	}
+	text->Drawtext(L"ÇmÇdÇvÇfÇ`ÇlÇd", 320.0f, 250.0f, 30.0f, { r1, g1, 1.0f, 1.0f });
+	text->Drawtext(L"ÇbÇnÇmÇsÇhÇmÇtÇd", 320.0f, 290.0f, 30.0f, { r2, g2, 1.0f, 1.0f });
 	return TRUE;
 }
 
@@ -270,34 +274,39 @@ bool StateMenu::Menudraw(Position::H_Pos *h_p, int map_no, int *boss_killed, Her
 
 bool StateMenu::Main_Menu(Position::H_Pos *h_p, int map_no, int *boss_killed, Hero *hero, Directionkey direction){
 
+	float fsize = 25.0f;
+
 	Menucreate();
-	char str[30];
 	for (int i = 0; i < 4; i++){
-		sprintf(str, "é˙êláÇ %d", i);
-		dx->text(str, 170, 10 + 110 * i, FALSE, 0xffffffff);
-		sprintf(str, "HP %d/%d", hero[i].s_HP(), hero[i].s_MHP());
-		dx->text(str, 170, 40 + 110 * i, FALSE, 0xffffffff);
-		sprintf(str, "MP %d/%d", hero[i].s_MP(), hero[i].s_MMP());
-		dx->text(str, 170, 70 + 110 * i, FALSE, 0xffffffff);
+		text->Drawtext(L"é˙êlÇmÇè", 160.0f, 10.0f + 110.0f * i, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(i, 270.0f, 10.0f + 110.0f * i, fsize, 1, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->Drawtext(L"ÇgÇo", 160.0f, 40.0f + 110.0f * i, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(hero[i].s_HP(), 220.0f, 40.0f + 110.0f * i, fsize, 5, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(hero[i].s_MHP(), 370.0f, 40.0f + 110.0f * i, fsize, 5, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->Drawtext(L"ÇlÇo", 160.0f, 70.0f + 110.0f * i, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(hero[i].s_MP(), 220.0f, 70.0f + 110.0f * i, fsize, 5, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(hero[i].s_MMP(), 370.0f, 70.0f + 110.0f * i, fsize, 5, { 1.0f, 1.0f, 1.0f, 1.0f });
 	}
 
-	dx->text("ÉXÉeÅ[É^ÉX", 10, 10, TRUE, 0xffffffff);
-	dx->text("âÒïú", 10, 40, TRUE, 0xffffffff);
-	dx->text("PPêUÇËï™ÇØ", 10, 70, TRUE, 0xffffffff);
-	dx->text("ÉZÅ[Éu", 10, 100, TRUE, 0xffffffff);
+	float r1, r2, r3, r4, g1, g2, g3, g4;
+	r1 = r2 = r3 = r4 = g1 = g2 = g3 = g4 = 1.0f;
 
 	switch (main_select){
 	case 0:
-		dx->text("ÉXÉeÅ[É^ÉX", 10, 10, TRUE, 0xff00ffff);
+		r1 = 0.0f;
+		g1 = 0.7f;
 		break;
 	case 1:
-		dx->text("âÒïú", 10, 40, TRUE, 0xff00ffff);
+		r2 = 0.0f;
+		g2 = 0.7f;
 		break;
 	case 2:
-		dx->text("PPêUÇËï™ÇØ", 10, 70, TRUE, 0xff00ffff);
+		r3 = 0.0f;
+		g3 = 0.7f;
 		break;
 	case 3:
-		dx->text("ÉZÅ[Éu", 10, 100, TRUE, 0xff00ffff);
+		r4 = 0.0f;
+		g4 = 0.7f;
 		break;
 	}
 
@@ -334,37 +343,37 @@ bool StateMenu::Main_Menu(Position::H_Pos *h_p, int map_no, int *boss_killed, He
 			//ò_óùêœ 0ÇÕëSÇƒ0000,fÇÕå≥êîílÇ∆ïœÇÌÇÁÇ∏
 			for (int i = 0; i < 4; i++){
 				//ò_óùòaÉfÅ[É^
-				key1.p_data[i].Attack =         ((unsigned int)hero[i].s_ATT() | Encryptionkey);
-				key1.p_data[i].Magic =          ((unsigned int)hero[i].s_MAG() | Encryptionkey);
-				key1.p_data[i].Agility =        ((unsigned int)hero[i].s_AG() | Encryptionkey);
-				key1.p_data[i].Vitality =       ((unsigned int)hero[i].s_VIT() | Encryptionkey);
-				key1.p_data[i].Exp =            ((unsigned int)hero[i].s_Exp() | Encryptionkey);
-				key1.p_data[i].LV =             ((unsigned int)hero[i].s_LV() | Encryptionkey);
+				key1.p_data[i].Attack = ((unsigned int)hero[i].s_ATT() | Encryptionkey);
+				key1.p_data[i].Magic = ((unsigned int)hero[i].s_MAG() | Encryptionkey);
+				key1.p_data[i].Agility = ((unsigned int)hero[i].s_AG() | Encryptionkey);
+				key1.p_data[i].Vitality = ((unsigned int)hero[i].s_VIT() | Encryptionkey);
+				key1.p_data[i].Exp = ((unsigned int)hero[i].s_Exp() | Encryptionkey);
+				key1.p_data[i].LV = ((unsigned int)hero[i].s_LV() | Encryptionkey);
 				key1.p_data[i].ParameterPoint = ((unsigned int)hero[i].s_ParameterPoint() | Encryptionkey);
-				key1.p_data[i].HP =             ((unsigned int)hero[i].s_HP() | Encryptionkey);
-				key1.p_data[i].MP =             ((unsigned int)hero[i].s_MP() | Encryptionkey);
-				key1.p_data[i].FlameATT_LV =    ((unsigned int)hero[i].GetFlameATT_LV() | Encryptionkey);
-				key1.p_data[i].Fpoint =         ((unsigned int)hero[i].s_Fp() | Encryptionkey);
-				key1.p_data[i].Healing_LV =     ((unsigned int)hero[i].GetHealing_LV() | Encryptionkey);
-				key1.p_data[i].Hpoint =         ((unsigned int)hero[i].s_Hp() | Encryptionkey);
-				key1.p_data[i].Recover_LV =     ((unsigned int)hero[i].GetRecover_LV() | Encryptionkey);
-				key1.p_data[i].Rpoint =         ((unsigned int)hero[i].s_Rp() | Encryptionkey);
+				key1.p_data[i].HP = ((unsigned int)hero[i].s_HP() | Encryptionkey);
+				key1.p_data[i].MP = ((unsigned int)hero[i].s_MP() | Encryptionkey);
+				key1.p_data[i].FlameATT_LV = ((unsigned int)hero[i].GetFlameATT_LV() | Encryptionkey);
+				key1.p_data[i].Fpoint = ((unsigned int)hero[i].s_Fp() | Encryptionkey);
+				key1.p_data[i].Healing_LV = ((unsigned int)hero[i].GetHealing_LV() | Encryptionkey);
+				key1.p_data[i].Hpoint = ((unsigned int)hero[i].s_Hp() | Encryptionkey);
+				key1.p_data[i].Recover_LV = ((unsigned int)hero[i].GetRecover_LV() | Encryptionkey);
+				key1.p_data[i].Rpoint = ((unsigned int)hero[i].s_Rp() | Encryptionkey);
 				//ò_óùêœÉfÅ[É^
-				key2.p_data[i].Attack =         ((unsigned int)hero[i].s_ATT() & Encryptionkey);
-				key2.p_data[i].Magic =          ((unsigned int)hero[i].s_MAG() & Encryptionkey);
-				key2.p_data[i].Agility =        ((unsigned int)hero[i].s_AG() & Encryptionkey);
-				key2.p_data[i].Vitality =       ((unsigned int)hero[i].s_VIT() & Encryptionkey);
-				key2.p_data[i].Exp =            ((unsigned int)hero[i].s_Exp() & Encryptionkey);
-				key2.p_data[i].LV =             ((unsigned int)hero[i].s_LV() & Encryptionkey);
+				key2.p_data[i].Attack = ((unsigned int)hero[i].s_ATT() & Encryptionkey);
+				key2.p_data[i].Magic = ((unsigned int)hero[i].s_MAG() & Encryptionkey);
+				key2.p_data[i].Agility = ((unsigned int)hero[i].s_AG() & Encryptionkey);
+				key2.p_data[i].Vitality = ((unsigned int)hero[i].s_VIT() & Encryptionkey);
+				key2.p_data[i].Exp = ((unsigned int)hero[i].s_Exp() & Encryptionkey);
+				key2.p_data[i].LV = ((unsigned int)hero[i].s_LV() & Encryptionkey);
 				key2.p_data[i].ParameterPoint = ((unsigned int)hero[i].s_ParameterPoint() & Encryptionkey);
-				key2.p_data[i].HP =             ((unsigned int)hero[i].s_HP() & Encryptionkey);
-				key2.p_data[i].MP =             ((unsigned int)hero[i].s_MP() & Encryptionkey);
-				key2.p_data[i].FlameATT_LV =    ((unsigned int)hero[i].GetFlameATT_LV() & Encryptionkey);
-				key2.p_data[i].Fpoint =         ((unsigned int)hero[i].s_Fp() & Encryptionkey);
-				key2.p_data[i].Healing_LV =     ((unsigned int)hero[i].GetHealing_LV() & Encryptionkey);
-				key2.p_data[i].Hpoint =         ((unsigned int)hero[i].s_Hp() & Encryptionkey);
-				key2.p_data[i].Recover_LV =     ((unsigned int)hero[i].GetRecover_LV() & Encryptionkey);
-				key2.p_data[i].Rpoint =         ((unsigned int)hero[i].s_Rp() & Encryptionkey);
+				key2.p_data[i].HP = ((unsigned int)hero[i].s_HP() & Encryptionkey);
+				key2.p_data[i].MP = ((unsigned int)hero[i].s_MP() & Encryptionkey);
+				key2.p_data[i].FlameATT_LV = ((unsigned int)hero[i].GetFlameATT_LV() & Encryptionkey);
+				key2.p_data[i].Fpoint = ((unsigned int)hero[i].s_Fp() & Encryptionkey);
+				key2.p_data[i].Healing_LV = ((unsigned int)hero[i].GetHealing_LV() & Encryptionkey);
+				key2.p_data[i].Hpoint = ((unsigned int)hero[i].s_Hp() & Encryptionkey);
+				key2.p_data[i].Recover_LV = ((unsigned int)hero[i].GetRecover_LV() & Encryptionkey);
+				key2.p_data[i].Rpoint = ((unsigned int)hero[i].s_Rp() & Encryptionkey);
 			}
 			//ò_óùòaÉfÅ[É^
 			key1.h_pos.cx1 = (float)((unsigned int)(h_p->px * 100 + 50) | Encryptionkey);
@@ -402,45 +411,56 @@ bool StateMenu::Main_Menu(Position::H_Pos *h_p, int map_no, int *boss_killed, He
 		MovieSoundManager::Select_sound(FALSE);
 		return FALSE;
 	}
+
+	fsize = 15.0f;
+	text->Drawtext(L"ÉXÉeÅ[É^ÉX", 10, 10, fsize, { r1, g1, 1.0f, 1.0f });
+	text->Drawtext(L"âÒïú", 10, 40, fsize, { r2, g2, 1.0f, 1.0f });
+	text->Drawtext(L"ÇoÇoêUÇËï™ÇØ", 10, 70, fsize, { r3, g3, 1.0f, 1.0f });
+	text->Drawtext(L"ÉZÅ[Éu", 10, 100, fsize, { r4, g4, 1.0f, 1.0f });
+
 	return TRUE;
 }
 
 void StateMenu::St_Menu(Hero *hero, Directionkey direction){
 
+	float fsize = 25.0f;
 	St_create();
-	char str[30];
-	sprintf(str, "é˙êláÇ %d", st_select);
-	dx->text(str, 120, 10, FALSE, 0xffffffff);
-	sprintf(str, "LV            %d   %d/%d", hero[st_select].s_LV(),
-		hero[st_select].s_LV() * 10 - hero[st_select].s_Exp(),
-		hero[st_select].s_LV() * 10);
-	dx->text(str, 120, 35, TRUE, 0xffffffff);
-	sprintf(str, "óÕ            %d", hero[st_select].s_ATT());
-	dx->text(str, 120, 55, TRUE, 0xffffffff);
-	sprintf(str, "ñÇóÕ          %d", hero[st_select].s_MAG());
-	dx->text(str, 120, 75, TRUE, 0xffffffff);
-	sprintf(str, "ëfëÅÇ≥        %d", hero[st_select].s_AG());
-	dx->text(str, 120, 95, TRUE, 0xffffffff);
-	sprintf(str, "ëÃóÕ          %d", hero[st_select].s_VIT());
-	dx->text(str, 120, 115, TRUE, 0xffffffff);
+	text->Drawtext(L"é˙êlÇmÇè", 120.0f, 10.0f, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->DrawValue(st_select, 230.0f, 10.0f, fsize, 1, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"ÇkÇu", 120.0f, 40.0f, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->DrawValue(hero[st_select].s_LV(), 300.0f, 40.0f, fsize, 3, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->DrawValue(hero[st_select].s_LV() * 10 - hero[st_select].s_Exp(), 180.0f, 70.0f, fsize, 4, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"/", 280.0f, 70.0f, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->DrawValue(hero[st_select].s_LV() * 10, 305.0f, 70.0f, fsize, 4, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"óÕ", 120.0f, 100.0f, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->DrawValue(hero[st_select].s_ATT(), 200.0f, 100.0f, fsize, 3, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"ñÇóÕ", 120.0f, 130.0f, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->DrawValue(hero[st_select].s_MAG(), 200.0f, 130.0f, fsize, 3, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"ëfëÅÇ≥", 120.0f, 160.0f, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->DrawValue(hero[st_select].s_AG(), 200.0f, 160.0f, fsize, 3, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"ëÃóÕ", 120.0f, 190.0f, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->DrawValue(hero[st_select].s_VIT(), 200.0f, 190.0f, fsize, 3, { 1.0f, 1.0f, 1.0f, 1.0f });
 
 	if (hero[st_select].GetFlameATT_LV() != 0){
-		sprintf(str, "ÉtÉåÉCÉÄLV    %d   %d/%d", hero[st_select].GetFlameATT_LV(),
-			hero[st_select].GetFlameATT_LV() * 10 - hero[st_select].s_Fp(),
-			hero[st_select].GetFlameATT_LV() * 10);
-		dx->text(str, 120, 135, TRUE, 0xffffffff);
+		text->Drawtext(L"ÉtÉåÉCÉÄÇkÇu", 120.0f, 220.0f, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(hero[st_select].GetFlameATT_LV(), 300.0f, 220.0f, fsize, 3, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(hero[st_select].GetFlameATT_LV() * 10 - hero[st_select].s_Fp(), 180.0f, 250.0f, fsize, 4, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->Drawtext(L"/", 280.0f, 250.0f, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(hero[st_select].GetFlameATT_LV() * 10, 305.0f, 250.0f, fsize, 4, { 1.0f, 1.0f, 1.0f, 1.0f });
 	}
 	if (hero[st_select].GetHealing_LV() != 0){
-		sprintf(str, "ÉqÅ[ÉäÉìÉOLV  %d   %d/%d", hero[st_select].GetHealing_LV(),
-			hero[st_select].GetHealing_LV() * 10 - hero[st_select].s_Hp(),
-			hero[st_select].GetHealing_LV() * 10);
-		dx->text(str, 120, 155, TRUE, 0xffffffff);
+		text->Drawtext(L"ÉqÅ[ÉäÉìÉOÇkÇu", 120.0f, 280.0f, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(hero[st_select].GetHealing_LV(), 300.0f, 280.0f, fsize, 3, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(hero[st_select].GetHealing_LV() * 10 - hero[st_select].s_Hp(), 180.0f, 310.0f, fsize, 4, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->Drawtext(L"/", 280.0f, 310.0f, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(hero[st_select].GetHealing_LV() * 10, 305.0f, 310.0f, fsize, 4, { 1.0f, 1.0f, 1.0f, 1.0f });
 	}
 	if (hero[st_select].GetRecover_LV() != 0){
-		sprintf(str, "ÉäÉJÉoÉäLV    %d   %d/%d", hero[st_select].GetRecover_LV(),
-			hero[st_select].GetRecover_LV() * 10 - hero[st_select].s_Rp(),
-			hero[st_select].GetRecover_LV() * 10);
-		dx->text(str, 120, 175, TRUE, 0xffffffff);
+		text->Drawtext(L"ÉäÉJÉoÉäÇkÇu", 120.0f, 340.0f, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(hero[st_select].GetRecover_LV(), 300.0f, 340.0f, fsize, 3, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(hero[st_select].GetRecover_LV() * 10 - hero[st_select].s_Rp(), 180.0f, 370.0f, fsize, 4, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->Drawtext(L"/", 280.0f, 370.0f, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(hero[st_select].GetRecover_LV() * 10, 305.0f, 370.0f, fsize, 4, { 1.0f, 1.0f, 1.0f, 1.0f });
 	}
 
 	switch (direction){
@@ -469,44 +489,32 @@ void StateMenu::St_Menu(Hero *hero, Directionkey direction){
 
 void StateMenu::Re_Menu(Hero *hero, Directionkey direction){
 
+	float nr[4], ng[4], r[4], g[4], mr[2], mg[2];
+	float fsize0 = 15.0f;
+	float fsize = 25.0f;
 	St_create();
 	Re_create();
 	int cnt;
-	char str[30];
-	for (int i = 0; i < 4; i++){
-		sprintf(str, "é˙êláÇ %d", i);
-		dx->text(str, 10, 10 + 20 * i, TRUE, 0xffffffff);
-		dx->text(str, 170, 10 + 110 * i, FALSE, 0xffffffff);
-		sprintf(str, "HP %d/%d", hero[i].s_HP(), hero[i].s_MHP());
-		dx->text(str, 170, 40 + 110 * i, FALSE, 0xffffffff);
-		sprintf(str, "MP %d/%d", hero[i].s_MP(), hero[i].s_MMP());
-		dx->text(str, 170, 70 + 110 * i, FALSE, 0xffffffff);
-	}
+	nr[0] = nr[1] = nr[2] = nr[3] = ng[0] = ng[1] = ng[2] = ng[3] = 1.0f;
+	r[0] = r[1] = r[2] = r[3] = g[0] = g[1] = g[2] = g[3] = 1.0f;
+	mr[0] = mr[1] = mg[0] = mg[1] = 1.0f;
 
 	if (re_select2 == 4){
 		for (int i = 0; i < 4; i++){
-			sprintf(str, "HP %d/%d", hero[i].s_HP(), hero[i].s_MHP());
-			dx->text(str, 170, 40 + 110 * i, FALSE, 0xff00ffff);
+			r[i] = 0.0f;
+			g[i] = 0.7f;
 		}
 	}
 	if (re_select2 != -1 && re_select2 != 4){
-		sprintf(str, "HP %d/%d", hero[re_select2].s_HP(), hero[re_select2].s_MHP());
-		dx->text(str, 170, 40 + 110 * re_select2, FALSE, 0xff00ffff);
+		r[re_select2] = 0.0f;
+		g[re_select2] = 0.7f;
 	}
 
-	sprintf(str, "é˙êláÇ %d", re_select);
-	dx->text(str, 10, 10 + 20 * re_select, TRUE, 0xff00ffff);
+	nr[re_select] = 0.0f;
+	ng[re_select] = 0.7f;
 
 	if (re_select1 != -1){
-		Re_create1();
-		if (hero[re_select].GetHealing_LV() >= 1){
-			sprintf(str, "ÉqÅ[ÉäÉìÉO LV%d", hero[re_select].GetHealing_LV());
-			dx->text(str, 10, 160, TRUE, 0xffffffff);
-		}
-		if (hero[re_select].GetRecover_LV() >= 1){
-			sprintf(str, "ÉäÉJÉoÉä LV%d", hero[re_select].GetRecover_LV());
-			dx->text(str, 10, 190, TRUE, 0xffffffff);
-		}
+
 		if (re_select1 == 0){
 			if (hero[re_select].GetRecover_LV() >= 1)re_select1 = 2;
 			if (hero[re_select].GetHealing_LV() >= 1)re_select1 = 1;
@@ -514,14 +522,14 @@ void StateMenu::Re_Menu(Hero *hero, Directionkey direction){
 		switch (re_select1){
 		case 1:
 			if (hero[re_select].GetHealing_LV() >= 1){
-				sprintf(str, "ÉqÅ[ÉäÉìÉO LV%d", hero[re_select].GetHealing_LV());
-				dx->text(str, 10, 160, TRUE, 0xff00ffff);
+				mr[0] = 0.0f;
+				mg[0] = 0.7f;
 			}
 			break;
 		case 2:
 			if (hero[re_select].GetRecover_LV() >= 1){
-				sprintf(str, "ÉäÉJÉoÉä LV%d", hero[re_select].GetRecover_LV());
-				dx->text(str, 10, 190, TRUE, 0xff00ffff);
+				mr[1] = 0.0f;
+				mg[1] = 0.7f;
 			}
 			break;
 		}
@@ -645,56 +653,41 @@ void StateMenu::Re_Menu(Hero *hero, Directionkey direction){
 		menu_select = MAIN;
 		break;
 	}
+
+	for (int i = 0; i < 4; i++){
+		text->Drawtext(L"é˙êlÇmÇè", 10.0f, 10.0f + 20.0f * i, fsize0, { nr[i], ng[i], 1.0f, 1.0f });
+		text->DrawValue(i, 75.0f, 10.0f + 20.0f * i, fsize0, 1, { nr[i], ng[i], 1.0f, 1.0f });
+		text->Drawtext(L"ÇgÇo", 160.0f, 40.0f + 110.0f * i, fsize, { r[i], g[i], 1.0f, 1.0f });
+		text->DrawValue(hero[i].s_HP(), 220.0f, 40.0f + 110.0f * i, fsize, 5, { r[i], g[i], 1.0f, 1.0f });
+		text->DrawValue(hero[i].s_MHP(), 370.0f, 40.0f + 110.0f * i, fsize, 5, { r[i], g[i], 1.0f, 1.0f });
+		text->Drawtext(L"ÇlÇo", 160.0f, 70.0f + 110.0f * i, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(hero[i].s_MP(), 220.0f, 70.0f + 110.0f * i, fsize, 5, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(hero[i].s_MMP(), 370.0f, 70.0f + 110.0f * i, fsize, 5, { 1.0f, 1.0f, 1.0f, 1.0f });
+	}
+
+	if (re_select1 != -1){
+		Re_create1();
+		if (hero[re_select].GetHealing_LV() >= 1){
+			text->Drawtext(L"ÉqÅ[ÉäÉìÉO", 10.0f, 160.0f, fsize0, { mr[0], mg[0], 1.0f, 1.0f });
+		}
+		if (hero[re_select].GetRecover_LV() >= 1){
+			text->Drawtext(L"ÉäÉJÉoÉä", 10.0f, 190.0f, fsize0, { mr[1], mg[1], 1.0f, 1.0f });
+		}
+	}
 }
 
 void StateMenu::Pp_Menu(Hero *hero, Directionkey direction){
 
+	float nr[4], ng[4], r[4], g[4];
+	float fsize0 = 15.0f;
+	float fsize = 25.0f;
+	nr[0] = nr[1] = nr[2] = nr[3] = ng[0] = ng[1] = ng[2] = ng[3] = 1.0f;
+	r[0] = r[1] = r[2] = r[3] = g[0] = g[1] = g[2] = g[3] = 1.0f;
 	St_create();
 	Re_create();
 
-	char str[30];
-	for (int i = 0; i < 4; i++){
-		sprintf(str, "é˙êláÇ %d", i);
-		dx->text(str, 10, 10 + 20 * i, TRUE, 0xffffffff);
-	}
-	sprintf(str, "é˙êláÇ %d", pp_select);
-	dx->text(str, 10, 10 + 20 * pp_select, TRUE, 0xff00ffff);
-
-	if (pp_select1 != -1){
-		sprintf(str, "é˙êláÇ %d", pp_select);
-		dx->text(str, 120, 10, FALSE, 0xffffffff);
-		sprintf(str, "LV            %d", hero[pp_select].s_LV());
-		dx->text(str, 120, 35, TRUE, 0xffffffff);
-		sprintf(str, "óÕ            %d", hero[pp_select].s_ATT());
-		dx->text(str, 120, 55, TRUE, 0xffffffff);
-		sprintf(str, "ñÇóÕ          %d", hero[pp_select].s_MAG());
-		dx->text(str, 120, 75, TRUE, 0xffffffff);
-		sprintf(str, "ëfëÅÇ≥        %d", hero[pp_select].s_AG());
-		dx->text(str, 120, 95, TRUE, 0xffffffff);
-		sprintf(str, "ëÃóÕ          %d", hero[pp_select].s_VIT());
-		dx->text(str, 120, 115, TRUE, 0xffffffff);
-		sprintf(str, "PP            %d", hero[pp_select].s_ParameterPoint());
-		dx->text(str, 120, 145, TRUE, 0xffffffff);
-
-		switch (pp_select1){
-		case 0:
-			sprintf(str, "óÕ            %d", hero[pp_select].s_ATT());
-			dx->text(str, 120, 55, TRUE, 0xff00ffff);
-			break;
-		case 1:
-			sprintf(str, "ñÇóÕ          %d", hero[pp_select].s_MAG());
-			dx->text(str, 120, 75, TRUE, 0xff00ffff);
-			break;
-		case 2:
-			sprintf(str, "ëfëÅÇ≥        %d", hero[pp_select].s_AG());
-			dx->text(str, 120, 95, TRUE, 0xff00ffff);
-			break;
-		case 3:
-			sprintf(str, "ëÃóÕ          %d", hero[pp_select].s_VIT());
-			dx->text(str, 120, 115, TRUE, 0xff00ffff);
-			break;
-		}
-	}
+	nr[pp_select] = 0.0f;
+	ng[pp_select] = 0.7f;
 
 	switch (direction){
 	case LEFT:
@@ -751,5 +744,29 @@ void StateMenu::Pp_Menu(Hero *hero, Directionkey direction){
 		}
 		menu_select = MAIN;
 		break;
+	}
+
+	for (int i = 0; i < 4; i++){
+		text->Drawtext(L"é˙êlÇmÇè", 10.0f, 10.0f + 20.0f * i, fsize0, { nr[i], ng[i], 1.0f, 1.0f });
+		text->DrawValue(i, 75.0f, 10.0f + 20.0f * i, fsize0, 1, { nr[i], ng[i], 1.0f, 1.0f });
+	}
+
+	if (pp_select1 != -1){
+		r[pp_select1] = 0.0f;
+		g[pp_select1] = 0.7f;
+		text->Drawtext(L"é˙êlÇmÇè", 120.0f, 10.0f, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(pp_select, 230.0f, 10.0f, fsize, 1, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->Drawtext(L"ÇkÇu", 120.0f, 40.0f, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(hero[pp_select].s_LV(), 300.0f, 40.0f, fsize, 3, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->Drawtext(L"óÕ", 120.0f, 100.0f, fsize, { r[0], g[0], 1.0f, 1.0f });
+		text->DrawValue(hero[pp_select].s_ATT(), 200.0f, 100.0f, fsize, 3, { r[0], g[0], 1.0f, 1.0f });
+		text->Drawtext(L"ñÇóÕ", 120.0f, 130.0f, fsize, { r[1], g[1], 1.0f, 1.0f });
+		text->DrawValue(hero[pp_select].s_MAG(), 200.0f, 130.0f, fsize, 3, { r[1], g[1], 1.0f, 1.0f });
+		text->Drawtext(L"ëfëÅÇ≥", 120.0f, 160.0f, fsize, { r[2], g[2], 1.0f, 1.0f });
+		text->DrawValue(hero[pp_select].s_AG(), 200.0f, 160.0f, fsize, 3, { r[2], g[2], 1.0f, 1.0f });
+		text->Drawtext(L"ëÃóÕ", 120.0f, 190.0f, fsize, { r[3], g[3], 1.0f, 1.0f });
+		text->DrawValue(hero[pp_select].s_VIT(), 200.0f, 190.0f, fsize, 3, { r[3], g[3], 1.0f, 1.0f });
+		text->Drawtext(L"ÇoÇo", 120.0f, 250.0f, fsize, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(hero[pp_select].s_ParameterPoint(), 200.0f, 250.0f, fsize, 3, { 1.0f, 1.0f, 1.0f, 1.0f });
 	}
 }

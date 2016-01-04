@@ -9,6 +9,7 @@
 
 #include "MovieSoundManager.h"
 #include "Position.h"
+#include "DxText.h"
 #define METER_MAX 25000
 
 //前方宣言
@@ -23,16 +24,18 @@ class EnemyBoss;
 class Battle{
 
 private:
-	Dx9Process *dx;
-	Dx9Process::MY_VERTEX2 *command, *h_select;//コマンド選択ウインドウ, 回復選択カーソル
-	Dx9Process::PolygonData E_select;//敵選択カーソル
+	Dx11Process *dx;
+	DxText *text;
+	T_float tfloat;
+	Dx11Process::PolygonData2D command, h_select;//コマンド選択ウインドウ, 回復選択カーソル
+	Dx11Process::PolygonData E_select;//敵選択カーソル
 	Enemy *enemy;
 	EnemySide *enemyside;
 	EnemyBoss *enemyboss;
 	int e_num;            //敵出現数
 	bool command_run_first_flg;//コマンド選択権無の状態 == FALSE
 	bool time_stop_flg;       //バトル中時間ストップフラグ
-	int Escape_f;            //エスケープ表示フラグ,座標
+	float Escape_f;            //エスケープ表示フラグ,座標
 	bool Escape_s;          //エスケープ成功
 
 	CommandSelect com_select;   //コマンド入力
@@ -46,11 +49,11 @@ private:
 		float AGmeter;        //メーター
 		Action action;
 		MagicSelect Magrun;//選択マジック
-		int RCVdrawY;       //回復表示フラグ,表示座標
+		float RCVdrawY;       //回復表示フラグ,表示座標
 		int RCVdata;       //回復数保管
-		int DMdrawY;      //ダメージ表示フラグ,表示座標
+		float DMdrawY;      //ダメージ表示フラグ,表示座標
 		int DMdata;      //ダメージ数保管
-		int draw_x;
+		float draw_x;
 		bool command_run;  //コマンドアクセス権状態,攻撃スタートフラグ
 		bool LOST_fin;    //LOSTアクション終了フラグ(敵のみ)
 		MenuSelect manu;//現選択メニュー(以下コマンド選択関連)
@@ -169,17 +172,14 @@ private:
 	}
 
 	template<typename T_rcv>
-	void RCVdraw(T_rcv *rcv, Draw *at, int DMdrawYMAX){
-		char str[30];
+	void RCVdraw(T_rcv *rcv, Draw *at, float DMdrawYMAX){
 		if (at->RCVdrawY != 0){
-			if (at->RCVdrawY++ < DMdrawYMAX){
-				sprintf(str, "%d", at->RCVdata);
-				dx->text(str, at->draw_x, at->RCVdrawY, FALSE, 0xff00ffff);
+			if ((at->RCVdrawY += tfloat.Add(0.1f)) < DMdrawYMAX){
+				text->DrawValue(at->RCVdata, at->draw_x, at->RCVdrawY, 30.0f, 5, { 0.3f, 1.0f, 0.3f, 1.0f });
 			}
 			else{
-				if (at->RCVdrawY >= DMdrawYMAX && at->RCVdrawY < DMdrawYMAX + 10){
-					sprintf(str, "%d", at->RCVdata);
-					dx->text(str, at->draw_x, DMdrawYMAX, FALSE, 0xff00ffff);
+				if (at->RCVdrawY >= DMdrawYMAX && at->RCVdrawY < DMdrawYMAX + 20){
+					text->DrawValue(at->RCVdata, at->draw_x, DMdrawYMAX, 30.0f, 5, { 0.3f, 1.0f, 0.3f, 1.0f });
 				}
 				else {
 					rcv->UpHP(at->RCVdata);
@@ -191,17 +191,14 @@ private:
 	}
 
 	template<typename T_dm>
-	void DMdraw(T_dm *dm, Draw *d, int DMdrawYMAX){
-		char str[30];
+	void DMdraw(T_dm *dm, Draw *d, float DMdrawYMAX){
 		if (d->DMdrawY != 0){
-			if (d->DMdrawY++ < DMdrawYMAX){
-				sprintf(str, "%d", d->DMdata);
-				dx->text(str, d->draw_x, d->DMdrawY, FALSE, 0xffffffff);
+			if ((d->DMdrawY += tfloat.Add(0.1f)) < DMdrawYMAX){
+				text->DrawValue(d->DMdata, d->draw_x, d->DMdrawY, 30.0f, 5, { 1.0f, 0.3f, 0.3f, 1.0f });
 			}
 			else{
-				if (d->DMdrawY >= DMdrawYMAX && d->DMdrawY < DMdrawYMAX + 10){
-					sprintf(str, "%d", d->DMdata);
-					dx->text(str, d->draw_x, DMdrawYMAX, FALSE, 0xffffffff);
+				if (d->DMdrawY >= DMdrawYMAX && d->DMdrawY < DMdrawYMAX + 20){
+					text->DrawValue(d->DMdata, d->draw_x, DMdrawYMAX, 30.0f, 5, { 1.0f, 0.3f, 0.3f, 1.0f });
 				}
 				else {
 					dm->DownHP(d->DMdata);

@@ -4,7 +4,7 @@
 //**                                   Enemycreate関数                                   **//
 //*****************************************************************************************//
 
-#include "Dx9Process.h"
+#include "Dx11Process.h"
 #include "Enemy.h"
 #include "Battle.h"
 
@@ -20,11 +20,12 @@ Enemy::Enemy(int t_no, int no){
 	act_f = normal_action;
 	up = TRUE;
 	zoom = TRUE;
-	count = 0;
+	count = 0.0f;
 	theta_recov = 0.0f;
 	effect_f = FALSE;
 	tx = ty = 0.0f;
-	cr = cg = cb = 255;
+	tt = 0;
+	cr = cg = cb = 1.0f;
 
 	dx->GetTexture(&effect, 81);
 	effect.tex_no = 1;
@@ -36,7 +37,7 @@ Enemy::Enemy(int t_no, int no){
 	dx->GetVBarray(SQUARE, &effect, 1);
 }
 
-void Enemy::Enemycreate(float x, float y, int r, int g, int b){
+void Enemy::Enemycreate(float x, float y, float r, float g, float b){
 
 	//敵左前
 	en.SetVertex(0, 3, 0,
@@ -111,32 +112,35 @@ bool Enemy::Effectdraw(Battle *battle, int *E_select_obj){
 	effect.SetVertex(0, 3, 0,
 		(float)-ver, (float)0.0f, ver * 2,
 		0.0f, 0.0f, 0.0f,
-		255, 255, 255,
+		1.0f, 1.0f, 1.0f,
 		tx, ty);
 
 	//左奥
 	effect.SetVertex(4, 2,
 		(float)-ver, (float)0.0f, 0.0f,
 		0.0f, 0.0f, 0.0f,
-		255, 255, 255,
+		1.0f, 1.0f, 1.0f,
 		tx, ty + py);
 
 	//右奥
 	effect.SetVertex(2, 5, 3,
 		(float)ver, (float)0.0f, 0.0f,
 		0.0f, 0.0f, 0.0f,
-		255, 255, 255,
+		1.0f, 1.0f, 1.0f,
 		tx + px, ty + py);
 
 	//右前
 	effect.SetVertex(1, 1,
 		(float)ver, (float)0.0f, ver * 2,
 		0.0f, 0.0f, 0.0f,
-		255, 255, 255,
+		1.0f, 1.0f, 1.0f,
 		tx + px, ty);
 
-	if ((tx += px) + px > 1.0f){
-		tx = 0; return FALSE;
+	if ((tt += tfloat.Add(0.8f)) > 10.0f){//速度調整用
+		tt = 0;
+		if ((tx += px) + px > 1.0f){
+			tx = 0; return FALSE;
+		}
 	}
 
 	float ex = 0.0f;

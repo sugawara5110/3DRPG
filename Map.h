@@ -9,6 +9,7 @@
 
 #include "MovieSoundManager.h"
 #include "Position.h"
+#include "DxText.h"
 
 #define POS_CE  (posz * mxy.y * mxy.x + posy * mxy.x + posx)
 #define POSY_U1 (posz * mxy.y * mxy.x + (posy + 1) * mxy.x + posx)
@@ -23,7 +24,9 @@ private:
 	int map_no;            //オブジェクト内部用マップナンバー
 	static MapStPos MPos;//マップスタート位置
 	static int boss_killed[5];//各ボス撃破履歴
-	Dx9Process *dx;
+	Dx11Process *dx;
+	DxText *text;
+	T_float tfloat;
 	typedef struct{
 		int *m;
 		int x;
@@ -31,6 +34,17 @@ private:
 		int z;
 	}mapxy;
 	mapxy mxy;
+
+	struct LightPos{
+		float x, y, z;
+		float r, g, b, a;
+		float range;
+		float brightness;
+		float attenuation;
+		bool on_off;
+	};
+	LightPos *light;
+	int lightcount;
 
 	float cax1;
 	float cax2;
@@ -48,8 +62,8 @@ private:
 	int f_wall_count;//動画テクスチャ炎壁個数
 	int boss_count; //ボス出現ポイント個数
 	int Elevator_count;//エレベーター個数
-	int map_text_f;//マップ上のテキスト表示フラグ
-	char m_tx[30];//表示内容
+	float map_text_f;//マップ上のテキスト表示フラグ
+	TCHAR m_tx[30];//表示内容
 	bool recover_p_f;//リカバーポイント到達履歴
 	bool boss_p_f;  //ボス出現ポイント到達履歴
 	bool elevator_UP; 
@@ -62,7 +76,7 @@ private:
 	float stepx;
 	float stepy;
 
-	Dx9Process::PolygonData poWall, poWall1, poF_Wall, poGround, poCeiling, poBackground,
+	Dx11Process::PolygonData poWall, poWall1, poF_Wall, poGround, poCeiling, poBackground,
 		poRain, poEXIT, poENTER, poRecover, poRecoverLine, poMo, poBoss, poElevator;
 	Position::E_Pos e_pos[4];
 	Position::H_Pos h_pos;
@@ -89,7 +103,7 @@ private:
 	void Mapcreate_BossPoint();
 	void Mapcreate_Elevator();
 	Encount Move(MapState *mapstate, Directionkey direction);
-	void MapText(char str[30]);
+	void MapText(TCHAR str[30]);
 
 public:
 	static int GetMapNo();

@@ -8,15 +8,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "Dx9Process.h"
+#include "Dx11Process.h"
+#include "DxText.h"
 #include "Hero.h"
 #include "Battle.h"
 
 Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_pos, Position::E_Pos *e_pos, float me, bool command_run, Action action, MagicSelect H_Magrun){
 
-	char str[30];
 	static bool clr_f = TRUE;
-	static DWORD r = 0x99;
+	static float r = 1.0f;
 	float x;
 	if (o_no == 0)x = 20.0f;
 	if (o_no == 1)x = 190.0f;
@@ -47,10 +47,12 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 		break;
 	}
 
+	float m;
 	switch (act_f){
 	case ATTACK:
-		if (effect_f == FALSE && up == TRUE && (mov_y -= 1.0f) < -30.0f)up = FALSE;
-		if (effect_f == FALSE && up == FALSE && (mov_y += 1.0f) > 0.0f){
+		m = tfloat.Add(0.15f);
+		if (effect_f == FALSE && up == TRUE && (mov_y -= m) < -30.0f)up = FALSE;
+		if (effect_f == FALSE && up == FALSE && (mov_y += m) > 0.0f){
 			up = TRUE;
 			mov_y = 0.0f;
 			effect_f = TRUE;
@@ -65,47 +67,50 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 		}
 		break;
 	case MAGIC:
-		int mx, my;
+		m = tfloat.Add(0.15f);
+		float mx, my;
 		MovieSoundManager::Magic_sound(TRUE);
-		dx->D3primitive(SQUARE, &mag, 1, h_pos->cx1, h_pos->cy1, (float)h_pos->pz * 100.0f + 25.0f, (float)count++, TRUE, FALSE, FALSE);
+		dx->D3primitive(SQUARE, &mag, 1, h_pos->cx1, h_pos->cy1, (float)h_pos->pz * 100.0f + 25.0f, count += m, TRUE, FALSE, FALSE);
 		switch (o_no){
 		case 0:
-			mx = 0;
-			my = 400;
+			mx = 0.0f;
+			my = 400.0f;
 			break;
 		case 1:
-			mx = 170;
-			my = 400;
+			mx = 170.0f;
+			my = 400.0f;
 			break;
 		case 2:
-			mx = 350;
-			my = 400;
+			mx = 350.0f;
+			my = 400.0f;
 			break;
 		case 3:
-			mx = 520;
-			my = 400;
+			mx = 520.0f;
+			my = 400.0f;
 			break;
 		}
 		switch (H_Magrun){
 		case FLAME:
-			sprintf(str, "ÉtÉåÉCÉÄ LV%d", GetFlameATT_LV());
+			text->Drawtext(L"ÉtÉåÉCÉÄÇkÇu", mx, my, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+			text->Drawtext(text->CreateTextValue(GetFlameATT_LV()), mx + 180.0f, my, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
 			effect.tex_no = 1;
 			break;
 		case HEAL:
-			sprintf(str, "ÉqÅ[ÉäÉìÉO LV%d", GetHealing_LV());
+			text->Drawtext(L"ÉqÅ[ÉäÉìÉOÇkÇu", mx, my, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+			text->Drawtext(text->CreateTextValue(GetHealing_LV()), mx + 210.0f, my, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
 			effect.tex_no = 2;
 			break;
 		case RECOV:
-			sprintf(str, "ÉäÉJÉoÉä LV%d", GetRecover_LV());
+			text->Drawtext(L"ÉäÉJÉoÉäÇkÇu", mx, my, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+			text->Drawtext(text->CreateTextValue(GetRecover_LV()), mx + 180.0f, my, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
 			effect.tex_no = 3;
 			break;
 		case NOSEL:
-			sprintf(str, "MPÇ™ë´ÇËÇ»Ç¢");
+			text->Drawtext(L"MPÇ™ë´ÇËÇ»Ç¢", mx, my, 30.0f, { 1.0f, 0.5f, 0.5f, 1.0f });
 			break;
 		}
-		dx->text(str, mx, my, FALSE, 0xffffffff);
-		if (effect_f == FALSE && up == TRUE && (mov_y -= 1.0f) < -30.0f)up = FALSE;
-		if (effect_f == FALSE && up == FALSE && (mov_y += 1.0f) > 0.0f){
+		if (effect_f == FALSE && up == TRUE && (mov_y -= m) < -30.0f)up = FALSE;
+		if (effect_f == FALSE && up == FALSE && (mov_y += m) > 0.0f){
 			up = TRUE;
 			mov_y = 0.0f;
 			count = 0;
@@ -124,7 +129,8 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 		}
 		break;
 	case DAMAGE:
-		if (count++ < 10){
+		m = tfloat.Add(0.05f);
+		if ((count += m) < 10){
 			int rnd = rand() % 20;
 			rnd -= 10;
 			mov_x = (float)rnd;
@@ -133,7 +139,7 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 			mov_y = (float)rnd;
 		}
 		else {
-			count = 0;
+			count = 0.0f;
 			act_f = NORMAL;
 			mov_x = mov_y = 0.0f;
 		}
@@ -141,24 +147,25 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 	}
 
 	Statecreate(command_run);
-	sprintf(str, "é˙êláÇ %d", o_no);
-	dx->text(str, (int)(x + mov_x), (int)(470 + mov_y), TRUE, 0xff00ffff);
-	sprintf(str, "HP %d/%d", p_data.HP, s_MHP());
-	dx->text(str, (int)(x + mov_x) - 5, (int)(490 + mov_y), TRUE, 0xff00ffff);
-	sprintf(str, "MP %d/%d", p_data.MP, s_MMP());
-	dx->text(str, (int)(x + mov_x) - 5, (int)(510 + mov_y), TRUE, 0xff00ffff);
+	text->Drawtext(L"é˙êlÇmÇè", x + mov_x, 470.0f + mov_y, 15.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->DrawValue(o_no, x + 60.0f + mov_x, 470.0f + mov_y, 15.0f, 1, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"ÇgÇo", x + mov_x - 5.0f, 490.0f + mov_y, 15.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->DrawValue(p_data.HP, x + mov_x + 25.0f, 490.0f + mov_y, 15.0f, 5, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"ÇlÇo", x + mov_x - 5.0f, 510.0f + mov_y, 15.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->DrawValue(p_data.MP, x + mov_x + 25.0f, 510.0f + mov_y, 15.0f, 5, { 1.0f, 1.0f, 1.0f, 1.0f });
 	if (p_data.HP <= 0){
-		dx->text("êÌì¨ïsî\", (int)(x + mov_x), (int)(525 + mov_y), FALSE, 0xffff0000);
+		text->Drawtext(L"êÌì¨ïsî\", x + mov_x, 525.0f + mov_y, 25.0f, { 1.0f, 0.0f, 0.0f, 1.0f });
 		return NOT_FIN;
 	}
 	if (me >= 1.0f){
+		m = tfloat.Add(0.001f);
 		if (clr_f){
-			if ((r -= 1) <= 0x77)clr_f = FALSE;
+			if ((r -= m) <= 0.5f)clr_f = FALSE;
 		}
 		else{
-			if ((r += 1) >= 0xff)clr_f = TRUE;
+			if ((r += m) >= 1.0f)clr_f = TRUE;
 		}
-		dx->text("ó’êÌë‘ê®", (int)(x + mov_x), (int)(525 + mov_y), FALSE, 0x00ffffff + (r << 24));
+		text->Drawtext(L"ó’êÌë‘ê®", x + mov_x, 525.0f + mov_y, 25.0f, { 1.0f, 1.0f, 1.0f, r });
 		return NOT_FIN;
 	}
 	Metercreate(me);

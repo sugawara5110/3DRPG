@@ -6,7 +6,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
-#include "Dx9Process.h"
+#include "Dx11Process.h"
 #include <new>     //placement new
 #include <stdlib.h>
 #include <time.h>
@@ -18,8 +18,8 @@
 
 Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 
-	int H_DMdrawYMAX = 470;
-	int E_DMdrawYMAX = 300;
+	float H_DMdrawYMAX = 470;
+	float E_DMdrawYMAX = 300;
 	int draw_count;
 	Act_fin_flg act;
 
@@ -246,10 +246,11 @@ Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 
 bool Battle::Escapedraw(){
 
+	float m = tfloat.Add(0.1f);
 	if (Escape_f != 0){
-		if (Escape_f++ < 330){
-			if (Escape_s == TRUE)dx->text("エスケープ成功", 300, 300, FALSE, 0xff00ffff);
-			if (Escape_s == FALSE)dx->text("エスケープ失敗", 300, 300, FALSE, 0xff00ffff);
+		if ((Escape_f += m) < 330){
+			if (Escape_s == TRUE)text->Drawtext(L"エスケープ成功", 300.0f, 300.0f, 35.0f, { 0.0f, 0.7f, 1.0f, 1.0f });
+			if (Escape_s == FALSE)text->Drawtext(L"エスケープ失敗", 300.0f, 300.0f, 35.0f, { 0.0f, 0.7f, 1.0f, 1.0f });
 			return TRUE;
 		}
 		else {
@@ -296,16 +297,16 @@ void Battle::Debug(Enemy *enemy){//デバック用
 	for (int i = 0; i < 4; i++){
 		if (e_pos[i].element == FALSE)continue;
 		sprintf(str, "ENEMY %d HP%d/MHP%d", i, enemy[i].s_HP(), enemy[i].s_MHP());
-		dx->text(str, 500, 10 + 90 * i, TRUE, 0xffffffff);
+		//dx->text(str, 500, 10 + 90 * i, TRUE, 0xffffffff);
 		sprintf(str, "ENEMY %d MP%d/MMP%d", i, enemy[i].s_MP(), enemy[i].s_MMP());
-		dx->text(str, 500, 25 + 90 * i, TRUE, 0xffffffff);
+		//dx->text(str, 500, 25 + 90 * i, TRUE, 0xffffffff);
 		sprintf(str, "ENEMY %d メーター %f", i, e_draw[i].AGmeter);
-		dx->text(str, 500, 40 + 90 * i, TRUE, 0xffffffff);
+		//dx->text(str, 500, 40 + 90 * i, TRUE, 0xffffffff);
 		sprintf(str, "ENEMY %d x %f", i, e_pos[i].x);
-		dx->text(str, 500, 55 + 90 * i, TRUE, 0xffffffff);
+		//dx->text(str, 500, 55 + 90 * i, TRUE, 0xffffffff);
 		sprintf(str, "ENEMY %d y %f", i, e_pos[i].y);
-		dx->text(str, 500, 70 + 90 * i, TRUE, 0xffffffff);
+		//dx->text(str, 500, 70 + 90 * i, TRUE, 0xffffffff);
 		sprintf(str, "ENEMY %d z %f", i, e_pos[i].z);
-		dx->text(str, 500, 85 + 90 * i, TRUE, 0xffffffff);
+		//dx->text(str, 500, 85 + 90 * i, TRUE, 0xffffffff);
 	}
 }

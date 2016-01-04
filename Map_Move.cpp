@@ -147,7 +147,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 	if (mxy.m[POS_CE] == 50 && recover_p_f == FALSE){
 		recover_p_f = TRUE;
 		map_text_f = 300;
-		sprintf(m_tx, "HP MPëSâÒïú!!");
+		_tcscpy_s(m_tx, L"ÇgÇoÇlÇoëSâÒïúÅIÅI");
 		*mapstate = RECOV_MAP;
 	}
 	else if (mxy.m[POS_CE] != 50)recover_p_f = FALSE;
@@ -227,42 +227,67 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 	}
 
 	//à⁄ìÆèàóù
+	bool movf;
+	float m = tfloat.Add(0.3f);
 	switch (direction_move){
 
 	case LEFT:
-		src_theta = src_theta - 2;
+		src_theta = src_theta - m;
 		cay2 = cay1 - (int)(cos(src_theta * 3.14f / 180.0f) * 50.0f);
 		cax2 = cax1 + (int)(sin(src_theta * 3.14f / 180.0f) * 50.0f);
-		if (src_theta == m_theta){
+		if (src_theta <= m_theta){
+			src_theta = m_theta;
 			moving = FALSE;
 			direction_move = NOTPRESS;
 		}
 		break;
 
 	case RIGHT:
-		src_theta = src_theta + 2;
+		src_theta = src_theta + m;
 		cay2 = cay1 - (int)(cos(src_theta * 3.14f / 180.0f) * 50.0f);
 		cax2 = cax1 + (int)(sin(src_theta * 3.14f / 180.0f) * 50.0f);
-		if (src_theta == m_theta){
+		if (src_theta >= m_theta){
+			src_theta = m_theta;
 			moving = FALSE;
 			direction_move = NOTPRESS;
 		}
 		break;
 
 	case UP:
+		movf = FALSE;
 		if (src_theta == 0 || src_theta == 360){
-			cay1 -= 2; cay2 -= 2;
+			cay1 -= m; cay2 -= m;
+			if (stepy >= cay1){
+				cay1 = stepy;
+				cay2 = cay1 - 100.0f;
+				movf = TRUE;
+			}
 		}
 		if (src_theta == 90){
-			cax1 += 2; cax2 += 2;
+			cax1 += m; cax2 += m;
+			if (stepx <= cax1){
+				cax1 = stepx;
+				cax2 = cax1 + 100.0f;
+				movf = TRUE;
+			}
 		}
 		if (src_theta == 180){
-			cay1 += 2; cay2 += 2;
+			cay1 += m; cay2 += m;
+			if (stepy <= cay1){
+				cay1 = stepy;
+				cay2 = cay1 + 100.0f;
+				movf = TRUE;
+			}
 		}
 		if (src_theta == 270){
-			cax1 -= 2; cax2 -= 2;
+			cax1 -= m; cax2 -= m;
+			if (stepx >= cax1){
+				cax1 = stepx;
+				cax2 = cax1 - 100.0f;
+				movf = TRUE;
+			}
 		}
-		if (stepx == cax1 && stepy == cay1){
+		if (movf == TRUE){
 			if (src_theta == 0 || src_theta == 360)posy -= 1;
 			if (src_theta == 90)posx += 1;
 			if (src_theta == 180)posy += 1;
@@ -294,19 +319,40 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 		break;
 
 	case DOWN:
+		movf = FALSE;
 		if (src_theta == 0 || src_theta == 360){
-			cay1 += 2; cay2 += 2;
+			cay1 += m; cay2 += m;
+			if (stepy <= cay1){
+				cay1 = stepy;
+				cay2 = cay1 - 100.0f;
+				movf = TRUE;
+			}
 		}
 		if (src_theta == 90){
-			cax1 -= 2; cax2 -= 2;
+			cax1 -= m; cax2 -= m;
+			if (stepx >= cax1){
+				cax1 = stepx;
+				cax2 = cax1 + 100.0f;
+				movf = TRUE;
+			}
 		}
 		if (src_theta == 180){
-			cay1 -= 2; cay2 -= 2;
+			cay1 -= m; cay2 -= m;
+			if (stepy >= cay1){
+				cay1 = stepy;
+				cay2 = cay1 + 100.0f;
+				movf = TRUE;
+			}
 		}
 		if (src_theta == 270){
-			cax1 += 2; cax2 += 2;
+			cax1 += m; cax2 += m;
+			if (stepx <= cax1){
+				cax1 = stepx;
+				cax2 = cax1 - 100.0f;
+				movf = TRUE;
+			}
 		}
-		if (stepx == cax1 && stepy == cay1){
+		if (movf == TRUE){
 			if (src_theta == 0 || src_theta == 360)posy += 1;
 			if (src_theta == 90)posx -= 1;
 			if (src_theta == 180)posy -= 1;
@@ -329,11 +375,11 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 	return NOENCOUNT;
 }
 
-void Map::MapText(char str[30]){
+void Map::MapText(TCHAR str[30]){
 
 	if (map_text_f != 0){
-		if (map_text_f++ < 340){
-			dx->text(str, 300, 300, FALSE, 0xff00ffff);
+		if ((map_text_f += tfloat.Add(0.1f)) < 340){
+			text->Drawtext(str, 300.0f, 300.0f, 25, { 0.0f, 1.0f, 1.0f, 1.0f });
 		}
 		else {
 			map_text_f = 0;

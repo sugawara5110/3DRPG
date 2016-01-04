@@ -7,7 +7,7 @@
 #ifndef Class_DsProcess_Header
 #define Class_DsProcess_Header
 
-#include "Dx9Process.h"
+#include "Dx11Process.h"
 #include <dshow.h>
 #include <qedit.h>
 

@@ -4,12 +4,14 @@
 //**                                      GetAttackä÷êî                                  **//
 //*****************************************************************************************//
 
-#include "Dx9Process.h"
+#include "Dx11Process.h"
 #include "Parameter.h"
+#include "DxText.h"
 
 Parameter::Parameter(){
 
-	dx = Dx9Process::GetInstance();
+	dx = Dx11Process::GetInstance();
+	text = DxText::GetInstance();
 }
 
 int Parameter::GetAttack(){
@@ -63,7 +65,7 @@ bool Parameter::DownMP(MagicSelect mag){
 
 int Parameter::GetAgility(){
 
-	return p_data.Agility + 50;
+	return (p_data.Agility + 50) / 4;
 }
 
 int Parameter::GetFlameATT_LV(){
