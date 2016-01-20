@@ -13,8 +13,8 @@ class DxText{
 
 private:
 	Dx11Process *dx;
-	Dx11Process::PolygonData2D text[20];  //文字描画用
-	Dx11Process::PolygonData2D value[10];//可変数字用
+	PolygonData2D text[20];  //文字描画用
+	PolygonData2D value[10];//可変数字用
 	TCHAR str[20][40];                 //登録テキスト
 	float f_size[20];                  //登録テキストのフォントサイズ
 	int strcnt[20];                   //登録テキスト文字数 
@@ -32,7 +32,7 @@ private:
 	void operator=(const DxText& obj);// 代入演算子禁止
 	DxText();
 	~DxText();
-	int CreateText(Dx11Process::PolygonData2D *p2, TCHAR *c, int texNo, float fontsize);
+	int CreateText(PolygonData2D *p2, TCHAR *c, int texNo, float fontsize);
 
 public:
 	static void InstanceCreate();

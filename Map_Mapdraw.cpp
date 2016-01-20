@@ -25,40 +25,41 @@ Encount Map::Mapdraw(MapState *mapstate, Directionkey direction, Encount encount
 	if (ending == FALSE && title == FALSE && encount == NOENCOUNT)MovieSoundManager::Dungeon_sound(TRUE); else MovieSoundManager::Dungeon_soundoff();
 	if (title == FALSE && map_no == 1)MovieSoundManager::Rain_sound(TRUE);
 
-	bool light_f = FALSE;
 	dx->Cameraset(cax1, cax2, cay1, cay2, (float)posz * 100.0f + 35.0f + elevator_step);
-
+	dx->SetLight(FALSE);
 	//ライトに影響する描画, マップ1,3はライト無し
 	if (map_no != 1 && map_no != 3){
-		dx->LightPosSet(0, cax1, cay1, (float)posz * 100.0f + 70.0f + elevator_step, 1.0f, 1.0f, 1.0f, 1.0f, 150.0f, 100.0f, 3.0f, TRUE); light_f = TRUE;
+		dx->SetLight(TRUE);
+		dx->ShadowBright(0.3f);
+		dx->LightPosSet(0, cax1, cay1, (float)posz * 100.0f + 70.0f + elevator_step, 1.0f, 1.0f, 1.0f, 1.0f, 200.0f, 10.0f, 2.01f, TRUE);
 	}
-	if (map_no == 4)dx->LightPosSet(1, 1450.0f, 1000.0f, 650.0f, 0.0f, 0.0f, 1.0f, 1.0f, 400.0f, 500.0f, 10.0f, TRUE);
+	if (map_no == 4)dx->LightPosSet(1, 1450.0f, 1000.0f, 650.0f, 0.4f, 0.4f, 0.8f, 1.0f, 200.0f, 100.0f, 2.0f, TRUE);
 	if (map_no == 1)dx->SetFog(TRUE, StartPos, EndPos, r, g, b);
 	if (squarecount >= 1)Mapcreate_Wall1();
-	if (blockcount >= 1)dx->D3primitive(SQUARE, &poWall, blockcount * 6, 0, 0, 0, 0, TRUE, FALSE, light_f);
-	dx->D3primitive(SQUARE, &poGround, 900, 0, 0, 0, 0, TRUE, FALSE, light_f);
-	dx->D3primitive(SQUARE, &poCeiling, 900, 0, 0, 0, 0, TRUE, FALSE, light_f);
+	if (blockcount >= 1)poWall.D3primitive(0, 0, 0, 0, 0, 0, 0, TRUE, FALSE);
+	poGround.D3primitive(0, 0, 0, 0, 0, 0, 0, TRUE, FALSE);
+	poCeiling.D3primitive(0, 0, 0, 0, 0, 0, 0, TRUE, FALSE);
 	if (map_no == 1){
-		dx->D3primitive(SQUARE, &poBackground, 4, 0, 0, 0, 0, TRUE, FALSE, FALSE);
+		poBackground.D3primitive(0, 0, 0, 0, 0, 0, 0, TRUE, FALSE);
 		Mapcreate_Rain();
 	}
 
 	//ライトに影響しない描画
 	dx->SetFog(FALSE, StartPos, EndPos, r, g, b);
-	if (map_no != 4 && map_no != 3)dx->D3primitive(SQUARE, &poEXIT, 1, 0, 0, 0, 0, TRUE, FALSE, FALSE);
-	if (map_no != 0)dx->D3primitive(SQUARE, &poENTER, 1, 0, 0, 0, 0, TRUE, FALSE, FALSE);
+	if (map_no != 4 && map_no != 3)poEXIT.D3primitive(0, 0, 0, 0, 0, 0, 0, TRUE, FALSE);
+	if (map_no != 0)poENTER.D3primitive(0, 0, 0, 0, 0, 0, 0, TRUE, FALSE);
 	if (r_point_count >= 1)Mapcreate_Recover();
-	if (boss_count >= 1)dx->D3primitive(SQUARE, &poBoss, boss_count, 0, 0, 0, 0, TRUE, FALSE, FALSE);
-	if (Elevator_count >= 1)dx->D3primitive(SQUARE, &poElevator, Elevator_count, 0, 0, 0, 0, TRUE, FALSE, FALSE);
+	if (boss_count >= 1)poBoss.D3primitive(0, 0, 0, 0, 0, 0, 0, TRUE, FALSE);
+	if (Elevator_count >= 1)poElevator.D3primitive(0, 0, 0, 0, 0, 0, 0, TRUE, FALSE);
 
 	//動画テクスチャ
 	if (mo_count >= 1){
-		dx->SetTextureMPixel(&poMo, MovieSoundManager::Torch_GetFrame(128, 128), 0xff, 0xff, 0xff, 255);
+		poMo.SetTextureMPixel(MovieSoundManager::Torch_GetFrame(128, 128), 0xff, 0xff, 0xff, 200);
 		Mapcreate_Ds();
 	}
 	if (f_wall_count >= 1){
-		dx->SetTextureMPixel(&poF_Wall, MovieSoundManager::FireWall_GetFrame(256, 256), 0xff, 0xff, 0xff, 255);
-		dx->D3primitive(SQUARE, &poF_Wall, f_wall_count * 4, 0, 0, 0, 0, TRUE, FALSE, FALSE);
+		poF_Wall.SetTextureMPixel(MovieSoundManager::FireWall_GetFrame(256, 256), 0xff, 0xff, 0xff, 255);
+		poF_Wall.D3primitive(0, 0, 0, 0, 0, 0, 0, TRUE, FALSE);
 	}
 
 	MapText(m_tx);

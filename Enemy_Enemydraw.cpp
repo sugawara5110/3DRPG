@@ -23,7 +23,6 @@ Act_fin_flg Enemy::Enemydraw(Battle *battle, int *E_select_obj, Action action, M
 		up = TRUE;
 		zoom = TRUE;
 		count = 0;
-		theta_recov = 0;
 	}
 
 	switch (action){
@@ -172,8 +171,8 @@ Act_fin_flg Enemy::Enemydraw(Battle *battle, int *E_select_obj, Action action, M
 		}
 		break;
 	}
-
-	dx->D3primitive(SQUARE, &en, 1, e_pos[o_no].x + mov_x, e_pos[o_no].y + mov_y, e_pos[o_no].z + mov_z, e_pos[o_no].theta + theta_recov, TRUE, FALSE, FALSE);
+	dx->ShadowBright(0.3f);
+	en.D3primitive(e_pos[o_no].x + mov_x, e_pos[o_no].y + mov_y, e_pos[o_no].z + mov_z, cr, cg, cb, e_pos[o_no].theta, TRUE, FALSE);
 
 	return NOT_FIN;
 }

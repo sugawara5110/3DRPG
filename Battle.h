@@ -27,15 +27,15 @@ private:
 	Dx11Process *dx;
 	DxText *text;
 	T_float tfloat;
-	Dx11Process::PolygonData2D command, h_select;//コマンド選択ウインドウ, 回復選択カーソル
-	Dx11Process::PolygonData E_select;//敵選択カーソル
+	PolygonData2D command, h_select;//コマンド選択ウインドウ, 回復選択カーソル
+	PolygonData E_select;//敵選択カーソル
 	Enemy *enemy;
 	EnemySide *enemyside;
 	EnemyBoss *enemyboss;
 	int e_num;            //敵出現数
 	bool command_run_first_flg;//コマンド選択権無の状態 == FALSE
 	bool time_stop_flg;       //バトル中時間ストップフラグ
-	float Escape_f;            //エスケープ表示フラグ,座標
+	float Escape_f;          //エスケープ表示フラグ,座標
 	bool Escape_s;          //エスケープ成功
 
 	CommandSelect com_select;   //コマンド入力

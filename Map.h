@@ -76,7 +76,7 @@ private:
 	float stepx;
 	float stepy;
 
-	Dx11Process::PolygonData poWall, poWall1, poF_Wall, poGround, poCeiling, poBackground,
+	PolygonData poWall, poWall1, poF_Wall, poGround, poCeiling, poBackground,
 		poRain, poEXIT, poENTER, poRecover, poRecoverLine, poMo, poBoss, poElevator;
 	Position::E_Pos e_pos[4];
 	Position::H_Pos h_pos;

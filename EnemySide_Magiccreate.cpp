@@ -388,13 +388,14 @@ EnemySide::EnemySide(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 
 	PosOffset(o_no);
 
-	dx->GetTexture(&en, e);
-	dx->GetVBarray(SQUARE, &en, 1);
-	mag = new Dx11Process::PolygonData();
-	dx->GetTexture(mag, 60);
-	dx->GetVBarray(SQUARE, mag, 1);
+	en.GetTexture(e);
+	en.GetVBarrayCPUNotAccess(1);
+	en.Light(TRUE);
+	mag = new PolygonData();
+	mag->GetTexture(60);
+	mag->GetVBarray(SQUARE, 1);
 
-	Enemycreate(size_x, size_y, cr, cg, cb);
+	Enemycreate(size_x, size_y);
 }
 
 //@Override
@@ -421,16 +422,16 @@ void EnemySide::DamageAction(){
 
 //@Override
 void EnemySide::RecoverActionInit(){
-	theta_recov = 90.0f;
+	mov_z = -50.0f;
 	act_f = RECOVER;
 }
 
 //@Override
 void EnemySide::RecoverAction(){
 
-	float m = 0.1f;
-	if ((theta_recov -= m) < 0){
-		theta_recov = 0;
+	float m = tfloat.Add(0.03f);
+	if ((mov_z += m) > 0.0f){
+		mov_z = 0.0f;
 		act_f = normal_action;
 	}
 }
@@ -452,32 +453,32 @@ bool EnemySide::Magiccreate(float x, float y, float z){
 	mag->SetVertex(0, 3, 0,
 		(float)-35.0f, (float)-35.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		0.0f, 0.0f);
 
 	//マジック左下
 	mag->SetVertex(4, 2,
 		(float)-35.0f, (float)35.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		0.0f, 1.0f);
 
 	//マジック右下
 	mag->SetVertex(2, 5, 3,
 		(float)35.0f, (float)35.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 1.0f);
 
 	//マジック右上
 	mag->SetVertex(1, 1,
 		(float)35.0f, (float)-35.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 0.0f);
 
 	MovieSoundManager::Magic_sound(TRUE);
-	dx->D3primitive(SQUARE, mag, 1, x + mov_x, y + mov_y, z + 1.0f + mov_z, (float)count, TRUE, FALSE, FALSE);
+	mag->D3primitive(x + mov_x, y + mov_y, z + 1.0f + mov_z, 0, 0, 0, count, TRUE, FALSE);
 	float m = tfloat.Add(0.15f);
 	if ((count += m) > 100){
 		count = 0.0f;

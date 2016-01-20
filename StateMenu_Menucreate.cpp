@@ -15,10 +15,10 @@ StateMenu::StateMenu(){
 	text = DxText::GetInstance();
 	MovieSoundManager::ObjCreate_title();
 	MovieSoundManager::Title_sound(FALSE);
-	dx->GetVBarray2D(&state, 1);
-	dx->GetVBarray2D(&s_state, 1);
-	dx->GetVBarray2D(&r_state, 1);
-	dx->GetVBarray2D(&r_state1, 1);
+	state.GetVBarray2D(1);
+	s_state.GetVBarray2D(1);
+	r_state.GetVBarray2D(1);
+	r_state1.GetVBarray2D(1);
 	menu_select = MAIN;
 	main_select = 0;
 	st_select = 0;
@@ -33,7 +33,7 @@ StateMenu::StateMenu(){
 
 void StateMenu::Menucreate(){
 
-	D3DXVECTOR4 clr = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+	D3DXVECTOR4 clr = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 0.5f);
 
 	state.d3varray[0].x = 0.0f;
 	state.d3varray[0].y = 0.0f;
@@ -55,9 +55,9 @@ void StateMenu::Menucreate(){
 	state.d3varray[3].z = 0.9f;
 	state.d3varray[3].color = clr;
 
-	dx->D2primitive(&state, 1, TRUE);
+	state.D2primitive(TRUE, TRUE);
 
-	clr = D3DXVECTOR4(0.0f, 0.0f, 1.0f, 1.0f);
+	clr = D3DXVECTOR4(0.6f, 0.6f, 0.6f, 0.5f);
 
 	state.d3varray[0].x = 5.0f;
 	state.d3varray[0].y = 5.0f;
@@ -79,12 +79,12 @@ void StateMenu::Menucreate(){
 	state.d3varray[3].z = 0.8f;
 	state.d3varray[3].color = clr;
 
-	dx->D2primitive(&state, 1, TRUE);
+	state.D2primitive(TRUE, TRUE);
 }
 
 void StateMenu::St_create(){
 
-	D3DXVECTOR4 clr = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+	D3DXVECTOR4 clr = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 0.5f);
 
 	s_state.d3varray[0].x = 110.0f;
 	s_state.d3varray[0].y = 0.0f;
@@ -106,9 +106,9 @@ void StateMenu::St_create(){
 	s_state.d3varray[3].z = 0.7f;
 	s_state.d3varray[3].color = clr;
 
-	dx->D2primitive(&s_state, 1, TRUE);
+	s_state.D2primitive(TRUE, TRUE);
 
-	clr = D3DXVECTOR4(0.0f, 0.0f, 1.0f, 1.0f);
+	clr = D3DXVECTOR4(0.6f, 0.6f, 0.6f, 0.5f);
 
 	s_state.d3varray[0].x = 115.0f;
 	s_state.d3varray[0].y = 5.0f;
@@ -130,12 +130,12 @@ void StateMenu::St_create(){
 	s_state.d3varray[3].z = 0.6f;
 	s_state.d3varray[3].color = clr;
 
-	dx->D2primitive(&s_state, 1, TRUE);
+	s_state.D2primitive(TRUE, TRUE);
 }
 
 void StateMenu::Re_create(){
 
-	D3DXVECTOR4 clr = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+	D3DXVECTOR4 clr = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 0.5f);
 
 	r_state.d3varray[0].x = 0.0f;
 	r_state.d3varray[0].y = 0.0f;
@@ -157,9 +157,9 @@ void StateMenu::Re_create(){
 	r_state.d3varray[3].z = 0.7f;
 	r_state.d3varray[3].color = clr;
 
-	dx->D2primitive(&r_state, 1, TRUE);
+	r_state.D2primitive(TRUE, TRUE);
 
-	clr = D3DXVECTOR4(0.0f, 0.0f, 1.0f, 1.0f);
+	clr = D3DXVECTOR4(0.6f, 0.6f, 0.6f, 0.5f);
 
 	r_state.d3varray[0].x = 5.0f;
 	r_state.d3varray[0].y = 5.0f;
@@ -181,12 +181,12 @@ void StateMenu::Re_create(){
 	r_state.d3varray[3].z = 0.6f;
 	r_state.d3varray[3].color = clr;
 
-	dx->D2primitive(&r_state, 1, TRUE);
+	r_state.D2primitive(TRUE, TRUE);
 }
 
 void StateMenu::Re_create1(){
 
-	D3DXVECTOR4 clr = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+	D3DXVECTOR4 clr = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 0.5f);
 
 	r_state1.d3varray[0].x = 0.0f;
 	r_state1.d3varray[0].y = 150.0f;
@@ -208,9 +208,9 @@ void StateMenu::Re_create1(){
 	r_state1.d3varray[3].z = 0.5f;
 	r_state1.d3varray[3].color = clr;
 
-	dx->D2primitive(&r_state1, 1, TRUE);
+	r_state1.D2primitive(TRUE, TRUE);
 
-	clr = D3DXVECTOR4(0.0f, 0.0f, 1.0f, 1.0f);
+	clr = D3DXVECTOR4(0.6f, 0.6f, 0.6f, 0.5f);
 
 	r_state1.d3varray[0].x = 5.0f;
 	r_state1.d3varray[0].y = 155.0f;
@@ -232,7 +232,7 @@ void StateMenu::Re_create1(){
 	r_state1.d3varray[3].z = 0.4f;
 	r_state1.d3varray[3].color = clr;
 
-	dx->D2primitive(&r_state1, 1, TRUE);
+	r_state1.D2primitive(TRUE, TRUE);
 }
 
 StateMenu::~StateMenu(){

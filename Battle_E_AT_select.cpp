@@ -24,7 +24,7 @@ CommandSelect Battle::E_AT_select(Hero *hero){
 	if (time_stop_flg == FALSE){
 		for (int i = 0; i < e_num; i++)e_draw[i].command_run = FALSE;
 		for (int i = 0; i < e_num; i++){
-			if (enemy[i].Dieflg() == FALSE && (e_draw[i].AGmeter += enemy[i].GetAgility()) > METER_MAX){
+			if (enemy[i].Dieflg() == FALSE && (e_draw[i].AGmeter += tfloat.Add(enemy[i].GetAgility())) > METER_MAX){
 				e_draw[i].command_run = TRUE;
 				if (enemy[i].M_run_flg() == FALSE){
 					do{
@@ -111,5 +111,6 @@ CommandSelect Battle::E_AT_select(Hero *hero){
 			}
 		}
 	}
+
 	return NOSELECT;
 }

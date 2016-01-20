@@ -23,7 +23,7 @@ CommandSelect Battle::Menu_main(Hero *hero, int i, Directionkey direction){
 	float g[5];
 	r[0] = r[1] = r[2] = r[3] = r[4] = 1.0f;
 	g[0] = g[1] = g[2] = g[3] = g[4] = 1.0f;
-	dx->D2primitive(&command, 1, FALSE);
+	command.D2primitive(TRUE, FALSE);
 
 	switch (h_draw[i].M_select){
 	case 0:

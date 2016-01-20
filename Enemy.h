@@ -22,7 +22,7 @@ protected:
 	float pos_offset;//
 	Position::H_Pos *h_pos;
 	Position::E_Pos *e_pos;
-	Dx11Process::PolygonData en, *mag, effect;
+	PolygonData en, *mag, effect;
 	float mag_size;             //ボス用
 
 	bool esc;//エスケープ可否 TRUE==エスケープ可
@@ -37,13 +37,12 @@ protected:
 	bool up;
 	bool zoom;
 	float count;
-	float theta_recov;
 	bool effect_f;//エフェクトON,OFF
 	float tx, ty;//エフェクト用テクスチャ座標
 	float tt;     //エフェクト速度調整用
 	float cr, cg, cb;//敵画像色
 
-	void Enemycreate(float x, float y, float r, float g, float b);
+	void Enemycreate(float x, float y);
 	virtual void DamageAction();
 	virtual void RecoverActionInit();
 	virtual void RecoverAction();

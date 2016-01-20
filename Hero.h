@@ -18,8 +18,8 @@ class Hero:public Parameter{
 
 protected:
 	int o_no;//オブジェクトナンバー
-	Dx11Process::PolygonData2D state, meter;
-	Dx11Process::PolygonData mag, effect;
+	PolygonData2D state, meter;
+	PolygonData mag, effect;
 	float mov_y;
 	float mov_x;
 	Action act_f;

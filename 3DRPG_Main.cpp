@@ -4,6 +4,7 @@
 //**                                                                                     **//
 //*****************************************************************************************//
 
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -18,6 +19,7 @@
 #include <Process.h>
 #include "NowLoading.h"
 #include "Ending.h"
+#pragma comment(lib,"winmm.lib")
 
 //-------------------------------------------------------------
 // メッセージ処理用コールバック関数
@@ -159,6 +161,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	Ending *ending = NULL;
 	bool endingflg = FALSE;
 	int  rnd;
+	//FPS計算用
+	DWORD time = 0;
+	int frame = 0;
+	char str[50];
 
 	while (1){//アプリ実行中ループ
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -172,6 +178,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 		}
 		if (FAILED(dx->Sclear()))break;
+
+		//FPS計測
+		frame++;
+		sprintf(str, "         fps=%d", frame);
+		if (timeGetTime() - time>1000)
+		{
+			time = timeGetTime();
+			frame = 0;
+			char Name[100] = { 0 };
+			GetClassNameA(hWnd, Name, sizeof(Name));
+			strcat(Name, str);
+			SetWindowTextA(hWnd, Name);
+		}
 
 		if (title == TRUE){
 			title = statemenu.TitleMenu(control.Direction());

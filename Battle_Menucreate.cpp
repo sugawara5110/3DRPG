@@ -22,11 +22,11 @@ Battle::Battle(Position::E_Pos *e_po, Position::H_Pos *h_po, Encount encount, in
 	e_num = e_nu;//敵出現数
 	e_pos = e_po;//ポジションアドレス
 	h_pos = h_po;//ポジションアドレス
-	dx->GetVBarray2D(&command, 1);
-	dx->GetVBarray2D(&h_select, 1);
+	command.GetVBarray2D(1);
+	h_select.GetVBarray2D(1);
 	Escape_f = 0;
 	Escape_s = FALSE;
-	dx->GetVBarray(SQUARE, &E_select, 1);
+	E_select.GetVBarray(SQUARE, 1);
 
 	int en_bgm;
 	if (encount == SIDE)en_bgm = 0;
@@ -115,11 +115,15 @@ Battle::Battle(Position::E_Pos *e_po, Position::H_Pos *h_po, Encount encount, in
 	h_draw[1].draw_x = 190;
 	h_draw[2].draw_x = 370;
 	h_draw[3].draw_x = 540;
+
+	//ロード時間による遅延分のリセット
+	T_float::GetTime();
+	T_float::GetTime();
 }
 
 void Battle::Menucreate(){
 
-	D3DXVECTOR4 clr = D3DXVECTOR4(0.0f, 0.0f, 0.8f, 1.0f);
+	D3DXVECTOR4 clr = D3DXVECTOR4(0.6f, 0.6f, 0.6f, 0.5f);
 
 	//コマンドウインドウ
 	command.d3varray[0].x = 5.0f;
@@ -184,7 +188,7 @@ void Battle::Cursor_h(int no){
 	h_select.d3varray[3].y = 560.0f;
 	h_select.d3varray[3].z = 0.0f;
 	h_select.d3varray[3].color = clr;
-	dx->D2primitive(&h_select, 1, TRUE);
+	h_select.D2primitive(TRUE, TRUE);
 
 	//回復対象カーソル右
 	h_select.d3varray[0].x = x + 125.0f;
@@ -206,7 +210,7 @@ void Battle::Cursor_h(int no){
 	h_select.d3varray[3].y = 560.0f;
 	h_select.d3varray[3].z = 0.0f;
 	h_select.d3varray[3].color = clr;
-	dx->D2primitive(&h_select, 1, TRUE);
+	h_select.D2primitive(TRUE, TRUE);
 
 	//回復対象カーソル上
 	h_select.d3varray[0].x = x - 5.0f;
@@ -228,7 +232,7 @@ void Battle::Cursor_h(int no){
 	h_select.d3varray[3].y = 445.0f;
 	h_select.d3varray[3].z = 0.0f;
 	h_select.d3varray[3].color = clr;
-	dx->D2primitive(&h_select, 1, TRUE);
+	h_select.D2primitive(TRUE, TRUE);
 
 	//回復対象カーソル下
 	h_select.d3varray[0].x = x - 5.0f;
@@ -250,7 +254,7 @@ void Battle::Cursor_h(int no){
 	h_select.d3varray[3].y = 560.0f;
 	h_select.d3varray[3].z = 0.0f;
 	h_select.d3varray[3].color = clr;
-	dx->D2primitive(&h_select, 1, TRUE);
+	h_select.D2primitive(TRUE, TRUE);
 }
 
 void Battle::Cursor_e(int select){
@@ -271,34 +275,34 @@ void Battle::Cursor_e(int select){
 
 	//カーソル左上
 	E_select.SetVertex(0, 3, 0,
-		(float)-25.0f, (float)-25.0f, 1.0f,
+		(float)-25.0f, (float)-25.0f, 2.0f,
 		0.0f, 0.0f, 0.0f,
-		r, 0.0f, b,
+		r, 0.0f, b, 1.0f,
 		0.0f, 0.0f);
 
 	//カーソル左下
 	E_select.SetVertex(4, 2,
-		(float)-25.0f, (float)25.0f, 1.0f,
+		(float)-25.0f, (float)25.0f, 2.0f,
 		0.0f, 0.0f, 0.0f,
-		b, 0.0f, r,
+		b, 0.0f, r, 1.0f,
 		0.0f, 1.0f);
 
 	//カーソル右下
 	E_select.SetVertex(2, 5, 3,
-		(float)25.0f, (float)25.0f, 1.0f,
+		(float)25.0f, (float)25.0f, 2.0f,
 		0.0f, 0.0f, 0.0f,
-		0.0f, r, b,
+		0.0f, r, b, 1.0f,
 		1.0f, 1.0f);
 
 	//カーソル右上
 	E_select.SetVertex(1, 1,
-		(float)25.0f, (float)-25.0f, 1.0f,
+		(float)25.0f, (float)-25.0f, 2.0f,
 		0.0f, 0.0f, 0.0f,
-		r, b, 0.0f,
+		r, b, 0.0f, 1.0f,
 		1.0f, 0.0f);
 	m = tfloat.Add(0.2f);
 	if ((theta += m) > 360.0f)theta = 0.0f;
-	dx->D3primitive(SQUARE, &E_select, 1, e_pos[select].x, e_pos[select].y, e_pos[select].z, theta, FALSE, FALSE, FALSE);
+	E_select.D3primitive(e_pos[select].x, e_pos[select].y, e_pos[select].z, 0, 0, 0, theta, FALSE, FALSE);
 }
 
 void Battle::SelectPermissionMove(Hero *hero){

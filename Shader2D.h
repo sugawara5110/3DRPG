@@ -32,11 +32,7 @@ char *Shader2D =
 //**************************基本色ピクセル******************************//
 "float4 PSBaseColor(VS_OUTPUT input) : SV_Target\n"
 "{\n"
-"	VS_OUTPUT output = (VS_OUTPUT)0;\n"
-
-"	output.Col = input.Col;\n"
-
-"	return output.Col;\n"
+"	return input.Col;\n"
 "}\n"
 //**************************基本色ピクセル******************************//
 
@@ -60,11 +56,7 @@ char *Shader2D =
 //**************************テクスチャピクセル**************************//
 "float4 PSTextureColor(VS_OUTPUT input) : SV_Target\n"
 "{\n"
-"	VS_OUTPUT output = (VS_OUTPUT)0;\n"
-
-"	output.Col = input.Col * g_texColor.Sample(g_samLinear, input.Tex);\n"
-
-"	return output.Col;\n"
+"	return input.Col * g_texColor.Sample(g_samLinear, input.Tex);\n"
 "}\n";
 //**************************テクスチャピクセル**************************//
 

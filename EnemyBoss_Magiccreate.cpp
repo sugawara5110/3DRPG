@@ -127,28 +127,25 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 
 	PosOffset(o_no);
 
-	dx->GetTexture(&en, e);
-	dx->GetVBarray(SQUARE, &en, 1);
-	mag = new Dx11Process::PolygonData();
-	dx->GetTexture(mag, 61);
-	dx->GetVBarray(SQUARE, mag, 1);
+	en.GetTexture(e);
+	en.GetVBarrayCPUNotAccess(1);
+	en.Light(TRUE);
+	mag = new PolygonData();
+	mag->GetTexture(61);
+	mag->GetVBarray(SQUARE, 1);
 
-	Enemycreate(size_x, size_y, cr, cg, cb);
+	Enemycreate(size_x, size_y);
 }
 
 //@Override
 void EnemyBoss::DamageAction(){
 
 	float m = tfloat.Add(0.01f);
-	if (cg < 0.01f){
-		cg = cb = 1.0f;
-		Enemycreate(size_x, size_y, cr, cg, cb);
-		en.lock = FALSE;
+	if (cg < -0.9f){
+		cg = cb = 0.0f;
 		act_f = normal_action;
 	}
 	else{
-		Enemycreate(size_x, size_y, cr, cg, cb);
-		en.lock = FALSE;
 		cg -= m;
 		cb -= m;
 	}
@@ -156,21 +153,19 @@ void EnemyBoss::DamageAction(){
 
 //@Override
 void EnemyBoss::RecoverActionInit(){
-	cr = cg = cb = 0;
+	cr = cg = cb = -1.0f;
 	act_f = RECOVER;
 }
 
 //@Override
 void EnemyBoss::RecoverAction(){
 
-	float m = 0.005f;
-	if (cr > 1.0f){
-		cr = cg = cb = 1.0f;
+	float m = tfloat.Add(0.01f);
+	if (cr > -0.1f){
+		cr = cg = cb = 0.0f;
 		act_f = normal_action;
 	}
 	else{
-		Enemycreate(size_x, size_y, cr, cg, cb);
-		en.lock = FALSE;
 		cr += m;
 		cg += m;
 		cb += m;
@@ -196,33 +191,33 @@ bool EnemyBoss::Magiccreate(float x, float y, float z){
 	mag->SetVertex(0, 3, 0,
 		(float)-si, (float)-si, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		0.0f, 0.0f);
 
 	//マジック左下
 	mag->SetVertex(4, 2,
 		(float)-si, (float)si, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		0.0f, 1.0f);
 
 	//マジック右下
 	mag->SetVertex(2, 5, 3,
 		(float)si, (float)si, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 1.0f);
 
 	//マジック右上
 	mag->SetVertex(1, 1,
 		(float)si, (float)-si, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 0.0f);
 
 	float m = tfloat.Add(0.15f);
 	MovieSoundManager::Magic_sound(TRUE);
-	dx->D3primitive(SQUARE, mag, 1, x + mov_x, y + mov_y, z + 1.0f + mov_z, count, TRUE, FALSE, FALSE);
+	mag->D3primitive(x + mov_x, y + mov_y, z + 1.0f + mov_z, 0, 0, 0, count, TRUE, FALSE);
 
 	if ((count += m) > 200.0f){
 		count = 0.0f;

@@ -46,7 +46,7 @@ public:
 	void UpHP(int up);
 	void DownHP(int down);
 	bool DownMP(MagicSelect mag);
-	int GetAgility();
+	float GetAgility();
 	int GetFlameATT_LV();
 	int GetHealing_LV();
 	int GetRecover_LV();

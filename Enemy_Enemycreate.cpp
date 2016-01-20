@@ -21,50 +21,49 @@ Enemy::Enemy(int t_no, int no){
 	up = TRUE;
 	zoom = TRUE;
 	count = 0.0f;
-	theta_recov = 0.0f;
 	effect_f = FALSE;
 	tx = ty = 0.0f;
 	tt = 0;
-	cr = cg = cb = 1.0f;
+	cr = cg = cb = 0.0f;
 
-	dx->GetTexture(&effect, 81);
+	effect.GetTexture(81);
 	effect.tex_no = 1;
-	dx->GetTexture(&effect, 82);
+	effect.GetTexture(82);
 	effect.tex_no = 2;
-	dx->GetTexture(&effect, 83);
+	effect.GetTexture(83);
 	effect.tex_no = 3;
-	dx->GetTexture(&effect, 84);
-	dx->GetVBarray(SQUARE, &effect, 1);
+	effect.GetTexture(84);
+	effect.GetVBarray(SQUARE, 1);
 }
 
-void Enemy::Enemycreate(float x, float y, float r, float g, float b){
+void Enemy::Enemycreate(float x, float y){
 
 	//敵左前
-	en.SetVertex(0, 3, 0,
+	en.SetVertex(0, 0,
 		(float)-(x / 2), (float)0.0f, y,
-		0.0f, 0.0f, 0.0f,
-		r, g, b,
+		0.0f, 1.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		0.0f, 0.0f);
 
 	//敵左奥
-	en.SetVertex(4, 2,
+	en.SetVertex(1, 1,
 		(float)-(x / 2), (float)0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f,
-		r, g, b,
+		0.0f, 1.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		0.0f, 1.0f);
 
 	//敵右奥
-	en.SetVertex(2, 5, 3,
+	en.SetVertex(2, 2,
 		(float)(x / 2), (float)0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f,
-		r, g, b,
+		0.0f, 1.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 1.0f);
 
 	//敵右前
-	en.SetVertex(1, 1,
+	en.SetVertex(3, 3,
 		(float)(x / 2), (float)0.0f, y,
-		0.0f, 0.0f, 0.0f,
-		r, g, b,
+		0.0f, 1.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 0.0f);
 }
 
@@ -112,28 +111,28 @@ bool Enemy::Effectdraw(Battle *battle, int *E_select_obj){
 	effect.SetVertex(0, 3, 0,
 		(float)-ver, (float)0.0f, ver * 2,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		tx, ty);
 
 	//左奥
 	effect.SetVertex(4, 2,
 		(float)-ver, (float)0.0f, 0.0f,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		tx, ty + py);
 
 	//右奥
 	effect.SetVertex(2, 5, 3,
 		(float)ver, (float)0.0f, 0.0f,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		tx + px, ty + py);
 
 	//右前
 	effect.SetVertex(1, 1,
 		(float)ver, (float)0.0f, ver * 2,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		tx + px, ty);
 
 	if ((tt += tfloat.Add(0.8f)) > 10.0f){//速度調整用
@@ -182,12 +181,12 @@ bool Enemy::Effectdraw(Battle *battle, int *E_select_obj){
 	if (effect.tex_no == 2 || effect.tex_no == 3){
 		MovieSoundManager::Heal_sound(TRUE);
 		if (*E_select_obj != 4){
-			dx->D3primitive(SQUARE, &effect, 1, e_pos[*E_select_obj].x + ex, e_pos[*E_select_obj].y + ey, e_pos[*E_select_obj].z, e_pos[*E_select_obj].theta, TRUE, TRUE, FALSE);
+			effect.D3primitive(e_pos[*E_select_obj].x + ex, e_pos[*E_select_obj].y + ey, e_pos[*E_select_obj].z, 0, 0, 0, e_pos[*E_select_obj].theta, TRUE, TRUE);
 		}
 		else {
 			for (int i = 0; i < 4; i++){
 				if (battle->GetE_RCV(i) == FALSE)continue;
-				dx->D3primitive(SQUARE, &effect, 1, e_pos[i].x + ex, e_pos[i].y + ey, e_pos[i].z, e_pos[i].theta, TRUE, TRUE, FALSE);
+				effect.D3primitive(e_pos[i].x + ex, e_pos[i].y + ey, e_pos[i].z, 0, 0, 0, e_pos[i].theta, TRUE, TRUE);
 			}
 		}
 	}
@@ -196,21 +195,21 @@ bool Enemy::Effectdraw(Battle *battle, int *E_select_obj){
 		if (effect.tex_no == 1)MovieSoundManager::Flame_sound(TRUE);
 		switch (*E_select_obj){
 		case 0:
-			dx->D3primitive(SQUARE, &effect, 1, h_pos->cx1 + hx[0], h_pos->cy1 + hy[0], (float)h_pos->pz * 100.0f + 30.0f, h_pos->theta, TRUE, TRUE, FALSE);
+			effect.D3primitive(h_pos->cx1 + hx[0], h_pos->cy1 + hy[0], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE);
 			break;
 		case 1:
-			dx->D3primitive(SQUARE, &effect, 1, h_pos->cx1 + hx[1], h_pos->cy1 + hy[1], (float)h_pos->pz * 100.0f + 30.0f, h_pos->theta, TRUE, TRUE, FALSE);
+			effect.D3primitive(h_pos->cx1 + hx[1], h_pos->cy1 + hy[1], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE);
 			break;
 		case 2:
-			dx->D3primitive(SQUARE, &effect, 1, h_pos->cx1 + hx[2], h_pos->cy1 + hy[2], (float)h_pos->pz * 100.0f + 30.0f, h_pos->theta, TRUE, TRUE, FALSE);
+			effect.D3primitive(h_pos->cx1 + hx[2], h_pos->cy1 + hy[2], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE);
 			break;
 		case 3:
-			dx->D3primitive(SQUARE, &effect, 1, h_pos->cx1 + hx[3], h_pos->cy1 + hy[3], (float)h_pos->pz * 100.0f + 30.0f, h_pos->theta, TRUE, TRUE, FALSE);
+			effect.D3primitive(h_pos->cx1 + hx[3], h_pos->cy1 + hy[3], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE);
 			break;
 		case 4:
 			for (int i = 0; i < 4; i++){
 				if (battle->GetH_DM(i) == FALSE)continue;
-				dx->D3primitive(SQUARE, &effect, 1, h_pos->cx1 + hx[i], h_pos->cy1 + hy[i], (float)h_pos->pz * 100.0f + 30.0f, h_pos->theta, TRUE, TRUE, FALSE);
+				effect.D3primitive(h_pos->cx1 + hx[i], h_pos->cy1 + hy[i], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE);
 			}
 			break;
 		}

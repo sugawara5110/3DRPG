@@ -17,7 +17,7 @@ class StateMenu{
 
 private:
 	Dx11Process *dx;
-	Dx11Process::PolygonData2D state, s_state, r_state, r_state1;
+	PolygonData2D state, s_state, r_state, r_state1;
 	DxText *text;
 	MapMenuSelect menu_select;
 	int main_select;

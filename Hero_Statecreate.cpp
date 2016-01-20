@@ -32,19 +32,19 @@ Hero::Hero(P_Data *p_dat, int no){
 	p_data.Hpoint = p_dat->Hpoint;
 	p_data.Rpoint = p_dat->Rpoint;
 
-	dx->GetVBarray2D(&state, 1);
-	dx->GetVBarray2D(&meter, 1);
+	state.GetVBarray2D(1);
+	meter.GetVBarray2D(1);
 
-	dx->GetTexture(&mag, 60);
-	dx->GetVBarray(SQUARE, &mag, 1);
-	dx->GetTexture(&effect, 81);
+	mag.GetTexture(60);
+	mag.GetVBarray(SQUARE, 1);
+	effect.GetTexture(81);
 	effect.tex_no = 1;
-	dx->GetTexture(&effect, 82);
+	effect.GetTexture(82);
 	effect.tex_no = 2;
-	dx->GetTexture(&effect, 83);
+	effect.GetTexture(83);
 	effect.tex_no = 3;
-	dx->GetTexture(&effect, 84);
-	dx->GetVBarray(SQUARE, &effect, 1);
+	effect.GetTexture(84);
+	effect.GetVBarray(SQUARE, 1);
 
 	Magiccreate();
 
@@ -61,7 +61,7 @@ void Hero::Statecreate(bool command_run){
 	static float r = 1.0f;
 	D3DXVECTOR4 clr;
 	float m = tfloat.Add(0.002f);
-	if (command_run == FALSE)clr = D3DXVECTOR4(0.0f, 0.0f, 0.8f, 1.0f);
+	if (command_run == FALSE)clr = D3DXVECTOR4(0.6f, 0.6f, 0.6f, 0.5f);
 	if (command_run == TRUE){
 		if (clr_f){
 			if ((r -= m) <= 0.0f)clr_f = FALSE;
@@ -69,7 +69,7 @@ void Hero::Statecreate(bool command_run){
 		else{
 			if ((r += m) >= 1.0f)clr_f = TRUE;
 		}
-		clr = D3DXVECTOR4(r, r, 0.8f, 1.0f);
+		clr = D3DXVECTOR4(r, r, r, 0.5f);
 	}
 
 	float x;
@@ -99,7 +99,7 @@ void Hero::Statecreate(bool command_run){
 	state.d3varray[3].z = 0.2f;
 	state.d3varray[3].color = clr;
 
-	dx->D2primitive(&state, 1, TRUE);
+	state.D2primitive(TRUE, TRUE);
 }
 
 void Hero::Metercreate(float me){
@@ -133,7 +133,7 @@ void Hero::Metercreate(float me){
 	meter.d3varray[3].z = 0.1f;
 	meter.d3varray[3].color = clr;
 
-	dx->D2primitive(&meter, 1, TRUE);
+	meter.D2primitive(TRUE, TRUE);
 
 	clr = D3DXVECTOR4(1.0f, 0.5f, 0.0f, 1.0f);
 
@@ -158,7 +158,7 @@ void Hero::Metercreate(float me){
 	meter.d3varray[3].z = 0.0f;
 	meter.d3varray[3].color = clr;
 
-	dx->D2primitive(&meter, 1, TRUE);
+	meter.D2primitive(TRUE, TRUE);
 }
 
 void Hero::Magiccreate(){
@@ -167,28 +167,28 @@ void Hero::Magiccreate(){
 	mag.SetVertex(0, 3, 0,
 		(float)-25.0f, (float)-25.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		0.0f, 0.0f);
 
 	//マジック左下
 	mag.SetVertex(4, 2,
 		(float)-25.0f, (float)25.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		0.0f, 1.0f);
 
 	//マジック右下
 	mag.SetVertex(2, 5, 3,
 		(float)25.0f, (float)25.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 1.0f);
 
 	//マジック右上
 	mag.SetVertex(1, 1,
 		(float)25.0f, (float)-25.0f, 1.0f,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 0.0f);
 }
 
@@ -226,28 +226,28 @@ bool Hero::Effectdraw(Battle *battle, int *select_obj, Position::H_Pos *h_pos, P
 	effect.SetVertex(0, 3, 0,
 		(float)-ver, (float)0.0f, ver * 2,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		tx, ty);
 
 	//左奥
 	effect.SetVertex(4, 2,
 		(float)-ver, (float)0.0f, 0.0f,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		tx, ty + py);
 
 	//右奥
 	effect.SetVertex(2, 5, 3,
 		(float)ver, (float)0.0f, 0.0f,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		tx + px, ty + py);
 
 	//右前
 	effect.SetVertex(1, 1,
 		(float)ver, (float)0.0f, ver * 2,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
 		tx + px, ty);
 
 	if ((tt += tfloat.Add(0.8f)) > 10.0f){//速度調整用
@@ -297,12 +297,12 @@ bool Hero::Effectdraw(Battle *battle, int *select_obj, Position::H_Pos *h_pos, P
 		if (effect.tex_no == 0)MovieSoundManager::Att_sound(TRUE);
 		if (effect.tex_no == 1)MovieSoundManager::Flame_sound(TRUE);
 		if (*select_obj != 4){
-			dx->D3primitive(SQUARE, &effect, 1, e_pos[*select_obj].x + ex, e_pos[*select_obj].y + ey, e_pos[*select_obj].z, e_pos[*select_obj].theta, TRUE, TRUE, FALSE);
+			effect.D3primitive(e_pos[*select_obj].x + ex, e_pos[*select_obj].y + ey, e_pos[*select_obj].z, 0, 0, 0, e_pos[*select_obj].theta, TRUE, TRUE);
 		}
 		else {
 			for (int i = 0; i < 4; i++){
 				if (battle->GetE_DM(i) == FALSE)continue;
-				dx->D3primitive(SQUARE, &effect, 1, e_pos[i].x + ex, e_pos[i].y + ey, e_pos[*select_obj].z, e_pos[i].theta, TRUE, TRUE, FALSE);
+				effect.D3primitive(e_pos[i].x + ex, e_pos[i].y + ey, e_pos[*select_obj].z, 0, 0, 0, e_pos[i].theta, TRUE, TRUE);
 			}
 		}
 	}
@@ -310,21 +310,21 @@ bool Hero::Effectdraw(Battle *battle, int *select_obj, Position::H_Pos *h_pos, P
 		MovieSoundManager::Heal_sound(TRUE);
 		switch (*select_obj){
 		case 0:
-			dx->D3primitive(SQUARE, &effect, 1, h_pos->cx1 + hx[0], h_pos->cy1 + hy[0], (float)h_pos->pz * 100.0f + 30.0f, h_pos->theta, TRUE, TRUE, FALSE);
+			effect.D3primitive(h_pos->cx1 + hx[0], h_pos->cy1 + hy[0], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE);
 			break;
 		case 1:
-			dx->D3primitive(SQUARE, &effect, 1, h_pos->cx1 + hx[1], h_pos->cy1 + hy[1], (float)h_pos->pz * 100.0f + 30.0f, h_pos->theta, TRUE, TRUE, FALSE);
+			effect.D3primitive(h_pos->cx1 + hx[1], h_pos->cy1 + hy[1], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE);
 			break;
 		case 2:
-			dx->D3primitive(SQUARE, &effect, 1, h_pos->cx1 + hx[2], h_pos->cy1 + hy[2], (float)h_pos->pz * 100.0f + 30.0f, h_pos->theta, TRUE, TRUE, FALSE);
+			effect.D3primitive(h_pos->cx1 + hx[2], h_pos->cy1 + hy[2], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE);
 			break;
 		case 3:
-			dx->D3primitive(SQUARE, &effect, 1, h_pos->cx1 + hx[3], h_pos->cy1 + hy[3], (float)h_pos->pz * 100.0f + 30.0f, h_pos->theta, TRUE, TRUE, FALSE);
+			effect.D3primitive(h_pos->cx1 + hx[3], h_pos->cy1 + hy[3], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE);
 			break;
 		case 4:
 			for (int i = 0; i < 4; i++){
 				if (battle->GetH_RCV(i) == FALSE)continue;
-				dx->D3primitive(SQUARE, &effect, 1, h_pos->cx1 + hx[i], h_pos->cy1 + hy[i], (float)h_pos->pz * 100.0f + 30.0f, h_pos->theta, TRUE, TRUE, FALSE);
+				effect.D3primitive(h_pos->cx1 + hx[i], h_pos->cy1 + hy[i], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE);
 			}
 			break;
 		}

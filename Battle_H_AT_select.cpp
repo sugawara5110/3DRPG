@@ -20,7 +20,7 @@ CommandSelect Battle::H_AT_select(Hero *hero, int i, Directionkey direction){
 
 	CommandSelect f, f1;
 	if (hero[i].Dieflg() == TRUE){ h_draw[i].AGmeter = 0; return NOSELECT; }
-	if (h_draw[i].AGmeter > METER_MAX || time_stop_flg == FALSE && (h_draw[i].AGmeter += hero[i].GetAgility()) > METER_MAX){
+	if (h_draw[i].AGmeter > METER_MAX || time_stop_flg == FALSE && (h_draw[i].AGmeter += tfloat.Add(hero[i].GetAgility())) > METER_MAX){
 		h_draw[i].AGmeter = METER_MAX + 1;//範囲外防止(コマンド選択保留で増え続けるから)
 		if (command_run_first_flg == FALSE){
 			h_draw[i].command_run = TRUE;
@@ -90,5 +90,6 @@ CommandSelect Battle::H_AT_select(Hero *hero, int i, Directionkey direction){
 			}
 		}
 	}
+
 	return NOSELECT;
 }

@@ -38,14 +38,14 @@ DxText::DxText(){
 
 	//文字列用バッファ初期化
 	for (int i = 0; i < 20; i++){
-		dx->GetVBarray2D(&text[i], 1);
+		text[i].GetVBarray2D(1);
 		_tcscpy_s(str[i], 40 * sizeof(TCHAR), _T("***************************************"));//直接代入
 		f_size[i] = 0;
 	}
 
 	//可変用
 	for (int i = 0; i < 10; i++){
-		dx->GetVBarray2D(&value[i], 1);
+		value[i].GetVBarray2D(1);
 		CreateText(value, CreateTextValue(i), i, 15.0f);
 	}
 
@@ -56,7 +56,7 @@ DxText::~DxText(){
 
 }
 
-int DxText::CreateText(Dx11Process::PolygonData2D *p2, TCHAR *c, int texNo, float fontsize){
+int DxText::CreateText(PolygonData2D *p2, TCHAR *c, int texNo, float fontsize){
 
 	MAT2 Mat = { { 0, 1 }, { 0, 0 }, { 0, 0 }, { 0, 1 } };
 	int fsize = 100;
@@ -332,7 +332,7 @@ void DxText::Drawtext(TCHAR *c, float x, float y, float fontsize, D3DXVECTOR4 cl
 	text[texNo].d3varray[3].color = cl;
 	text[texNo].d3varray[3].tex = D3DXVECTOR2(1.0f, 1.0f);
 
-	dx->D2primitive(&text[texNo], 1, TRUE);
+	text[texNo].D2primitive(TRUE, TRUE);
 }
 
 void DxText::DrawValue(int val, float x, float y, float fontsize, int pcs, D3DXVECTOR4 cl){
@@ -373,7 +373,7 @@ void DxText::DrawValue(int val, float x, float y, float fontsize, int pcs, D3DXV
 		value[s].d3varray[3].color = cl;
 		value[s].d3varray[3].tex = D3DXVECTOR2(1.0f, 1.0f);
 
-		dx->D2primitive(&value[s], 1, TRUE);
+		value[s].D2primitive(TRUE, TRUE);
 		val = val - (int)pow(10.0, i) * s;
 		xx += fontsize;
 	}

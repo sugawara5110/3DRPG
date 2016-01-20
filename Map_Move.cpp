@@ -63,7 +63,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 		elevator_UP = TRUE;
 	}
 	if (elevator_UP == TRUE){
-		if ((elevator_step += 2) > 300.0f){
+		if ((elevator_step += tfloat.Add(1.0f)) > 300.0f){
 			posz += 3;
 			elevator_step = 0.0f;
 			elevator_UP = FALSE;
@@ -75,7 +75,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 		elevator_DOWN = TRUE;
 	}
 	if (elevator_DOWN == TRUE){
-		if ((elevator_step -= 2) < -300.0f){
+		if ((elevator_step -= tfloat.Add(1.0f)) < -300.0f){
 			posz -= 3;
 			elevator_step = 0.0f;
 			elevator_DOWN = FALSE;

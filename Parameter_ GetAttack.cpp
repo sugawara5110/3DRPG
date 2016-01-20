@@ -63,9 +63,9 @@ bool Parameter::DownMP(MagicSelect mag){
 	return TRUE;
 }
 
-int Parameter::GetAgility(){
+float Parameter::GetAgility(){
 
-	return (p_data.Agility + 50) / 4;
+	return (p_data.Agility + 50.0f) / 4.0f;
 }
 
 int Parameter::GetFlameATT_LV(){
