@@ -74,15 +74,7 @@ void PolygonData2D::D2primitive(bool a, bool lock){//2D描画
 	//アルファブレンド,アルファテスト切り替え
 	bool at = a;
 	if (d3varray[0].color.w != 1.0f)at = FALSE;
-	dx->bld.AlphaToCoverageEnable = at;
-	dx->bld.RenderTarget[0].BlendEnable = a;
-	dx->pDevice->CreateBlendState(&dx->bld, &dx->pBlendState);
-	UINT mask = 0xffffffff;
-	dx->pDeviceContext->OMSetBlendState(dx->pBlendState, NULL, mask);
-
-	//ハル,ドメインシェーダー無効
-	dx->pDeviceContext->HSSetShader(NULL, NULL, 0);
-	dx->pDeviceContext->DSSetShader(NULL, NULL, 0);
+	dx->ChangeBlendState(at, a);
 
 	//使用するシェーダーのセット
 	dx->pDeviceContext->VSSetShader(pVertexShader, NULL, 0);

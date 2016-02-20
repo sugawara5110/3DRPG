@@ -5,6 +5,8 @@
 //*****************************************************************************************//
 
 #include "Dx11Process.h"
+#include "ShaderMesh_D.h"
+#include "ShaderMesh.h"
 #include "ShaderDisp.h"
 #include "Shader3D.h"
 #include "Shader2D.h"
@@ -42,7 +44,7 @@ void Dx11Process::operator=(const Dx11Process& obj) {} // 代入演算子禁止
 //hlslファイルを読み込みシェーダーを作成する
 HRESULT Dx11Process::MakeShader(LPSTR szFileName, size_t size, LPSTR szFuncName, LPSTR szProfileName, void** ppShader, ID3DBlob** ppBlob){
 	ID3DBlob *pErrors = NULL;
-	if (FAILED(D3DX11CompileFromMemory(szFileName, size, NULL, NULL, NULL, szFuncName, szProfileName, D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION, 0, NULL, ppBlob, &pErrors, NULL)))
+	if (FAILED(D3DCompile(szFileName, size, NULL, NULL, NULL, szFuncName, szProfileName, D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION, 0, ppBlob, &pErrors)))
 	{
 		char*p = (char*)pErrors->GetBufferPointer();
 		MessageBoxA(0, p, 0, MB_OK);
@@ -81,6 +83,183 @@ HRESULT Dx11Process::MakeShader(LPSTR szFileName, size_t size, LPSTR szFuncName,
 	return S_OK;
 }
 
+void Dx11Process::ChangeBlendState(BOOL at, BOOL a){
+	//変更無しの場合何もしない
+	if (bld.AlphaToCoverageEnable == at && bld.RenderTarget[0].BlendEnable == a)return;
+	//変更有の場合
+	bld.AlphaToCoverageEnable = at;
+	bld.RenderTarget[0].BlendEnable = a;
+	pDevice->CreateBlendState(&bld, &pBlendState);
+	UINT mask = 0xffffffff;
+	pDeviceContext->OMSetBlendState(pBlendState, NULL, mask);
+}
+
+void Dx11Process::MatrixMap(ID3D11Buffer *pCBuffer, float x, float y, float z, float r, float g, float b, float theta, float size, float disp){
+
+	MATRIX mov;
+	MATRIX rot;
+	MATRIX scale;
+	MATRIX scro;
+	MATRIX WV;
+
+	//シェーダーのコンスタントバッファーに各種データを渡す
+	D3D11_MAPPED_SUBRESOURCE pData;
+	CONSTANT_BUFFER cb;
+	pDeviceContext->Map(pCBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &pData);
+
+	//拡大縮小
+	MatrixScaling(&scale, size, size, size);
+	//表示位置
+	MatrixRotationZ(&rot, theta);
+	MatrixTranslation(&mov, x, y, z);
+	MatrixMultiply(&scro, &rot, &scale);
+	MatrixMultiply(&World, &scro, &mov);
+
+	//ワールド、カメラ、射影行列、等
+	cb.World = World;
+	MatrixMultiply(&WV, &World, &View);
+	MatrixMultiply(&cb.WVP, &WV, &Proj);
+	cb.C_Pos.as(cx, cy, cz, 0.0f);
+	cb.AddObjColor.as(r, g, b, 0.0f);
+	cb.pShadowLow_Lpcs.as(plight.ShadowLow_val, (float)plight.LightPcs, 0.0f, 0.0f);
+	memcpy(cb.pLightPos, plight.LightPos, sizeof(VECTOR4) * LIGHT_PCS);
+	memcpy(cb.pLightColor, plight.LightColor, sizeof(VECTOR4) * LIGHT_PCS);
+	memcpy(cb.pLightst, plight.Lightst, sizeof(VECTOR4) * LIGHT_PCS);
+	cb.dDirection = dlight.Direction;
+	cb.dLightColor = dlight.LightColor;
+	cb.dLightst = dlight.Lightst;
+	cb.FogAmo_Density.as(fog.Amount, fog.Density, fog.on_off, 0.0f);
+	cb.FogColor = fog.FogColor;
+	if (disp == 0.0f)disp = 3.0f;
+	cb.DispAmount.as(disp, 0.0f, 0.0f, 0.0f);
+	MatrixTranspose(&cb.World);
+	MatrixTranspose(&cb.WVP);
+	memcpy_s(pData.pData, pData.RowPitch, (void*)(&cb), sizeof(cb));
+	pDeviceContext->Unmap(pCBuffer, 0);
+}
+
+void Dx11Process::MatrixIdentity(MATRIX *mat){
+	mat->_11 = 1.0f; mat->_12 = 0.0f; mat->_13 = 0.0f; mat->_14 = 0.0f;
+	mat->_21 = 0.0f; mat->_22 = 1.0f; mat->_23 = 0.0f; mat->_24 = 0.0f;
+	mat->_31 = 0.0f; mat->_32 = 0.0f; mat->_33 = 1.0f; mat->_34 = 0.0f;
+	mat->_41 = 0.0f; mat->_42 = 0.0f; mat->_43 = 0.0f; mat->_44 = 1.0f;
+}
+
+void Dx11Process::MatrixScaling(MATRIX *mat, float sizex, float sizey, float sizez){
+	mat->_11 = sizex; mat->_12 = 0.0f; mat->_13 = 0.0f; mat->_14 = 0.0f;
+	mat->_21 = 0.0f; mat->_22 = sizey; mat->_23 = 0.0f; mat->_24 = 0.0f;
+	mat->_31 = 0.0f; mat->_32 = 0.0f; mat->_33 = sizez; mat->_34 = 0.0f;
+	mat->_41 = 0.0f; mat->_42 = 0.0f; mat->_43 = 0.0f; mat->_44 = 1.0f;
+}
+
+void Dx11Process::MatrixRotationZ(MATRIX *mat, float theta){
+	float the = theta * 3.14f / 180.0f;
+	mat->_11 = cos(the); mat->_12 = sin(the); mat->_13 = 0.0f; mat->_14 = 0.0f;
+	mat->_21 = -sin(the); mat->_22 = cos(the); mat->_23 = 0.0f; mat->_24 = 0.0f;
+	mat->_31 = 0.0f; mat->_32 = 0.0f; mat->_33 = 1.0f; mat->_34 = 0.0f;
+	mat->_41 = 0.0f; mat->_42 = 0.0f; mat->_43 = 0.0f; mat->_44 = 1.0f;
+}
+
+void Dx11Process::MatrixTranslation(MATRIX *mat, float movx, float movy, float movz){
+	mat->_11 = 1.0f; mat->_12 = 0.0f; mat->_13 = 0.0f; mat->_14 = 0.0f;
+	mat->_21 = 0.0f; mat->_22 = 1.0f; mat->_23 = 0.0f; mat->_24 = 0.0f;
+	mat->_31 = 0.0f; mat->_32 = 0.0f; mat->_33 = 1.0f; mat->_34 = 0.0f;
+	mat->_41 = movx; mat->_42 = movy; mat->_43 = movz; mat->_44 = 1.0f;
+}
+
+void Dx11Process::MatrixMultiply(MATRIX *mat, MATRIX *mat1, MATRIX *mat2){
+	mat->_11 = mat1->_11 * mat2->_11 + mat1->_12 * mat2->_21 + mat1->_13 * mat2->_31 + mat1->_14 * mat2->_41;
+	mat->_12 = mat1->_11 * mat2->_12 + mat1->_12 * mat2->_22 + mat1->_13 * mat2->_32 + mat1->_14 * mat2->_42;
+	mat->_13 = mat1->_11 * mat2->_13 + mat1->_12 * mat2->_23 + mat1->_13 * mat2->_33 + mat1->_14 * mat2->_43;
+	mat->_14 = mat1->_11 * mat2->_14 + mat1->_12 * mat2->_24 + mat1->_13 * mat2->_34 + mat1->_14 * mat2->_44;
+
+	mat->_21 = mat1->_21 * mat2->_11 + mat1->_22 * mat2->_21 + mat1->_23 * mat2->_31 + mat1->_24 * mat2->_41;
+	mat->_22 = mat1->_21 * mat2->_12 + mat1->_22 * mat2->_22 + mat1->_23 * mat2->_32 + mat1->_24 * mat2->_42;
+	mat->_23 = mat1->_21 * mat2->_13 + mat1->_22 * mat2->_23 + mat1->_23 * mat2->_33 + mat1->_24 * mat2->_43;
+	mat->_24 = mat1->_21 * mat2->_14 + mat1->_22 * mat2->_24 + mat1->_23 * mat2->_34 + mat1->_24 * mat2->_44;
+
+	mat->_31 = mat1->_31 * mat2->_11 + mat1->_32 * mat2->_21 + mat1->_33 * mat2->_31 + mat1->_34 * mat2->_41;
+	mat->_32 = mat1->_31 * mat2->_12 + mat1->_32 * mat2->_22 + mat1->_33 * mat2->_32 + mat1->_34 * mat2->_42;
+	mat->_33 = mat1->_31 * mat2->_13 + mat1->_32 * mat2->_23 + mat1->_33 * mat2->_33 + mat1->_34 * mat2->_43;
+	mat->_34 = mat1->_31 * mat2->_14 + mat1->_32 * mat2->_24 + mat1->_33 * mat2->_34 + mat1->_34 * mat2->_44;
+
+	mat->_41 = mat1->_41 * mat2->_11 + mat1->_42 * mat2->_21 + mat1->_43 * mat2->_31 + mat1->_44 * mat2->_41;
+	mat->_42 = mat1->_41 * mat2->_12 + mat1->_42 * mat2->_22 + mat1->_43 * mat2->_32 + mat1->_44 * mat2->_42;
+	mat->_43 = mat1->_41 * mat2->_13 + mat1->_42 * mat2->_23 + mat1->_43 * mat2->_33 + mat1->_44 * mat2->_43;
+	mat->_44 = mat1->_41 * mat2->_14 + mat1->_42 * mat2->_24 + mat1->_43 * mat2->_34 + mat1->_44 * mat2->_44;
+}
+
+void swap(float *a, float *b){
+	float tmp;
+	tmp = *a;
+	*a = *b;
+	*b = tmp;
+}
+
+void Dx11Process::MatrixTranspose(MATRIX *mat){
+	swap(&mat->_12, &mat->_21);
+	swap(&mat->_13, &mat->_31);
+	swap(&mat->_14, &mat->_41);
+	swap(&mat->_23, &mat->_32);
+	swap(&mat->_24, &mat->_42);
+	swap(&mat->_34, &mat->_43);
+}
+
+void Dx11Process::MatrixLookAtLH(MATRIX *mat, float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3){
+	//z軸
+	float zx = x2 - x1;
+	float zy = y2 - y1;
+	float zz = z2 - z1;
+	//正規化
+	float zzz = sqrt(zx * zx + zy * zy + zz * zz);
+	if (zzz != 0.0f){
+		zx = zx / zzz;
+		zy = zy / zzz;
+		zz = zz / zzz;
+	}
+
+	//x軸(外積)
+	float xx = y3 * zz - z3 * zy;
+	float xy = z3 * zx - x3 * zz;
+	float xz = x3 * zy - y3 * zx;
+	float xxx = sqrt(xx * xx + xy * xy + xz * xz);
+	if (xxx != 0.0f){
+		xx = xx / xxx;
+		xy = xy / xxx;
+		xz = xz / xxx;
+	}
+
+	//y軸(外積)
+	float yx = zy * xz - zz * xy;
+	float yy = zz * xx - zx * xz;
+	float yz = zx * xy - zy * xx;
+
+	//平行移動(内積)
+	float mx = -(x1 * xx + y1 * xy + z1 * xz);
+	float my = -(x1 * yx + y1 * yy + z1 * yz);
+	float mz = -(x1 * zx + y1 * zy + z1 * zz);
+
+	mat->_11 = xx; mat->_12 = yx; mat->_13 = zx; mat->_14 = 0.0f;
+	mat->_21 = xy; mat->_22 = yy; mat->_23 = zy; mat->_24 = 0.0f;
+	mat->_31 = xz; mat->_32 = yz; mat->_33 = zz; mat->_34 = 0.0f;
+	mat->_41 = mx; mat->_42 = my; mat->_43 = mz; mat->_44 = 1.0f;
+}
+
+void Dx11Process::MatrixPerspectiveFovLH(MATRIX *mat, float theta, float aspect, float Near, float Far){
+	float the = theta * 3.14f / 180.0f;
+	//透視変換後y方向スケーリング
+	float sy = 1.0f / (tan(the / 2.0f));
+	//x方向スケーリング
+	float sx = sy / aspect;
+	//z方向スケーリング
+	float sz = Far / (Far - Near);
+
+	mat->_11 = sx; mat->_12 = 0.0f; mat->_13 = 0.0f; mat->_14 = 0.0f;
+	mat->_21 = 0.0f; mat->_22 = sy; mat->_23 = 0.0f; mat->_24 = 0.0f;
+	mat->_31 = 0.0f; mat->_32 = 0.0f; mat->_33 = sz; mat->_34 = 1.0f;
+	mat->_41 = 0.0f; mat->_42 = 0.0f; mat->_43 = -(sz * Near); mat->_44 = 0.0f;
+}
+
 HRESULT Dx11Process::Initialize(HWND hWnd){
 
 	pDevice = NULL;
@@ -89,6 +268,14 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	pRTV = NULL;
 	pDS = NULL;
 	pDSV = NULL;
+	pDomainShader_MESH_D = NULL;
+	pHullShader_MESH_D = NULL;
+	pVertexLayout_MESH_D = NULL;
+	pVertexShader_MESH_D = NULL;
+	pPixelShader_MESH_D = NULL;
+	pVertexLayout_MESH = NULL;
+	pVertexShader_MESH = NULL;
+	pPixelShader_MESH = NULL;
 	pDomainShader_DISPL = NULL;
 	pHullShader_DISPL = NULL;
 	pVertexLayout_DISPL = NULL;
@@ -99,6 +286,9 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	pVertexLayout_DISP = NULL;
 	pVertexShader_DISP = NULL;
 	pPixelShader_DISP = NULL;
+	pVertexLayout_TCL = NULL;
+	pVertexShader_TCL = NULL;
+	pPixelShader_TCL = NULL;
 	pVertexLayout_TC = NULL;
 	pVertexShader_TC = NULL;
 	pPixelShader_TC = NULL;
@@ -161,11 +351,9 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	pDevice->CreateDepthStencilView(pDS, NULL, &pDSV);
 
 	//各マトリックス初期化
-	D3DXMatrixIdentity(&View);
-
-	D3DXMatrixIdentity(&Proj);
-
-	D3DXMatrixIdentity(&World);
+	MatrixIdentity(&View);
+	MatrixIdentity(&Proj);
+	MatrixIdentity(&World);
 
 	//ビューポートの設定
 	D3D11_VIEWPORT vp;
@@ -180,11 +368,61 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	float aspect;
 	aspect = (float)vp.Width / (float)vp.Height;
 	// 射影マトリックスを作成
-	D3DXMatrixPerspectiveFovLH(&Proj,
-		(float)(D3DXToRadian(55.0f)),	// カメラの画角
-		aspect,				   // アスペクト比
-		1.0f,		          // nearプレーン
-		10000.0f);			 // farプレーン
+	MatrixPerspectiveFovLH(&Proj,
+		55.0f,           // カメラの画角
+		aspect,		    // アスペクト比
+		1.0f,		   // nearプレーン
+		10000.0f);	  // farプレーン
+
+	//メッシュ頂点インプットレイアウトを定義
+	D3D11_INPUT_ELEMENT_DESC layout_MESH[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 4 * 3, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 4 * 3 * 2, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+	UINT numElements = sizeof(layout_MESH) / sizeof(layout_MESH[0]);
+	ID3DBlob *pCompiledShader = NULL;
+
+	//**********************************ハルシェーダー***************************************************************//
+	MakeShader(ShaderMesh_D, strlen(ShaderMesh_D), "HSMesh", "hs_5_0", (void**)&pHullShader_MESH_D, &pCompiledShader);
+	pCompiledShader->Release();
+	pCompiledShader = NULL;
+	//**********************************ハルシェーダー***************************************************************//
+
+	//**********************************ドメインシェーダー***********************************************************//
+	MakeShader(ShaderMesh_D, strlen(ShaderMesh_D), "DSMesh", "ds_5_0", (void**)&pDomainShader_MESH_D, &pCompiledShader);
+	pCompiledShader->Release();
+	pCompiledShader = NULL;
+	//**********************************ドメインシェーダー***********************************************************//
+
+	//**********************************頂点シェーダー***************************************************************//
+	//ディスプレイトメントマッピング有
+	MakeShader(ShaderMesh_D, strlen(ShaderMesh_D), "VSMesh", "vs_5_0", (void**)&pVertexShader_MESH_D, &pCompiledShader);
+	//頂点インプットレイアウトを作成
+	pDevice->CreateInputLayout(layout_MESH, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_MESH_D);
+	pCompiledShader->Release();
+	pCompiledShader = NULL;
+
+	//ディスプレイトメントマッピング無
+	MakeShader(ShaderMesh, strlen(ShaderMesh), "VSMesh", "vs_5_0", (void**)&pVertexShader_MESH, &pCompiledShader);
+	//頂点インプットレイアウトを作成
+	pDevice->CreateInputLayout(layout_MESH, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_MESH);
+	pCompiledShader->Release();
+	pCompiledShader = NULL;
+	//**********************************頂点シェーダー***************************************************************//
+
+	//**********************************ピクセルシェーダー***********************************************************//
+	//ディスプレイトメントマッピング有
+	MakeShader(ShaderMesh_D, strlen(ShaderMesh_D), "PSMesh", "ps_5_0", (void**)&pPixelShader_MESH_D, &pCompiledShader);
+	pCompiledShader->Release();
+	pCompiledShader = NULL;
+
+	//ディスプレイトメントマッピング無
+	MakeShader(ShaderMesh, strlen(ShaderMesh), "PSMesh", "ps_5_0", (void**)&pPixelShader_MESH, &pCompiledShader);
+	pCompiledShader->Release();
+	pCompiledShader = NULL;
+	//**********************************ピクセルシェーダー***********************************************************//
 
 	//3D頂点インプットレイアウトを定義, NORMALにはPOSITIONのfloat型4バイト×3を記述
 	D3D11_INPUT_ELEMENT_DESC layout[] =
@@ -194,8 +432,8 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 4 * 3 * 2, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 4 * 3 * 2 + 4 * 4, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
-	UINT numElements = sizeof(layout) / sizeof(layout[0]);
-	ID3DBlob *pCompiledShader = NULL;
+	numElements = sizeof(layout) / sizeof(layout[0]);
+	pCompiledShader = NULL;
 
 	//**********************************ハルシェーダー***************************************************************//
 	//ディスプレイトメントマッピング, ライト有 作成
@@ -236,6 +474,13 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	pCompiledShader->Release();
 	pCompiledShader = NULL;
 
+	//テクスチャー,ライト有 作成
+	MakeShader(Shader3D, strlen(Shader3D), "VSTextureColorL", "vs_5_0", (void**)&pVertexShader_TCL, &pCompiledShader);
+	//頂点インプットレイアウトを作成
+	pDevice->CreateInputLayout(layout, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_TCL);
+	pCompiledShader->Release();
+	pCompiledShader = NULL;
+
 	//テクスチャー,ライト無 作成
 	MakeShader(Shader3D, strlen(Shader3D), "VSTextureColor", "vs_5_0", (void**)&pVertexShader_TC, &pCompiledShader);
 	//頂点インプットレイアウトを作成
@@ -259,6 +504,11 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 
 	//ディスプレイトメントマッピング 作成
 	MakeShader(ShaderDisp, strlen(ShaderDisp), "PSDisp", "ps_5_0", (void**)&pPixelShader_DISP, &pCompiledShader);
+	pCompiledShader->Release();
+	pCompiledShader = NULL;
+
+	//テクスチャー,ライト有 作成
+	MakeShader(Shader3D, strlen(Shader3D), "PSTextureColorL", "ps_5_0", (void**)&pPixelShader_TCL, &pCompiledShader);
 	pCompiledShader->Release();
 	pCompiledShader = NULL;
 
@@ -341,7 +591,8 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	//ラスタライザ
 	RSDesc.FillMode = D3D11_FILL_SOLID;//塗りつぶし描画
 	//RSDesc.FillMode = D3D11_FILL_WIREFRAME;//ワイヤフレーム
-	RSDesc.CullMode = D3D11_CULL_NONE;//ポリゴン両面描画モード(D3D11_CULL_BACKで表のみ描画)
+	//RSDesc.CullMode = D3D11_CULL_NONE;//ポリゴン両面描画モード(D3D11_CULL_BACKで表のみ描画)
+	RSDesc.CullMode = D3D11_CULL_BACK;
 	RSDesc.FrontCounterClockwise = FALSE;//時計回りが表面
 	RSDesc.DepthBias = 0;
 	RSDesc.DepthBiasClamp = 0;
@@ -366,8 +617,8 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	sadesc.BorderColor[1] = 0.0f;
 	sadesc.BorderColor[2] = 0.0f;
 	sadesc.BorderColor[3] = 0.0f;
-	sadesc.MinLOD = -FLT_MAX;
-	sadesc.MaxLOD = FLT_MAX;
+	sadesc.MinLOD = -3.402823466e+38F;
+	sadesc.MaxLOD = 3.402823466e+38F;
 	pDevice->CreateSamplerState(&sadesc, &pSampleLinear);
 
 	pTexture = (ID3D11ShaderResourceView**)malloc(sizeof(ID3D11ShaderResourceView*) * 100);
@@ -379,14 +630,20 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 		binary_size[i] = 0;
 	}
 
-	//ライト構造体初期化
-	for (int i = 0; i < LIGHT_PCS; i++){
-		LightPos[i] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		LightColor[i] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		Lightst[i] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	}
-	SetLight_f = FALSE;
-	ShadowLow_val = 0.0f;
+	//ポイントライト構造体初期化
+	ResetPointLight();
+
+	//平行光源初期化
+	dlight.Direction.as(0.0f, 0.0f, 0.0f, 0.0f);
+	dlight.LightColor.as(1.0f, 1.0f, 1.0f, 1.0f);
+	dlight.Lightst.as(1.0f, 0.0f, 0.3f, 0.0f);
+
+	//フォグ初期化
+	fog.FogColor.as(1.0f, 1.0f, 1.0f, 1.0f);
+	fog.Amount = 0.0f;
+	fog.Density = 0.0f;
+	fog.on_off = 0.0f;
+
 	return S_OK;
 }
 
@@ -404,33 +661,70 @@ HRESULT Dx11Process::Sclear(){//スクリーンクリア
 void Dx11Process::Cameraset(float cax1, float cax2, float cay1, float cay2, float caz){//カメラセット
 
 	//カメラの位置と方向を設定
-	D3DXMatrixLookAtLH(&View,
-		&D3DXVECTOR3(cax1, cay1, caz),   //カメラの位置
-		&D3DXVECTOR3(cax2, cay2, caz),   //カメラの方向を向ける点
-		&D3DXVECTOR3(0.0f, 0.0f, 1.0f)); //カメラの上の方向(通常視点での上方向を1.0fにする)
+	MatrixLookAtLH(&View,
+		cax1, cay1, caz,   //カメラの位置
+		cax2, cay2, caz,   //カメラの方向を向ける点
+		0.0f, 0.0f, 1.0f); //カメラの上の方向(通常視点での上方向を1.0fにする)
 	//シェーダー計算用座標登録
 	cx = cax1;
 	cy = cay1;
 	cz = caz;
 }
 
-void Dx11Process::SetLight(bool f){
-	SetLight_f = f;
+void Dx11Process::ResetPointLight(){
+	for (int i = 0; i < LIGHT_PCS; i++){
+		plight.LightPos[i].as(0.0f, 0.0f, 0.0f, 0.0f);
+		plight.LightColor[i].as(0.0f, 0.0f, 0.0f, 0.0f);
+		plight.Lightst[i].as(0.0f, 0.0f, 0.0f, 0.0f);
+	}
+	plight.ShadowLow_val = 0.0f;
 }
 
-void Dx11Process::ShadowBright(float val){
-	ShadowLow_val = val;
+void Dx11Process::P_ShadowBright(float val){
+	plight.ShadowLow_val = val;
 }
 
-void Dx11Process::LightPosSet(int Idx, float x, float y, float z, float r, float g, float b, float a, float range,
+void Dx11Process::PointLightPosSet(int Idx, float x, float y, float z, float r, float g, float b, float a, float range,
 	float brightness, float attenuation, bool on_off){
 
-	if (Idx > 49 || Idx < 0)return;//エラー防止
+	static int pcs = 3;//個数初期値(予約済み)
+
+	if (Idx > LIGHT_PCS - 1 || Idx < 0)return;//エラー防止
+
+	if (Idx > 2 && on_off == TRUE)pcs = Idx + 1;
+
 	float onoff;
 	if (on_off == TRUE)onoff = 1.0f; else onoff = 0.0f;
-	LightPos[Idx] = D3DXVECTOR4(x, y, z, 1.0f);
-	LightColor[Idx] = D3DXVECTOR4(r, g, b, a);
-	Lightst[Idx] = D3DXVECTOR4(range, brightness, attenuation, onoff);
+	plight.LightPos[Idx].as(x, y, z, 1.0f);
+	plight.LightColor[Idx].as(r, g, b, a);
+	plight.Lightst[Idx].as(range, brightness, attenuation, onoff);
+	plight.LightPcs = pcs;
+}
+
+void Dx11Process::DirectionLight(float x, float y, float z, float r, float g, float b, float bright, float ShadowBright){
+	dlight.Direction.as(x, y, z, 0.0f);
+	dlight.LightColor.as(r, g, b, 0.0f);
+	dlight.Lightst.x = bright;
+	dlight.Lightst.z = ShadowBright;
+	dlight.Lightst.w = 0.0f;
+}
+
+void Dx11Process::SetDirectionLight(bool onoff){
+	float f = 0.0f;
+	if (onoff == TRUE)f = 1.0f;
+	dlight.Lightst.y = f;
+}
+
+void Dx11Process::Fog(float r, float g, float b, float amount, float density, bool onoff){
+
+	if (onoff == FALSE){
+		fog.on_off = 0.0f;
+		return;
+	}
+	fog.on_off = 1.0f;
+	fog.FogColor.as(r, g, b, 1.0f);
+	fog.Amount = amount;
+	fog.Density = density;
 }
 
 void Dx11Process::TextureBinaryDecode(char *Bpass, int i){
@@ -557,28 +851,20 @@ void Dx11Process::TextureBinaryDecodeAll(){
 	TextureBinaryDecode("./dat/texture/map/wall1.da", 0);
 	TextureBinaryDecode("./dat/texture/map/ground1.da", 1);
 	TextureBinaryDecode("./dat/texture/map/ceiling1.da", 2);
-	TextureBinaryDecode("./dat/texture/map/EXIT1.da", 3);
 	//マップ1
 	TextureBinaryDecode("./dat/texture/map/wall2.da", 4);
 	TextureBinaryDecode("./dat/texture/map/ground2.da", 5);
 	TextureBinaryDecode("./dat/texture/map/ceiling2.da", 6);
-	TextureBinaryDecode("./dat/texture/map/EXIT2.da", 7);
 	TextureBinaryDecode("./dat/texture/map/wall2-1.da", 8);
-	TextureBinaryDecode("./dat/texture/map/ENTER2.da", 9);
-	TextureBinaryDecode("./dat/texture/map/background.da", 10);
 	//マップ2
 	TextureBinaryDecode("./dat/texture/map/ceiling3_wall3.da", 11);
 	TextureBinaryDecode("./dat/texture/map/ground3.da", 12);
-	TextureBinaryDecode("./dat/texture/map/ENTER3.da", 13);
-	TextureBinaryDecode("./dat/texture/map/EXIT3.da", 14);
 	//マップ3
 	TextureBinaryDecode("./dat/texture/map/ceiling4_ground4.da", 15);
-	TextureBinaryDecode("./dat/texture/map/ENTER4.da", 16);
 	//マップ4
 	TextureBinaryDecode("./dat/texture/map/wall5.da", 26);
 	TextureBinaryDecode("./dat/texture/map/ground5.da", 27);
 	TextureBinaryDecode("./dat/texture/map/ceiling5.da", 28);
-	TextureBinaryDecode("./dat/texture/map/ENTER5.da", 29);
 	//通常敵
 	TextureBinaryDecode("./dat/texture/enemy/enemy1.da", 30);
 	TextureBinaryDecode("./dat/texture/enemy/enemy2.da", 31);
@@ -623,26 +909,11 @@ void Dx11Process::TextureBinaryDecodeAll(){
 
 void Dx11Process::GetTexture(){
 
-	//読み込むテクスチャ情報
-	D3DX11_IMAGE_LOAD_INFO info;
-	info.Width = 0;
-	info.Height = 0;
-	info.Depth = 0;
-	info.FirstMipLevel = 0;
-	info.MipLevels = 1;
-	info.Usage = D3D11_USAGE_DEFAULT;
-	info.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	info.CpuAccessFlags = 0;
-	info.MiscFlags = 0;
-	info.Format = DXGI_FORMAT_FROM_FILE;
-	info.Filter = D3DX11_FILTER_LINEAR;
-	info.MipFilter = D3DX11_FILTER_LINEAR;
-	info.pSrcInfo = NULL;
-
 	for (int i = 0; i < 100; i++){
 		if (binary_size[i] == 0)continue;
 		//テクスチャー作成
-		D3DX11CreateShaderResourceViewFromMemory(pDevice, binary_ch[i], binary_size[i], &info, NULL, &pTexture[i], NULL);
+		DirectX::CreateWICTextureFromMemoryEx(pDevice, (uint8_t*)binary_ch[i], binary_size[i], binary_size[i],
+			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, TRUE, NULL, &pTexture[i]);
 	}
 	for (int i = 0; i < 100; i++){
 		if (binary_ch[i] == NULL)continue;
@@ -651,11 +922,6 @@ void Dx11Process::GetTexture(){
 	}
 	free(binary_ch);
 	free(binary_size);
-}
-
-void Dx11Process::SetFog(bool on, float StartPos, float EndPos, DWORD r, DWORD g, DWORD b){
-
-
 }
 
 void  Dx11Process::Drawscreen(){//スクリーン描画
@@ -683,20 +949,30 @@ Dx11Process::~Dx11Process(){
 	pConstantBuffer->Release();
 	pConstantBuffer = NULL;
 
+	pHullShader_MESH_D->Release();
+	pHullShader_MESH_D = NULL;
 	pHullShader_DISPL->Release();
 	pHullShader_DISPL = NULL;
 	pHullShader_DISP->Release();
 	pHullShader_DISP = NULL;
 
+	pDomainShader_MESH_D->Release();
+	pDomainShader_MESH_D = NULL;
 	pDomainShader_DISPL->Release();
 	pDomainShader_DISPL = NULL;
 	pDomainShader_DISP->Release();
 	pDomainShader_DISP = NULL;
 
+	pPixelShader_MESH_D->Release();
+	pPixelShader_MESH_D = NULL;
+	pPixelShader_MESH->Release();
+	pPixelShader_MESH = NULL;
 	pPixelShader_DISPL->Release();
 	pPixelShader_DISPL = NULL;
 	pPixelShader_DISP->Release();
 	pPixelShader_DISP = NULL;
+	pPixelShader_TCL->Release();
+	pPixelShader_TCL = NULL;
 	pPixelShader_TC->Release();
 	pPixelShader_TC = NULL;
 	pPixelShader_BC->Release();
@@ -706,10 +982,16 @@ Dx11Process::~Dx11Process(){
 	pPixelShader_2DTC->Release();
 	pPixelShader_2DTC = NULL;
 
+	pVertexShader_MESH_D->Release();
+	pVertexShader_MESH_D = NULL;
+	pVertexShader_MESH->Release();
+	pVertexShader_MESH = NULL;
 	pVertexShader_DISPL->Release();
 	pVertexShader_DISPL = NULL;
 	pVertexShader_DISP->Release();
 	pVertexShader_DISP = NULL;
+	pVertexShader_TCL->Release();
+	pVertexShader_TCL = NULL;
 	pVertexShader_TC->Release();
 	pVertexShader_TC = NULL;
 	pVertexShader_BC->Release();
@@ -719,10 +1001,16 @@ Dx11Process::~Dx11Process(){
 	pVertexShader_2DTC->Release();
 	pVertexShader_2DTC = NULL;
 
+	pVertexLayout_MESH_D->Release();
+	pVertexLayout_MESH_D = NULL;
+	pVertexLayout_MESH->Release();
+	pVertexLayout_MESH = NULL;
 	pVertexLayout_DISPL->Release();
 	pVertexLayout_DISPL = NULL;
 	pVertexLayout_DISP->Release();
 	pVertexLayout_DISP = NULL;
+	pVertexLayout_TCL->Release();
+	pVertexLayout_TCL = NULL;
 	pVertexLayout_TC->Release();
 	pVertexLayout_TC = NULL;
 	pVertexLayout_BC->Release();

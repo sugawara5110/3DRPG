@@ -10,6 +10,7 @@
 #include "MovieSoundManager.h"
 #include "Position.h"
 #include "DxText.h"
+#include <stdlib.h>
 
 #define POS_CE  (posz * mxy.y * mxy.x + posy * mxy.x + posx)
 #define POSY_U1 (posz * mxy.y * mxy.x + (posy + 1) * mxy.x + posx)
@@ -55,7 +56,12 @@ private:
 	int posx;
 	int posy;
 	int posz;
-	int blockcount;   //壁用立方体の個数
+	int woodcount;     //木個数
+	int blockcountA;   //壁用立方体の四角形の個数レンガ
+	int blockcountB;   //壁用立方体の四角形の個数岩
+	int blockcountC;   //壁用立方体の四角形の個数岩2
+	int blockcountD;   //壁用立方体の四角形の個数溶岩
+	int blockcountE;   //壁用立方体の四角形の個数コケ岩
 	int squarecount; //壁用板個数
 	int r_point_count;//回復ポイント個数
 	int mo_count;    //動画テクスチャ,松明個数
@@ -76,32 +82,45 @@ private:
 	float stepx;
 	float stepy;
 
-	PolygonData poWall, poWall1, poF_Wall, poGround, poCeiling, poBackground,
-		poRain, poEXIT, poENTER, poRecover, poRecoverLine, poMo, poBoss, poElevator;
+	struct OBJPosRandomValue{
+		float x;
+		float y;
+		OBJPosRandomValue(){
+			x = (rand() % 100) - 50.0f;
+			y = (rand() % 100) - 50.0f;
+		}
+	};
+	OBJPosRandomValue *wood, *wall1;
+	
+	MeshData mWood;
+	PolygonData poWallA, poWallB, poWallC, poWallD, poWallE, poWall1, poF_Wall,
+		poGroundF, poCeilingF, poGroundM, poCeilingM, poGroundE, poCeilingE,
+		poBackground, poRain, poRecover, poRecoverLine, poMo, poBoss, poElevator, poEXIT;
 	Position::E_Pos e_pos[4];
 	Position::H_Pos h_pos;
 
-	//フォグパラメーター
-	float StartPos;
-	float EndPos;
-	DWORD r, g, b;
-
 	void Debug();//デバック用
 	Map();
+	void Mapfilter_p(int k, int j, int i, int idx1, int idx2, int *cnt);
 	void Mapfilter(Position::H_Pos *h_p);
+	void Mapdraw_Wood();
 	void Mapcreate_Wall1();
-	void Mapcreate_Wall();
-	void Mapcreate_F_Wall();
-	void Mapcreate_Ground(float st, float end);
-	void Mapcreate_Ceiling(float st, float end, float height);
-	void Mapcreate_Background(float st, float end, float height);
-	void Mapcreate_Rain();
-	void Mapcreate_ENTER(float x, float y, float z, float xsize);
-	void Mapcreate_EXIT(float x, float y, float z, float xsize);
+	void Mapdraw_Wall1();
+	void Mapcreate_Wall(PolygonData *pd, int no1, int no2, float height, float adjust, float adjust2);
+	void Mapcreate_Ground(PolygonData *pd, int pcsx, int pcsy, float height, float adjust);
+	void Mapcreate_Ceiling(PolygonData *pd, int pcsx, int pcsy, float height, float adjust);
+	void Mapcreate_Background(float st, float end);
+	void Mapdraw_Rain();
 	void Mapcreate_Recover();
+	void Mapdraw_Recover();
 	void Mapcreate_Ds();
+	void Mapdraw_Ds();
 	void Mapcreate_BossPoint();
 	void Mapcreate_Elevator();
+	void Mapcreate_EXIT(float x, float y, float z, float xsize);
+	void MapdrawObj();
+	bool MoveUpCond(int Ind);
+	bool MoveDownCond(int Ind);
 	Encount Move(MapState *mapstate, Directionkey direction);
 	void MapText(TCHAR str[30]);
 

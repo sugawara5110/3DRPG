@@ -33,7 +33,7 @@ void Ending::StaffRoll(){
 	text->Drawtext(L"›Œ´‘", 350.0f, str_y + 1630.0f, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
 	text->Drawtext(L"‚s‚g‚d‚d‚m‚c", 310.0f, str_y + 2500.0f, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
 
-	if (str_y > -2200)str_y -= 0.2f;
+	if (str_y > -2200)str_y -= 0.4f;
 }
 
 Ending::~Ending(){

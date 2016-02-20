@@ -70,7 +70,7 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 		m = tfloat.Add(0.15f);
 		float mx, my;
 		MovieSoundManager::Magic_sound(TRUE);
-		mag.D3primitive(h_pos->cx1, h_pos->cy1, (float)h_pos->pz * 100.0f + 25.0f, 0, 0, 0, count += m, TRUE, FALSE);
+		mag.D3primitive(h_pos->cx1, h_pos->cy1, (float)h_pos->pz * 100.0f + 25.0f, 0, 0, 0, count += m, TRUE, FALSE, 0);
 		switch (o_no){
 		case 0:
 			mx = 0.0f;

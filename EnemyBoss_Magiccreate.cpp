@@ -188,36 +188,36 @@ bool EnemyBoss::Magiccreate(float x, float y, float z){
 
 	float si = mag_size / 2;
 	//マジック左上
-	mag->SetVertex(0, 3, 0,
-		(float)-si, (float)-si, 1.0f,
+	mag->SetVertex(0, 0,
+		(float)-si, (float)-si, 2.0f,
 		0.0f, 0.0f, 0.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 		0.0f, 0.0f);
 
+	//マジック右上
+	mag->SetVertex(1, 4, 1,
+		(float)si, (float)-si, 2.0f,
+		0.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 0.0f);
+
 	//マジック左下
-	mag->SetVertex(4, 2,
-		(float)-si, (float)si, 1.0f,
+	mag->SetVertex(2, 3, 2,
+		(float)-si, (float)si, 2.0f,
 		0.0f, 0.0f, 0.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 		0.0f, 1.0f);
 
 	//マジック右下
-	mag->SetVertex(2, 5, 3,
-		(float)si, (float)si, 1.0f,
+	mag->SetVertex(5, 3,
+		(float)si, (float)si, 2.0f,
 		0.0f, 0.0f, 0.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 1.0f);
 
-	//マジック右上
-	mag->SetVertex(1, 1,
-		(float)si, (float)-si, 1.0f,
-		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-		1.0f, 0.0f);
-
 	float m = tfloat.Add(0.15f);
 	MovieSoundManager::Magic_sound(TRUE);
-	mag->D3primitive(x + mov_x, y + mov_y, z + 1.0f + mov_z, 0, 0, 0, count, TRUE, FALSE);
+	mag->D3primitive(x + mov_x, y + mov_y, z + 1.0f + mov_z, 0, 0, 0, count, TRUE, FALSE, 0);
 
 	if ((count += m) > 200.0f){
 		count = 0.0f;

@@ -11,6 +11,9 @@
 #include <dshow.h>
 #include <qedit.h>
 
+#pragma comment(lib,"strmiids.lib")
+#pragma comment(lib,"quartz.lib")
+
 class DsProcess{
 
 protected:

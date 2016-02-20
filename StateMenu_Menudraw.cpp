@@ -80,21 +80,31 @@ bool StateMenu::TitleMenu(Directionkey direction){
 
 			savedata.h_pos.cx1 = 1150.0f;
 			savedata.h_pos.cx2 = 1150.0f;
-			savedata.h_pos.cy1 = 2850.0f;
-			savedata.h_pos.cy2 = 2800.0f;
+			savedata.h_pos.cy1 = 3350.0f;
+			savedata.h_pos.cy2 = 3300.0f;
 			savedata.h_pos.px = 11;
-			savedata.h_pos.py = 28;
+			savedata.h_pos.py = 33;
 			savedata.h_pos.pz = 0;
 			savedata.h_pos.theta = 0.0f;
 			savedata.map_no = 0;
-
+			/*
+			savedata.h_pos.cx1 = 1150.0f;
+			savedata.h_pos.cx2 = 1200.0f;
+			savedata.h_pos.cy1 = 3350.0f;
+			savedata.h_pos.cy2 = 3350.0f;
+			savedata.h_pos.px = 11;
+			savedata.h_pos.py = 33;
+			savedata.h_pos.pz = 0;
+			savedata.h_pos.theta = 90.0f;
+			savedata.map_no = 0;
+			*/
 			/*
 			savedata.h_pos.cx1 = 150.0f;
 			savedata.h_pos.cx2 = 150.0f;
-			savedata.h_pos.cy1 = 2750.0f;
-			savedata.h_pos.cy2 = 2700.0f;
+			savedata.h_pos.cy1 = 3750.0f;
+			savedata.h_pos.cy2 = 3700.0f;
 			savedata.h_pos.px = 1;
-			savedata.h_pos.py = 27;
+			savedata.h_pos.py = 37;
 			savedata.h_pos.pz = 0;
 			savedata.h_pos.theta = 0.0f;
 			savedata.map_no = 2;

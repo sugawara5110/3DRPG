@@ -123,7 +123,7 @@ Battle::Battle(Position::E_Pos *e_po, Position::H_Pos *h_po, Encount encount, in
 
 void Battle::Menucreate(){
 
-	D3DXVECTOR4 clr = D3DXVECTOR4(0.6f, 0.6f, 0.6f, 0.5f);
+	VECTOR4 clr = { 0.6f, 0.6f, 0.6f, 0.5f };
 
 	//コマンドウインドウ
 	command.d3varray[0].x = 5.0f;
@@ -131,13 +131,13 @@ void Battle::Menucreate(){
 	command.d3varray[0].z = 0.9f;
 	command.d3varray[0].color = clr;
 
-	command.d3varray[1].x = 5.0f;
-	command.d3varray[1].y = 200.0f;
+	command.d3varray[1].x = 140.0f;
+	command.d3varray[1].y = 0.0f;
 	command.d3varray[1].z = 0.9f;
 	command.d3varray[1].color = clr;
 
-	command.d3varray[2].x = 140.0f;
-	command.d3varray[2].y = 0.0f;
+	command.d3varray[2].x = 5.0f;
+	command.d3varray[2].y = 200.0f;
 	command.d3varray[2].z = 0.9f;
 	command.d3varray[2].color = clr;
 
@@ -151,7 +151,7 @@ void Battle::Cursor_h(int no){
 
 	static bool clr_f = TRUE;
 	static float r = 1.0f;
-	D3DXVECTOR4 clr;
+	VECTOR4 clr;
 
 	float m = tfloat.Add(0.002f);
 	if (clr_f){
@@ -160,7 +160,7 @@ void Battle::Cursor_h(int no){
 	else{
 		if ((r += m) >= 1.0f)clr_f = TRUE;
 	}
-	clr = D3DXVECTOR4(r, r, 0.7f, 1.0f);
+	clr.as(r, r, 0.7f, 1.0f);
 
 	float x;
 	if (no == 0)x = 10.0f;
@@ -174,13 +174,13 @@ void Battle::Cursor_h(int no){
 	h_select.d3varray[0].z = 0.0f;
 	h_select.d3varray[0].color = clr;
 
-	h_select.d3varray[1].x = x - 10.0f;
-	h_select.d3varray[1].y = 560.0f;
+	h_select.d3varray[1].x = x - 5.0f;
+	h_select.d3varray[1].y = 440.0f;
 	h_select.d3varray[1].z = 0.0f;
 	h_select.d3varray[1].color = clr;
 
-	h_select.d3varray[2].x = x - 5.0f;
-	h_select.d3varray[2].y = 440.0f;
+	h_select.d3varray[2].x = x - 10.0f;
+	h_select.d3varray[2].y = 560.0f;
 	h_select.d3varray[2].z = 0.0f;
 	h_select.d3varray[2].color = clr;
 
@@ -196,13 +196,13 @@ void Battle::Cursor_h(int no){
 	h_select.d3varray[0].z = 0.0f;
 	h_select.d3varray[0].color = clr;
 
-	h_select.d3varray[1].x = x + 125.0f;
-	h_select.d3varray[1].y = 560.0f;
+	h_select.d3varray[1].x = x + 130.0f;
+	h_select.d3varray[1].y = 440.0f;
 	h_select.d3varray[1].z = 0.0f;
 	h_select.d3varray[1].color = clr;
 
-	h_select.d3varray[2].x = x + 130.0f;
-	h_select.d3varray[2].y = 440.0f;
+	h_select.d3varray[2].x = x + 125.0f;
+	h_select.d3varray[2].y = 560.0f;
 	h_select.d3varray[2].z = 0.0f;
 	h_select.d3varray[2].color = clr;
 
@@ -218,13 +218,13 @@ void Battle::Cursor_h(int no){
 	h_select.d3varray[0].z = 0.0f;
 	h_select.d3varray[0].color = clr;
 
-	h_select.d3varray[1].x = x - 5.0f;
-	h_select.d3varray[1].y = 445.0f;
+	h_select.d3varray[1].x = x + 125.0f;
+	h_select.d3varray[1].y = 440.0f;
 	h_select.d3varray[1].z = 0.0f;
 	h_select.d3varray[1].color = clr;
 
-	h_select.d3varray[2].x = x + 125.0f;
-	h_select.d3varray[2].y = 440.0f;
+	h_select.d3varray[2].x = x - 5.0f;
+	h_select.d3varray[2].y = 445.0f;
 	h_select.d3varray[2].z = 0.0f;
 	h_select.d3varray[2].color = clr;
 
@@ -240,13 +240,13 @@ void Battle::Cursor_h(int no){
 	h_select.d3varray[0].z = 0.0f;
 	h_select.d3varray[0].color = clr;
 
-	h_select.d3varray[1].x = x - 5.0f;
-	h_select.d3varray[1].y = 560.0f;
+	h_select.d3varray[1].x = x + 125.0f;
+	h_select.d3varray[1].y = 555.0f;
 	h_select.d3varray[1].z = 0.0f;
 	h_select.d3varray[1].color = clr;
 
-	h_select.d3varray[2].x = x + 125.0f;
-	h_select.d3varray[2].y = 555.0f;
+	h_select.d3varray[2].x = x - 5.0f;
+	h_select.d3varray[2].y = 560.0f;
 	h_select.d3varray[2].z = 0.0f;
 	h_select.d3varray[2].color = clr;
 
@@ -274,35 +274,36 @@ void Battle::Cursor_e(int select){
 	}
 
 	//カーソル左上
-	E_select.SetVertex(0, 3, 0,
-		(float)-25.0f, (float)-25.0f, 2.0f,
+	E_select.SetVertex(0, 0,
+		(float)-25.0f, (float)-25.0f, 4.0f,
 		0.0f, 0.0f, 0.0f,
 		r, 0.0f, b, 1.0f,
 		0.0f, 0.0f);
 
+	//カーソル右上
+	E_select.SetVertex(1, 4, 1,
+		(float)25.0f, (float)-25.0f, 4.0f,
+		0.0f, 0.0f, 0.0f,
+		r, b, 0.0f, 1.0f,
+		1.0f, 0.0f);
+
 	//カーソル左下
-	E_select.SetVertex(4, 2,
-		(float)-25.0f, (float)25.0f, 2.0f,
+	E_select.SetVertex(2, 3, 2,
+		(float)-25.0f, (float)25.0f, 4.0f,
 		0.0f, 0.0f, 0.0f,
 		b, 0.0f, r, 1.0f,
 		0.0f, 1.0f);
 
 	//カーソル右下
-	E_select.SetVertex(2, 5, 3,
-		(float)25.0f, (float)25.0f, 2.0f,
+	E_select.SetVertex(5, 3,
+		(float)25.0f, (float)25.0f, 4.0f,
 		0.0f, 0.0f, 0.0f,
 		0.0f, r, b, 1.0f,
 		1.0f, 1.0f);
 
-	//カーソル右上
-	E_select.SetVertex(1, 1,
-		(float)25.0f, (float)-25.0f, 2.0f,
-		0.0f, 0.0f, 0.0f,
-		r, b, 0.0f, 1.0f,
-		1.0f, 0.0f);
 	m = tfloat.Add(0.2f);
 	if ((theta += m) > 360.0f)theta = 0.0f;
-	E_select.D3primitive(e_pos[select].x, e_pos[select].y, e_pos[select].z, 0, 0, 0, theta, FALSE, FALSE);
+	E_select.D3primitive(e_pos[select].x, e_pos[select].y, e_pos[select].z, 0, 0, 0, theta, FALSE, FALSE, 0);
 }
 
 void Battle::SelectPermissionMove(Hero *hero){

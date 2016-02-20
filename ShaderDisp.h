@@ -20,8 +20,20 @@ char *ShaderDisp =
 "    float4 g_LightColor[150];\n"
 //レンジ, 明るさ, 減衰の大きさ, オンオフ
 "    float4 g_Lightst[150];\n"
-//影の下限値(x要素に入ってる)
-"    float4 g_ShadowLow;\n"
+//影の下限値x, ライト個数y
+"    float4 g_ShadowLow_Lpcs;\n"
+//平行光源方向
+"    float4 g_DLightDirection;\n"
+//平行光源色
+"    float4 g_DLightColor;\n"
+//平行光源明るさx,オンオフy, 影の下限値z
+"    float4 g_DLightst;\n"
+//フォグ量x, 密度y, onoffz
+"    float4 g_FogAmo_Density;\n"
+//フォグ色
+"    float4 g_FogColor;\n"
+//ディスプ起伏量x
+"    float4 g_DispAmount;\n"
 "};\n"
 
 "struct VS_OUTPUT_TCL\n"
@@ -73,10 +85,11 @@ char *ShaderDisp =
 
 "struct DS_OUTPUT_TC\n"
 "{\n"
-"	 float4 Pos : SV_POSITION;\n"
-"    float3 Nor : NORMAL;\n"
-"    float4 Col : COLOR;\n"
-"    float2 Tex : TEXCOORD;\n"
+"	 float4 Pos  : SV_POSITION;\n"
+"    float4 wPos : POSITION;\n"
+"    float3 Nor  : NORMAL;\n"
+"    float4 Col  : COLOR;\n"
+"    float2 Tex  : TEXCOORD;\n"
 "};\n"
 
 //*********************************************頂点シェーダー*******************************************************************//
@@ -170,7 +183,7 @@ char *ShaderDisp =
 //ライト有
 "[domain(\"quad\")]\n"
 "[partitioning(\"integer\")]\n"
-"[outputtopology(\"triangle_cw\")]\n"
+"[outputtopology(\"triangle_ccw\")]\n"
 "[outputcontrolpoints(4)]\n"
 "[patchconstantfunc(\"HSConstantL\")]\n"
 "HS_OUTPUT_TCL HSDispL(InputPatch<VS_OUTPUT_TCL, 4> ipL, uint cpidL : SV_OutputControlPointID, uint pidL : SV_PrimitiveID)\n"
@@ -186,7 +199,7 @@ char *ShaderDisp =
 //ライト無
 "[domain(\"quad\")]\n"
 "[partitioning(\"integer\")]\n"
-"[outputtopology(\"triangle_cw\")]\n"
+"[outputtopology(\"triangle_ccw\")]\n"
 "[outputcontrolpoints(4)]\n"
 "[patchconstantfunc(\"HSConstant\")]\n"
 "HS_OUTPUT_TC HSDisp(InputPatch<VS_OUTPUT_TC, 4> ip, uint cpid : SV_OutputControlPointID, uint pid : SV_PrimitiveID)\n"
@@ -216,29 +229,30 @@ char *ShaderDisp =
 "   float2 uv = float2(lerp(top_uv, bottom_uv, UV.y));\n"
 "   output.Tex = uv;\n"
 //画像から高さを算出
-"   float4 height = g_texColor.SampleLevel(g_samLinear, uv, 0) * 3;\n"
+"   float4 height = g_texColor.SampleLevel(g_samLinear, uv, 0) * g_DispAmount.x;\n"
+"   float hei = (height.x + height.y + height.z) / 3;\n"
 //pos座標計算
 "   float3 top_pos = lerp(patchL[0].Pos, patchL[1].Pos, UV.x);\n"
 "   float3 bottom_pos = lerp(patchL[3].Pos, patchL[2].Pos, UV.x);\n"
 "   output.Pos = float4(lerp(top_pos, bottom_pos, UV.y), 1);\n"
 //法線の方向によって頂点移動方向を決める
 "   if (patchL[0].Nor.x == -1.0f){\n"
-"       output.Pos.x -= height.x;\n"
+"       output.Pos.x -= hei;\n"
 "   }\n"
 "   if (patchL[0].Nor.x ==  1.0f){\n"
-"       output.Pos.x += height.x;\n"
+"       output.Pos.x += hei;\n"
 "   }\n"
 "   if (patchL[0].Nor.y == -1.0f){\n"
-"       output.Pos.y -= height.x;\n"
+"       output.Pos.y -= hei;\n"
 "   }\n"
 "   if (patchL[0].Nor.y ==  1.0f){\n"
-"       output.Pos.y += height.x;\n"
+"       output.Pos.y += hei;\n"
 "   }\n"
 "   if (patchL[0].Nor.z == -1.0f){\n"
-"       output.Pos.z -= height.x;\n"
+"       output.Pos.z -= hei;\n"
 "   }\n"
 "   if (patchL[0].Nor.z ==  1.0f){\n"
-"       output.Pos.z += height.x;\n"
+"       output.Pos.z += hei;\n"
 "   }\n"
 "   output.wPos = mul(output.Pos, g_World);\n"
 "   output.Pos = mul(output.Pos, g_WVP);\n"
@@ -248,7 +262,7 @@ char *ShaderDisp =
 "   Normal.w = 0;\n"
 
 //出力する法線の作成
-"   output.Nor = mul(Normal, g_World);\n"
+"   output.Nor = mul(Normal, (float3x3)g_World);\n"
 
 "	return output;\n"
 "}\n"
@@ -267,30 +281,32 @@ char *ShaderDisp =
 "   float2 uv = float2(lerp(top_uv, bottom_uv, UV.y));\n"
 "   output.Tex = uv;\n"
 
-"   float4 height = g_texColor.SampleLevel(g_samLinear, uv, 0) * 3;\n"
+"   float4 height = g_texColor.SampleLevel(g_samLinear, uv, 0) * g_DispAmount.x;\n"
+"   float hei = (height.x + height.y + height.z) / 3;\n"
 
 "   float3 top_pos = lerp(patch[0].Pos, patch[1].Pos, UV.x);\n"
 "   float3 bottom_pos = lerp(patch[3].Pos, patch[2].Pos, UV.x);\n"
 "   output.Pos = float4(lerp(top_pos, bottom_pos, UV.y), 1);\n"
 //法線の方向によって頂点移動方向を決める
 "   if (patch[0].Nor.x == -1.0f){\n"
-"       output.Pos.x -= height.x;\n"
+"       output.Pos.x -= hei;\n"
 "   }\n"
 "   if (patch[0].Nor.x ==  1.0f){\n"
-"       output.Pos.x += height.x;\n"
+"       output.Pos.x += hei;\n"
 "   }\n"
 "   if (patch[0].Nor.y == -1.0f){\n"
-"       output.Pos.y -= height.x;\n"
+"       output.Pos.y -= hei;\n"
 "   }\n"
 "   if (patch[0].Nor.y ==  1.0f){\n"
-"       output.Pos.y += height.x;\n"
+"       output.Pos.y += hei;\n"
 "   }\n"
 "   if (patch[0].Nor.z == -1.0f){\n"
-"       output.Pos.z -= height.x;\n"
+"       output.Pos.z -= hei;\n"
 "   }\n"
 "   if (patch[0].Nor.z ==  1.0f){\n"
-"       output.Pos.z += height.x;\n"
+"       output.Pos.z += hei;\n"
 "   }\n"
+"   output.wPos = mul(output.Pos, g_World);\n"
 "   output.Pos = mul(output.Pos, g_WVP);\n"
 
 "	return output;\n"
@@ -303,13 +319,28 @@ char *ShaderDisp =
 "{\n"
 //法線正規化
 "    float3 N = normalize(input.Nor);\n"
+//テクスチャ
+"    float4 T = g_texColor.Sample(g_samLinear, input.Tex);\n"
+
+//フォグ計算テクスチャに対して計算
+"    float fd;\n"//距離
+"    float ff;\n"//フォグファクター
+"    if(g_FogAmo_Density.z == 1.0f){\n"
+"       fd = length(g_C_Pos.xyz - input.wPos.xyz) * 0.01f;\n"//距離計算, 0.01は補正値
+"       ff = pow(2.71828, -fd * g_FogAmo_Density.y);\n"//フォグファクター計算(変化量)
+"       ff *= g_FogAmo_Density.x;\n"//フォグ全体の量(小さい方が多くなる)
+"       ff = saturate(ff);\n"
+"       if(T.w > 0.3f){\n"
+"         T = ff * T + (1.0f - ff) * g_FogColor;\n"
+"       }\n"
+"    }\n"
 
 //アルファ値退避
 "    float a = input.Col.w;\n"
 "    float3 Col = { 0.0f, 0.0f, 0.0f };\n"
 
 //ライト計算
-"    for (int i = 0; i < 100; i++){\n"
+"    for (int i = 0; i < g_ShadowLow_Lpcs.y; i++){\n"
 //ライトオフは飛ばす
 "        if (g_Lightst[i].w == 1.0f){\n"
 //ライト方向正規化
@@ -325,18 +356,44 @@ char *ShaderDisp =
 "            float r = g_Lightst[i].y / (pow(distance, attenuation) * 0.001f);\n"
 
 //法線,ライト方向から陰影作成, N, Lの内積がg_ShadowLow.x未満の場合g_ShadowLow.xの値が適用される(距離による影は関係無し)
-"           Col = Col + max(dot(N, L), g_ShadowLow.x) * input.Col * r * g_LightColor[i];\n"
+"           Col = Col + max(dot(N, L), g_ShadowLow_Lpcs.x) * input.Col * r * g_LightColor[i];\n"
 "        }\n"
 "    }\n"
 
+//平行光源計算
+"    float3 D_LightDir;\n"
+"    float NL;\n"
+"    if(g_DLightst.y == 1.0f)\n"
+"    {\n"
+"       D_LightDir = normalize(g_DLightDirection);\n"
+"       NL = max(saturate(dot(input.Nor, D_LightDir)), g_DLightst.z);\n"
+"       Col = Col + g_DLightColor * g_DLightst.x * NL;\n"
+"    }\n"
+
 //最後に基本色にテクスチャの色を掛け合わせる
-"    return float4(Col, a) * g_texColor.Sample(g_samLinear, input.Tex) + g_ObjCol;\n"
+"    return float4(Col, a) * T + g_ObjCol;\n"
 "}\n"
 
 //ライト無
 "float4 PSDisp(DS_OUTPUT_TC input) : SV_Target\n"
 "{\n"
-"   float4 col = g_texColor.Sample(g_samLinear, input.Tex);\n"
+//テクスチャ
+"    float4 T = g_texColor.Sample(g_samLinear, input.Tex);\n"
+
+//フォグ計算テクスチャに対して計算
+"    float fd;\n"//距離
+"    float ff;\n"//フォグファクター
+"    if(g_FogAmo_Density.z == 1.0f){\n"
+"       fd = length(g_C_Pos.xyz - input.wPos.xyz) * 0.01f;\n"//距離計算, 0.01は補正値
+"       ff = pow(2.71828, -fd * g_FogAmo_Density.y);\n"//フォグファクター計算(変化量)
+"       ff *= g_FogAmo_Density.x;\n"//フォグ全体の量(小さい方が多くなる)
+"       ff = saturate(ff);\n"
+"       if(T.w > 0.3f){\n"
+"         T = ff * T + (1.0f - ff) * g_FogColor;\n"
+"       }\n"
+"    }\n"
+
+"   float4 col = T;\n"
 "   return col * input.Col + g_ObjCol;\n"
 "}\n";
 //**************************************ピクセルシェーダー*******************************************************************//

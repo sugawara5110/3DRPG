@@ -171,8 +171,8 @@ Act_fin_flg Enemy::Enemydraw(Battle *battle, int *E_select_obj, Action action, M
 		}
 		break;
 	}
-	dx->ShadowBright(0.3f);
-	en.D3primitive(e_pos[o_no].x + mov_x, e_pos[o_no].y + mov_y, e_pos[o_no].z + mov_z, cr, cg, cb, e_pos[o_no].theta, TRUE, FALSE);
+	dx->P_ShadowBright(0.3f);
+	en.D3primitive(e_pos[o_no].x + mov_x, e_pos[o_no].y + mov_y, e_pos[o_no].z + mov_z, cr, cg, cb, e_pos[o_no].theta, TRUE, FALSE, 0);
 
 	return NOT_FIN;
 }

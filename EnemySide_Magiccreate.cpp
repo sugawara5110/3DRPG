@@ -450,35 +450,35 @@ bool EnemySide::LostAction(float x, float y, float z){
 bool EnemySide::Magiccreate(float x, float y, float z){
 
 	//マジック左上
-	mag->SetVertex(0, 3, 0,
-		(float)-35.0f, (float)-35.0f, 1.0f,
+	mag->SetVertex(0, 0,
+		(float)-35.0f, (float)-35.0f, 2.0f,
 		0.0f, 0.0f, 0.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 		0.0f, 0.0f);
 
+	//マジック右上
+	mag->SetVertex(1, 4, 1,
+		(float)35.0f, (float)-35.0f, 2.0f,
+		0.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 0.0f);
+
 	//マジック左下
-	mag->SetVertex(4, 2,
-		(float)-35.0f, (float)35.0f, 1.0f,
+	mag->SetVertex(2, 3, 2,
+		(float)-35.0f, (float)35.0f, 2.0f,
 		0.0f, 0.0f, 0.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 		0.0f, 1.0f);
 
 	//マジック右下
-	mag->SetVertex(2, 5, 3,
-		(float)35.0f, (float)35.0f, 1.0f,
+	mag->SetVertex(5, 3,
+		(float)35.0f, (float)35.0f, 2.0f,
 		0.0f, 0.0f, 0.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 1.0f);
 
-	//マジック右上
-	mag->SetVertex(1, 1,
-		(float)35.0f, (float)-35.0f, 1.0f,
-		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-		1.0f, 0.0f);
-
 	MovieSoundManager::Magic_sound(TRUE);
-	mag->D3primitive(x + mov_x, y + mov_y, z + 1.0f + mov_z, 0, 0, 0, count, TRUE, FALSE);
+	mag->D3primitive(x + mov_x, y + mov_y, z + 1.0f + mov_z, 0, 0, 0, count, TRUE, FALSE, 0);
 	float m = tfloat.Add(0.15f);
 	if ((count += m) > 100){
 		count = 0.0f;

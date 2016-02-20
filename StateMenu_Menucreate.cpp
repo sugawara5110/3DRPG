@@ -33,20 +33,20 @@ StateMenu::StateMenu(){
 
 void StateMenu::Menucreate(){
 
-	D3DXVECTOR4 clr = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 0.5f);
+	VECTOR4 clr = { 1.0f, 1.0f, 1.0f, 0.5f };
 
 	state.d3varray[0].x = 0.0f;
 	state.d3varray[0].y = 0.0f;
 	state.d3varray[0].z = 0.9f;
 	state.d3varray[0].color = clr;
 
-	state.d3varray[1].x = 0.0f;
-	state.d3varray[1].y = 430.0f;
+	state.d3varray[1].x = 500.0f;
+	state.d3varray[1].y = 0.0f;
 	state.d3varray[1].z = 0.9f;
 	state.d3varray[1].color = clr;
 
-	state.d3varray[2].x = 500.0f;
-	state.d3varray[2].y = 0.0f;
+	state.d3varray[2].x = 0.0f;
+	state.d3varray[2].y = 430.0f;
 	state.d3varray[2].z = 0.9f;
 	state.d3varray[2].color = clr;
 
@@ -57,20 +57,20 @@ void StateMenu::Menucreate(){
 
 	state.D2primitive(TRUE, TRUE);
 
-	clr = D3DXVECTOR4(0.6f, 0.6f, 0.6f, 0.5f);
+	clr.as(0.6f, 0.6f, 0.6f, 0.5f);
 
 	state.d3varray[0].x = 5.0f;
 	state.d3varray[0].y = 5.0f;
 	state.d3varray[0].z = 0.8f;
 	state.d3varray[0].color = clr;
 
-	state.d3varray[1].x = 5.0f;
-	state.d3varray[1].y = 425.0f;
+	state.d3varray[1].x = 495.0f;
+	state.d3varray[1].y = 5.0f;
 	state.d3varray[1].z = 0.8f;
 	state.d3varray[1].color = clr;
 
-	state.d3varray[2].x = 495.0f;
-	state.d3varray[2].y = 5.0f;
+	state.d3varray[2].x = 5.0f;
+	state.d3varray[2].y = 425.0f;
 	state.d3varray[2].z = 0.8f;
 	state.d3varray[2].color = clr;
 
@@ -84,20 +84,20 @@ void StateMenu::Menucreate(){
 
 void StateMenu::St_create(){
 
-	D3DXVECTOR4 clr = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 0.5f);
+	VECTOR4 clr = { 1.0f, 1.0f, 1.0f, 0.5f };
 
 	s_state.d3varray[0].x = 110.0f;
 	s_state.d3varray[0].y = 0.0f;
 	s_state.d3varray[0].z = 0.7f;
 	s_state.d3varray[0].color = clr;
 
-	s_state.d3varray[1].x = 110.0f;
-	s_state.d3varray[1].y = 430.0f;
+	s_state.d3varray[1].x = 500.0f;
+	s_state.d3varray[1].y = 0.0f;
 	s_state.d3varray[1].z = 0.7f;
 	s_state.d3varray[1].color = clr;
 
-	s_state.d3varray[2].x = 500.0f;
-	s_state.d3varray[2].y = 0.0f;
+	s_state.d3varray[2].x = 110.0f;
+	s_state.d3varray[2].y = 430.0f;
 	s_state.d3varray[2].z = 0.7f;
 	s_state.d3varray[2].color = clr;
 
@@ -108,20 +108,20 @@ void StateMenu::St_create(){
 
 	s_state.D2primitive(TRUE, TRUE);
 
-	clr = D3DXVECTOR4(0.6f, 0.6f, 0.6f, 0.5f);
+	clr.as(0.6f, 0.6f, 0.6f, 0.5f);
 
 	s_state.d3varray[0].x = 115.0f;
 	s_state.d3varray[0].y = 5.0f;
 	s_state.d3varray[0].z = 0.6f;
 	s_state.d3varray[0].color = clr;
 
-	s_state.d3varray[1].x = 115.0f;
-	s_state.d3varray[1].y = 425.0f;
+	s_state.d3varray[1].x = 495.0f;
+	s_state.d3varray[1].y = 5.0f;
 	s_state.d3varray[1].z = 0.6f;
 	s_state.d3varray[1].color = clr;
 
-	s_state.d3varray[2].x = 495.0f;
-	s_state.d3varray[2].y = 5.0f;
+	s_state.d3varray[2].x = 115.0f;
+	s_state.d3varray[2].y = 425.0f;
 	s_state.d3varray[2].z = 0.6f;
 	s_state.d3varray[2].color = clr;
 
@@ -135,20 +135,20 @@ void StateMenu::St_create(){
 
 void StateMenu::Re_create(){
 
-	D3DXVECTOR4 clr = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 0.5f);
+	VECTOR4 clr = { 1.0f, 1.0f, 1.0f, 0.5f };
 
 	r_state.d3varray[0].x = 0.0f;
 	r_state.d3varray[0].y = 0.0f;
 	r_state.d3varray[0].z = 0.7f;
 	r_state.d3varray[0].color = clr;
 
-	r_state.d3varray[1].x = 0.0f;
-	r_state.d3varray[1].y = 430.0f;
+	r_state.d3varray[1].x = 110.0f;
+	r_state.d3varray[1].y = 0.0f;
 	r_state.d3varray[1].z = 0.7f;
 	r_state.d3varray[1].color = clr;
 
-	r_state.d3varray[2].x = 110.0f;
-	r_state.d3varray[2].y = 0.0f;
+	r_state.d3varray[2].x = 0.0f;
+	r_state.d3varray[2].y = 430.0f;
 	r_state.d3varray[2].z = 0.7f;
 	r_state.d3varray[2].color = clr;
 
@@ -159,20 +159,20 @@ void StateMenu::Re_create(){
 
 	r_state.D2primitive(TRUE, TRUE);
 
-	clr = D3DXVECTOR4(0.6f, 0.6f, 0.6f, 0.5f);
+	clr.as(0.6f, 0.6f, 0.6f, 0.5f);
 
 	r_state.d3varray[0].x = 5.0f;
 	r_state.d3varray[0].y = 5.0f;
 	r_state.d3varray[0].z = 0.6f;
 	r_state.d3varray[0].color = clr;
 
-	r_state.d3varray[1].x = 5.0f;
-	r_state.d3varray[1].y = 425.0f;
+	r_state.d3varray[1].x = 105.0f;
+	r_state.d3varray[1].y = 5.0f;
 	r_state.d3varray[1].z = 0.6f;
 	r_state.d3varray[1].color = clr;
 
-	r_state.d3varray[2].x = 105.0f;
-	r_state.d3varray[2].y = 5.0f;
+	r_state.d3varray[2].x = 5.0f;
+	r_state.d3varray[2].y = 425.0f;
 	r_state.d3varray[2].z = 0.6f;
 	r_state.d3varray[2].color = clr;
 
@@ -186,20 +186,20 @@ void StateMenu::Re_create(){
 
 void StateMenu::Re_create1(){
 
-	D3DXVECTOR4 clr = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 0.5f);
+	VECTOR4 clr = { 1.0f, 1.0f, 1.0f, 0.5f };
 
 	r_state1.d3varray[0].x = 0.0f;
 	r_state1.d3varray[0].y = 150.0f;
 	r_state1.d3varray[0].z = 0.5f;
 	r_state1.d3varray[0].color = clr;
 
-	r_state1.d3varray[1].x = 0.0f;
-	r_state1.d3varray[1].y = 430.0f;
+	r_state1.d3varray[1].x = 135.0f;
+	r_state1.d3varray[1].y = 150.0f;
 	r_state1.d3varray[1].z = 0.5f;
 	r_state1.d3varray[1].color = clr;
 
-	r_state1.d3varray[2].x = 135.0f;
-	r_state1.d3varray[2].y = 150.0f;
+	r_state1.d3varray[2].x = 0.0f;
+	r_state1.d3varray[2].y = 430.0f;
 	r_state1.d3varray[2].z = 0.5f;
 	r_state1.d3varray[2].color = clr;
 
@@ -210,20 +210,20 @@ void StateMenu::Re_create1(){
 
 	r_state1.D2primitive(TRUE, TRUE);
 
-	clr = D3DXVECTOR4(0.6f, 0.6f, 0.6f, 0.5f);
+	clr.as(0.6f, 0.6f, 0.6f, 0.5f);
 
 	r_state1.d3varray[0].x = 5.0f;
 	r_state1.d3varray[0].y = 155.0f;
 	r_state1.d3varray[0].z = 0.4f;
 	r_state1.d3varray[0].color = clr;
 
-	r_state1.d3varray[1].x = 5.0f;
-	r_state1.d3varray[1].y = 425.0f;
+	r_state1.d3varray[1].x = 130.0f;
+	r_state1.d3varray[1].y = 155.0f;
 	r_state1.d3varray[1].z = 0.4f;
 	r_state1.d3varray[1].color = clr;
 
-	r_state1.d3varray[2].x = 130.0f;
-	r_state1.d3varray[2].y = 155.0f;
+	r_state1.d3varray[2].x = 5.0f;
+	r_state1.d3varray[2].y = 425.0f;
 	r_state1.d3varray[2].z = 0.4f;
 	r_state1.d3varray[2].color = clr;
 

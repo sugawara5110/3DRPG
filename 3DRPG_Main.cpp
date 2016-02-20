@@ -181,7 +181,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		//FPSŒv‘ª
 		frame++;
-		sprintf(str, "         fps=%d", frame);
+		sprintf(str, "     Ctrl:Œˆ’è  Delete:ƒLƒƒƒ“ƒZƒ‹  fps=%d", frame);
 		if (timeGetTime() - time>1000)
 		{
 			time = timeGetTime();

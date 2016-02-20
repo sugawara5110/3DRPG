@@ -285,11 +285,11 @@ TCHAR *DxText::CreateTextValue(int val){
 	return c;
 }
 
-void DxText::Drawtext(TCHAR *c, float x, float y, float fontsize, D3DXVECTOR4 cl){//テキスト描画
+void DxText::Drawtext(TCHAR *c, float x, float y, float fontsize, VECTOR4 cl){//テキスト描画
 
 	bool match = FALSE;
 	int texNo = -1;
-	
+
 	//登録済みテキスト検索
 	for (int i = 0; i < 20; i++){
 		if (_tcscmp(c, str[i]) == 0 && f_size[i] == fontsize){
@@ -297,7 +297,7 @@ void DxText::Drawtext(TCHAR *c, float x, float y, float fontsize, D3DXVECTOR4 cl
 			texNo = i;
 		}
 	}
-	
+
 	if (texNo == -1){
 		if (CreateTextNo == 20)CreateTextNo = 0;
 		texNo = CreateTextNo++;
@@ -312,30 +312,30 @@ void DxText::Drawtext(TCHAR *c, float x, float y, float fontsize, D3DXVECTOR4 cl
 	text[texNo].d3varray[0].y = y;
 	text[texNo].d3varray[0].z = 0.0f;
 	text[texNo].d3varray[0].color = cl;
-	text[texNo].d3varray[0].tex = D3DXVECTOR2(0.0f, 0.0f);
+	text[texNo].d3varray[0].tex.as(0.0f, 0.0f);
 
-	text[texNo].d3varray[1].x = x;
-	text[texNo].d3varray[1].y = y + f_size[texNo];
+	text[texNo].d3varray[1].x = x + f_size[texNo] * strcnt[texNo];
+	text[texNo].d3varray[1].y = y;
 	text[texNo].d3varray[1].z = 0.0f;
 	text[texNo].d3varray[1].color = cl;
-	text[texNo].d3varray[1].tex = D3DXVECTOR2(0.0f, 1.0f);
+	text[texNo].d3varray[1].tex.as(1.0f, 0.0f);
 
-	text[texNo].d3varray[2].x = x + f_size[texNo] * strcnt[texNo];
-	text[texNo].d3varray[2].y = y;
+	text[texNo].d3varray[2].x = x;
+	text[texNo].d3varray[2].y = y + f_size[texNo];
 	text[texNo].d3varray[2].z = 0.0f;
 	text[texNo].d3varray[2].color = cl;
-	text[texNo].d3varray[2].tex = D3DXVECTOR2(1.0f, 0.0f);
+	text[texNo].d3varray[2].tex.as(0.0f, 1.0f);
 
 	text[texNo].d3varray[3].x = x + f_size[texNo] * strcnt[texNo];
 	text[texNo].d3varray[3].y = y + f_size[texNo];
 	text[texNo].d3varray[3].z = 0.0f;
 	text[texNo].d3varray[3].color = cl;
-	text[texNo].d3varray[3].tex = D3DXVECTOR2(1.0f, 1.0f);
+	text[texNo].d3varray[3].tex.as(1.0f, 1.0f);
 
 	text[texNo].D2primitive(TRUE, TRUE);
 }
 
-void DxText::DrawValue(int val, float x, float y, float fontsize, int pcs, D3DXVECTOR4 cl){
+void DxText::DrawValue(int val, float x, float y, float fontsize, int pcs, VECTOR4 cl){
 
 	//桁数カウント
 	int cnt = 0;
@@ -353,25 +353,25 @@ void DxText::DrawValue(int val, float x, float y, float fontsize, int pcs, D3DXV
 		value[s].d3varray[0].y = y;
 		value[s].d3varray[0].z = 0.0f;
 		value[s].d3varray[0].color = cl;
-		value[s].d3varray[0].tex = D3DXVECTOR2(0.0f, 0.0f);
+		value[s].d3varray[0].tex.as(0.0f, 0.0f);
 
-		value[s].d3varray[1].x = xx;
-		value[s].d3varray[1].y = y + fontsize;
+		value[s].d3varray[1].x = xx + fontsize;
+		value[s].d3varray[1].y = y;
 		value[s].d3varray[1].z = 0.0f;
 		value[s].d3varray[1].color = cl;
-		value[s].d3varray[1].tex = D3DXVECTOR2(0.0f, 1.0f);
+		value[s].d3varray[1].tex.as(1.0f, 0.0f);
 
-		value[s].d3varray[2].x = xx + fontsize;
-		value[s].d3varray[2].y = y;
+		value[s].d3varray[2].x = xx;
+		value[s].d3varray[2].y = y + fontsize;
 		value[s].d3varray[2].z = 0.0f;
 		value[s].d3varray[2].color = cl;
-		value[s].d3varray[2].tex = D3DXVECTOR2(1.0f, 0.0f);
+		value[s].d3varray[2].tex.as(0.0f, 1.0f);
 
 		value[s].d3varray[3].x = xx + fontsize;
 		value[s].d3varray[3].y = y + fontsize;
 		value[s].d3varray[3].z = 0.0f;
 		value[s].d3varray[3].color = cl;
-		value[s].d3varray[3].tex = D3DXVECTOR2(1.0f, 1.0f);
+		value[s].d3varray[3].tex.as(1.0f, 1.0f);
 
 		value[s].D2primitive(TRUE, TRUE);
 		val = val - (int)pow(10.0, i) * s;

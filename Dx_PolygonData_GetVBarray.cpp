@@ -55,10 +55,10 @@ void PolygonData::SetVertex(int I1, int I2, int i,
 	float u, float v){
 	d3varrayI[I1] = i;
 	d3varrayI[I2] = i;
-	d3varray[i].Pos = D3DXVECTOR3(vx, vy, vz);
-	d3varray[i].normal = D3DXVECTOR3(nx, ny, nz);
-	d3varray[i].color = { (FLOAT)r, (FLOAT)g, (FLOAT)b, (FLOAT)a };
-	d3varray[i].tex = D3DXVECTOR2(u, v);
+	d3varray[i].Pos.as(vx, vy, vz);
+	d3varray[i].normal.as(nx, ny, nz);
+	d3varray[i].color.as((FLOAT)r, (FLOAT)g, (FLOAT)b, (FLOAT)a);
+	d3varray[i].tex.as(u, v);
 }
 
 void PolygonData::SetVertex(int I1, int i,
@@ -67,10 +67,10 @@ void PolygonData::SetVertex(int I1, int i,
 	float r, float g, float b, float a,
 	float u, float v){
 	d3varrayI[I1] = i;
-	d3varray[i].Pos = D3DXVECTOR3(vx, vy, vz);
-	d3varray[i].normal = D3DXVECTOR3(nx, ny, nz);
-	d3varray[i].color = { (FLOAT)r, (FLOAT)g, (FLOAT)b, (FLOAT)a };
-	d3varray[i].tex = D3DXVECTOR2(u, v);
+	d3varray[i].Pos.as(vx, vy, vz);
+	d3varray[i].normal.as(nx, ny, nz);
+	d3varray[i].color.as((FLOAT)r, (FLOAT)g, (FLOAT)b, (FLOAT)a);
+	d3varray[i].tex.as(u, v);
 }
 
 void PolygonData::Light(bool f){
@@ -193,7 +193,7 @@ void PolygonData::SetTextureMPixel(int **m_pix, BYTE r, BYTE g, BYTE b, int a){
 			ptex[ptexI + 1] = m_pix[j][i] >> 8 & g;
 			ptex[ptexI + 2] = m_pix[j][i] & b;
 
-			if ((m_pix[j][i] >> 16 & b) < 20 && (m_pix[j][i] >> 8 & g) < 20 && (m_pix[j][i] & r) < 20){
+			if ((m_pix[j][i] >> 16 & b) < 50 && (m_pix[j][i] >> 8 & g) < 50 && (m_pix[j][i] & r) < 50){
 				ptex[ptexI + 3] = 0;
 			}
 			else{
@@ -208,14 +208,23 @@ void PolygonData::GetShaderPointer(){
 
 	pConstantBuffer = dx->pConstantBuffer;
 
-	if ((load_tex_no[0] != -1 || pTexview != NULL) && lighteffect == TRUE && dx->SetLight_f == TRUE){
-		pVertexShader = dx->pVertexShader_DISPL;
-		pPixelShader = dx->pPixelShader_DISPL;
-		pHullShader = dx->pHullShader_DISPL;
-		pDomainShader = dx->pDomainShader_DISPL;
-		pVertexLayout = dx->pVertexLayout_DISPL;
+	if ((load_tex_no[0] != -1 || pTexview != NULL) && lighteffect == TRUE){
+		if (CPUAccess == TRUE){
+			pVertexShader = dx->pVertexShader_TCL;
+			pPixelShader = dx->pPixelShader_TCL;
+			pHullShader = NULL;
+			pDomainShader = NULL;
+			pVertexLayout = dx->pVertexLayout_TCL;
+		}
+		else{
+			pVertexShader = dx->pVertexShader_DISPL;
+			pPixelShader = dx->pPixelShader_DISPL;
+			pHullShader = dx->pHullShader_DISPL;
+			pDomainShader = dx->pDomainShader_DISPL;
+			pVertexLayout = dx->pVertexLayout_DISPL;
+		}
 	}
-	if ((load_tex_no[0] != -1 || pTexview != NULL) && (lighteffect == FALSE || dx->SetLight_f == FALSE)){
+	if ((load_tex_no[0] != -1 || pTexview != NULL) && lighteffect == FALSE){
 		if (CPUAccess == TRUE){
 			pVertexShader = dx->pVertexShader_TC;
 			pPixelShader = dx->pPixelShader_TC;
@@ -240,25 +249,14 @@ void PolygonData::GetShaderPointer(){
 	}
 }
 
-void PolygonData::D3primitive(float x, float y, float z, float r, float g, float b, float theta, bool a, bool lock){
-
-	D3DXMATRIX mov;
-	D3DXMATRIX rot;
+void PolygonData::D3primitive(float x, float y, float z, float r, float g, float b, float theta, bool a, bool lock, float disp){
 
 	GetShaderPointer();
 
 	//アルファブレンド,アルファテスト切り替え
 	bool at = a;
 	if (d3varray[0].color.w != 1.0f)at = FALSE;//アルファ値1.0以外の場合は半透明にする
-	dx->bld.AlphaToCoverageEnable = at;
-	dx->bld.RenderTarget[0].BlendEnable = a;
-	dx->pDevice->CreateBlendState(&dx->bld, &dx->pBlendState);
-	UINT mask = 0xffffffff;
-	dx->pDeviceContext->OMSetBlendState(dx->pBlendState, NULL, mask);
-
-	//ハル,ドメインシェーダー無効
-	dx->pDeviceContext->HSSetShader(NULL, NULL, 0);
-	dx->pDeviceContext->DSSetShader(NULL, NULL, 0);
+	dx->ChangeBlendState(at, a);
 
 	//使用するシェーダーのセット
 	dx->pDeviceContext->VSSetShader(pVertexShader, NULL, 0);
@@ -296,7 +294,7 @@ void PolygonData::D3primitive(float x, float y, float z, float r, float g, float
 		lock = TRUE;
 	}
 
-	D3D11_MAPPED_SUBRESOURCE pData, pData1, pData2;
+	D3D11_MAPPED_SUBRESOURCE pData, pData1;
 	//インデックス配列書き換えの場合処理(基本的に最初の一回のみ)
 	if (CPUAccess == TRUE && lockI == FALSE){
 		dx->pDeviceContext->Map(pMyVBI, 0, D3D11_MAP_WRITE_DISCARD, 0, &pData);
@@ -314,27 +312,7 @@ void PolygonData::D3primitive(float x, float y, float z, float r, float g, float
 	}
 
 	//シェーダーのコンスタントバッファーに各種データを渡す
-	Dx11Process::CONSTANT_BUFFER cb;
-	dx->pDeviceContext->Map(pConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &pData2);
-
-	//表示位置
-	D3DXMatrixRotationZ(&rot, (FLOAT)D3DXToRadian(theta));
-	D3DXMatrixTranslation(&mov, x, y, z);
-	D3DXMatrixMultiply(&dx->World, &rot, &mov);
-
-	//ワールド、カメラ、射影行列、等
-	cb.World = dx->World;
-	cb.WVP = dx->World * dx->View * dx->Proj;
-	cb.C_Pos = D3DXVECTOR4(dx->cx, dx->cy, dx->cz, 0.0f);
-	cb.AddObjColor = D3DXVECTOR4(r, g, b, 0.0f);
-	cb.ShadowLow = D3DXVECTOR4(dx->ShadowLow_val, 0.0f, 0.0f, 0.0f);
-	memcpy(cb.LightPos, dx->LightPos, sizeof(D3DXVECTOR4) * LIGHT_PCS);
-	memcpy(cb.LightColor, dx->LightColor, sizeof(D3DXVECTOR4) * LIGHT_PCS);
-	memcpy(cb.Lightst, dx->Lightst, sizeof(D3DXVECTOR4) * LIGHT_PCS);
-	D3DXMatrixTranspose(&cb.World, &cb.World);
-	D3DXMatrixTranspose(&cb.WVP, &cb.WVP);
-	memcpy_s(pData2.pData, pData2.RowPitch, (void*)(&cb), sizeof(cb));
-	dx->pDeviceContext->Unmap(pConstantBuffer, 0);
+	dx->MatrixMap(pConstantBuffer, x, y, z, r, g, b, theta, 1.0f, disp);
 
 	//このコンスタントバッファーをどのシェーダーで使うか
 	if (CPUAccess == TRUE){
@@ -385,4 +363,8 @@ void PolygonData::D3primitive(float x, float y, float z, float r, float g, float
 	}
 	//プリミティブをレンダリング
 	dx->pDeviceContext->DrawIndexed(verI, 0, 0);
+
+	//ハル,ドメインシェーダー無効
+	dx->pDeviceContext->HSSetShader(NULL, NULL, 0);
+	dx->pDeviceContext->DSSetShader(NULL, NULL, 0);
 }

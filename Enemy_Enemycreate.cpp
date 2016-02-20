@@ -108,32 +108,32 @@ bool Enemy::Effectdraw(Battle *battle, int *E_select_obj){
 	else ver = 25;
 
 	//左前
-	effect.SetVertex(0, 3, 0,
+	effect.SetVertex(0, 0,
 		(float)-ver, (float)0.0f, ver * 2,
 		0.0f, 0.0f, 0.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 		tx, ty);
 
+	//右前
+	effect.SetVertex(1, 4, 1,
+		(float)ver, (float)0.0f, ver * 2,
+		0.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+		tx + px, ty);
+
 	//左奥
-	effect.SetVertex(4, 2,
+	effect.SetVertex(2, 3, 2,
 		(float)-ver, (float)0.0f, 0.0f,
 		0.0f, 0.0f, 0.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 		tx, ty + py);
 
 	//右奥
-	effect.SetVertex(2, 5, 3,
+	effect.SetVertex(5, 3,
 		(float)ver, (float)0.0f, 0.0f,
 		0.0f, 0.0f, 0.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 		tx + px, ty + py);
-
-	//右前
-	effect.SetVertex(1, 1,
-		(float)ver, (float)0.0f, ver * 2,
-		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-		tx + px, ty);
 
 	if ((tt += tfloat.Add(0.8f)) > 10.0f){//速度調整用
 		tt = 0;
@@ -181,12 +181,12 @@ bool Enemy::Effectdraw(Battle *battle, int *E_select_obj){
 	if (effect.tex_no == 2 || effect.tex_no == 3){
 		MovieSoundManager::Heal_sound(TRUE);
 		if (*E_select_obj != 4){
-			effect.D3primitive(e_pos[*E_select_obj].x + ex, e_pos[*E_select_obj].y + ey, e_pos[*E_select_obj].z, 0, 0, 0, e_pos[*E_select_obj].theta, TRUE, TRUE);
+			effect.D3primitive(e_pos[*E_select_obj].x + ex, e_pos[*E_select_obj].y + ey, e_pos[*E_select_obj].z, 0, 0, 0, e_pos[*E_select_obj].theta, TRUE, TRUE, 0);
 		}
 		else {
 			for (int i = 0; i < 4; i++){
 				if (battle->GetE_RCV(i) == FALSE)continue;
-				effect.D3primitive(e_pos[i].x + ex, e_pos[i].y + ey, e_pos[i].z, 0, 0, 0, e_pos[i].theta, TRUE, TRUE);
+				effect.D3primitive(e_pos[i].x + ex, e_pos[i].y + ey, e_pos[i].z, 0, 0, 0, e_pos[i].theta, TRUE, TRUE, 0);
 			}
 		}
 	}
@@ -195,21 +195,21 @@ bool Enemy::Effectdraw(Battle *battle, int *E_select_obj){
 		if (effect.tex_no == 1)MovieSoundManager::Flame_sound(TRUE);
 		switch (*E_select_obj){
 		case 0:
-			effect.D3primitive(h_pos->cx1 + hx[0], h_pos->cy1 + hy[0], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE);
+			effect.D3primitive(h_pos->cx1 + hx[0], h_pos->cy1 + hy[0], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
 			break;
 		case 1:
-			effect.D3primitive(h_pos->cx1 + hx[1], h_pos->cy1 + hy[1], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE);
+			effect.D3primitive(h_pos->cx1 + hx[1], h_pos->cy1 + hy[1], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
 			break;
 		case 2:
-			effect.D3primitive(h_pos->cx1 + hx[2], h_pos->cy1 + hy[2], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE);
+			effect.D3primitive(h_pos->cx1 + hx[2], h_pos->cy1 + hy[2], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
 			break;
 		case 3:
-			effect.D3primitive(h_pos->cx1 + hx[3], h_pos->cy1 + hy[3], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE);
+			effect.D3primitive(h_pos->cx1 + hx[3], h_pos->cy1 + hy[3], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
 			break;
 		case 4:
 			for (int i = 0; i < 4; i++){
 				if (battle->GetH_DM(i) == FALSE)continue;
-				effect.D3primitive(h_pos->cx1 + hx[i], h_pos->cy1 + hy[i], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE);
+				effect.D3primitive(h_pos->cx1 + hx[i], h_pos->cy1 + hy[i], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
 			}
 			break;
 		}

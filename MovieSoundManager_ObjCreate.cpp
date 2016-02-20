@@ -63,14 +63,18 @@ void MovieSoundManager::ObjCreate_map(int map_no){
 		if (dungeon_so == NULL)dungeon_so = new Sound_(21);
 		break;
 	case 1:
+		if (mo == NULL)mo = new Movie(0);
 		if (f_wall == NULL)f_wall = new Movie(1);
 		if (dungeon_so == NULL)dungeon_so = new Sound_(22);
 		if (rain_so == NULL)rain_so = new Sound_(23);
 		break;
 	case 2:
+		if (mo == NULL)mo = new Movie(0);
+		if (f_wall == NULL)f_wall = new Movie(1);
 		if (dungeon_so == NULL)dungeon_so = new Sound_(24);
 		break;
 	case 3:
+		if (mo == NULL)mo = new Movie(0);
 		if (f_wall == NULL)f_wall = new Movie(1);
 		if (dungeon_so == NULL)dungeon_so = new Sound_(25);
 		break;

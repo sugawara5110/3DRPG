@@ -240,7 +240,7 @@ Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 		}
 		return WIN;
 	}
-	Debug(enemy);//デバック用
+	//Debug(enemy);//デバック用
 	return IN_BATTLE;
 }
 
@@ -293,20 +293,12 @@ bool Battle::GetE_RCV(int element){
 
 void Battle::Debug(Enemy *enemy){//デバック用
 
-	char str[30];
 	for (int i = 0; i < 4; i++){
 		if (e_pos[i].element == FALSE)continue;
-		sprintf(str, "ENEMY %d HP%d/MHP%d", i, enemy[i].s_HP(), enemy[i].s_MHP());
-		//dx->text(str, 500, 10 + 90 * i, TRUE, 0xffffffff);
-		sprintf(str, "ENEMY %d MP%d/MMP%d", i, enemy[i].s_MP(), enemy[i].s_MMP());
-		//dx->text(str, 500, 25 + 90 * i, TRUE, 0xffffffff);
-		sprintf(str, "ENEMY %d メーター %f", i, e_draw[i].AGmeter);
-		//dx->text(str, 500, 40 + 90 * i, TRUE, 0xffffffff);
-		sprintf(str, "ENEMY %d x %f", i, e_pos[i].x);
-		//dx->text(str, 500, 55 + 90 * i, TRUE, 0xffffffff);
-		sprintf(str, "ENEMY %d y %f", i, e_pos[i].y);
-		//dx->text(str, 500, 70 + 90 * i, TRUE, 0xffffffff);
-		sprintf(str, "ENEMY %d z %f", i, e_pos[i].z);
-		//dx->text(str, 500, 85 + 90 * i, TRUE, 0xffffffff);
+		text->DrawValue(enemy[i].s_HP(), 500.0f, 10.0f + 90.0f * i, 15.0f, 5, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(enemy[i].s_MHP(), 580.0f, 10.0f + 90.0f * i, 15.0f, 5, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(enemy[i].s_MP(), 500.0f, 25.0f + 90.0f * i, 15.0f, 5, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue(enemy[i].s_MMP(), 580.0f, 25.0f + 90.0f * i, 15.0f, 5, { 1.0f, 1.0f, 1.0f, 1.0f });
+		text->DrawValue((int)e_draw[i].AGmeter, 500.0f, 40.0f + 90.0f * i, 15.0f, 5, { 1.0f, 1.0f, 1.0f, 1.0f });
 	}
 }

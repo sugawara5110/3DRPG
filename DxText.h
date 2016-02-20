@@ -39,8 +39,8 @@ public:
 	static DxText *GetInstance();
 	static void DeleteInstance();
 	TCHAR *CreateTextValue(int val);
-	void Drawtext(TCHAR *c, float x, float y, float fontsize, D3DXVECTOR4 cl);
-	void DrawValue(int val, float x, float y, float fontsize, int pcs, D3DXVECTOR4 cl);
+	void Drawtext(TCHAR *c, float x, float y, float fontsize, VECTOR4 cl);
+	void DrawValue(int val, float x, float y, float fontsize, int pcs, VECTOR4 cl);
 };
 
 #endif

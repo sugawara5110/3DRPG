@@ -11,6 +11,39 @@
 #include <stdio.h>
 #include <time.h>
 
+//ŽlŽÌŒÜ“ü
+int rounding(int val, int digit_number){
+
+	int v = 5 * (int)pow(10.0, (double)digit_number - 1.0);
+	val += v;
+	return val -= (val % (int)pow(10.0, (double)digit_number));
+}
+
+bool Map::MoveUpCond(int Ind){
+	if (mxy.m[Ind] == 49 ||
+		mxy.m[Ind] == 74 ||
+		mxy.m[Ind] == 75 ||
+		mxy.m[Ind] == 76 ||
+		mxy.m[Ind] == 77 ||
+		mxy.m[Ind] == 78 ||
+		mxy.m[Ind] == 79 ||
+		mxy.m[Ind] == 52 ||
+		mxy.m[Ind] == 53 ||
+		mxy.m[Ind] == 45 ||
+		mxy.m[Ind] == 87 ||
+		mxy.m[Ind] == 73)return TRUE;
+	return FALSE;
+}
+
+bool Map::MoveDownCond(int Ind){
+	if (MoveUpCond(Ind) ||
+		mxy.m[Ind] == 56 ||
+		mxy.m[Ind] == 51 ||
+		mxy.m[Ind] == 54 ||
+		mxy.m[Ind] == 55) return TRUE;
+	return FALSE;
+}
+
 Encount Map::Move(MapState *mapstate, Directionkey direction){
 
 	int rnd;
@@ -155,73 +188,25 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 	//“–‚½‚è”»’è
 	if (direction_move == UP){
 		if (((src_theta == 0 || src_theta == 360) &&
-			(posy == 0 || mxy.m[POSY_D1] == 49 ||
-			mxy.m[POSY_D1] == 52 ||
-			mxy.m[POSY_D1] == 53 ||
-			mxy.m[POSY_D1] == 45 ||
-			mxy.m[POSY_D1] == 73)) ||
+			(posy == 0 || MoveUpCond(POSY_D1))) ||
 			(src_theta == 90 &&
-			(posx == mxy.x - 1 || mxy.m[POSX_U1] == 49 ||
-			mxy.m[POSX_U1] == 52 ||
-			mxy.m[POSX_U1] == 53 ||
-			mxy.m[POSX_U1] == 45 ||
-			mxy.m[POSX_U1] == 73)) ||
+			(posx == mxy.x - 1 || MoveUpCond(POSX_U1))) ||
 			(src_theta == 180 &&
-			(posy == mxy.y - 1 || mxy.m[POSY_U1] == 49 ||
-			mxy.m[POSY_U1] == 52 ||
-			mxy.m[POSY_U1] == 53 ||
-			mxy.m[POSY_U1] == 45 ||
-			mxy.m[POSY_U1] == 73)) ||
+			(posy == mxy.y - 1 || MoveUpCond(POSY_U1))) ||
 			(src_theta == 270 &&
-			(posx == 0 || mxy.m[POSX_D1] == 49 ||
-			mxy.m[POSX_D1] == 52 ||
-			mxy.m[POSX_D1] == 53 ||
-			mxy.m[POSX_D1] == 45 ||
-			mxy.m[POSX_D1] == 73))){
+			(posx == 0 || MoveUpCond(POSX_D1)))){
 			moving = FALSE; return NOENCOUNT;
 		}
 	}
 	if (direction_move == DOWN){
 		if (((src_theta == 0 || src_theta == 360) &&
-			(posy == mxy.y - 1 || mxy.m[POSY_U1] == 49 ||
-			mxy.m[POSY_U1] == 52 ||
-			mxy.m[POSY_U1] == 53 ||
-			mxy.m[POSY_U1] == 56 ||
-			mxy.m[POSY_U1] == 45 ||
-			mxy.m[POSY_U1] == 73 ||
-			mxy.m[POSY_U1] == 51 ||
-			mxy.m[POSY_U1] == 54 ||
-			mxy.m[POSY_U1] == 55)) ||
+			(posy == mxy.y - 1 || MoveDownCond(POSY_U1))) ||
 			(src_theta == 90 &&
-			(posx == 0 || mxy.m[POSX_D1] == 49 ||
-			mxy.m[POSX_D1] == 52 ||
-			mxy.m[POSX_D1] == 53 ||
-			mxy.m[POSX_D1] == 56 ||
-			mxy.m[POSX_D1] == 45 ||
-			mxy.m[POSX_D1] == 73 ||
-			mxy.m[POSX_D1] == 51 ||
-			mxy.m[POSX_D1] == 54 ||
-			mxy.m[POSX_D1] == 55)) ||
+			(posx == 0 || MoveDownCond(POSX_D1))) ||
 			(src_theta == 180 &&
-			(posy == 0 || mxy.m[POSY_D1] == 49 ||
-			mxy.m[POSY_D1] == 52 ||
-			mxy.m[POSY_D1] == 53 ||
-			mxy.m[POSY_D1] == 56 ||
-			mxy.m[POSY_D1] == 45 ||
-			mxy.m[POSY_D1] == 73 ||
-			mxy.m[POSY_D1] == 51 ||
-			mxy.m[POSY_D1] == 54 ||
-			mxy.m[POSY_D1] == 55)) ||
+			(posy == 0 || MoveDownCond(POSY_D1))) ||
 			(src_theta == 270 &&
-			(posx == mxy.x - 1 || mxy.m[POSX_U1] == 49 ||
-			mxy.m[POSX_U1] == 52 ||
-			mxy.m[POSX_U1] == 53 ||
-			mxy.m[POSX_U1] == 56 ||
-			mxy.m[POSX_U1] == 45 ||
-			mxy.m[POSX_U1] == 73 ||
-			mxy.m[POSX_U1] == 51 ||
-			mxy.m[POSX_U1] == 54 ||
-			mxy.m[POSX_U1] == 55))){
+			(posx == mxy.x - 1 || MoveDownCond(POSX_U1)))){
 			moving = FALSE; return NOENCOUNT;
 		}
 	}
@@ -239,6 +224,8 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			src_theta = m_theta;
 			moving = FALSE;
 			direction_move = NOTPRESS;
+			cay2 = (float)rounding((int)cay2, 1);
+			cax2 = (float)rounding((int)cax2, 1);
 		}
 		break;
 
@@ -250,6 +237,8 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			src_theta = m_theta;
 			moving = FALSE;
 			direction_move = NOTPRESS;
+			cay2 = (float)rounding((int)cay2, 1);
+			cax2 = (float)rounding((int)cax2, 1);
 		}
 		break;
 
@@ -259,7 +248,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			cay1 -= m; cay2 -= m;
 			if (stepy >= cay1){
 				cay1 = stepy;
-				cay2 = cay1 - 100.0f;
+				cay2 = cay1 - 50.0f;
 				movf = TRUE;
 			}
 		}
@@ -267,7 +256,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			cax1 += m; cax2 += m;
 			if (stepx <= cax1){
 				cax1 = stepx;
-				cax2 = cax1 + 100.0f;
+				cax2 = cax1 + 50.0f;
 				movf = TRUE;
 			}
 		}
@@ -275,7 +264,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			cay1 += m; cay2 += m;
 			if (stepy <= cay1){
 				cay1 = stepy;
-				cay2 = cay1 + 100.0f;
+				cay2 = cay1 + 50.0f;
 				movf = TRUE;
 			}
 		}
@@ -283,7 +272,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			cax1 -= m; cax2 -= m;
 			if (stepx >= cax1){
 				cax1 = stepx;
-				cax2 = cax1 - 100.0f;
+				cax2 = cax1 - 50.0f;
 				movf = TRUE;
 			}
 		}
@@ -324,7 +313,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			cay1 += m; cay2 += m;
 			if (stepy <= cay1){
 				cay1 = stepy;
-				cay2 = cay1 - 100.0f;
+				cay2 = cay1 - 50.0f;
 				movf = TRUE;
 			}
 		}
@@ -332,7 +321,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			cax1 -= m; cax2 -= m;
 			if (stepx >= cax1){
 				cax1 = stepx;
-				cax2 = cax1 + 100.0f;
+				cax2 = cax1 + 50.0f;
 				movf = TRUE;
 			}
 		}
@@ -340,7 +329,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			cay1 -= m; cay2 -= m;
 			if (stepy >= cay1){
 				cay1 = stepy;
-				cay2 = cay1 + 100.0f;
+				cay2 = cay1 + 50.0f;
 				movf = TRUE;
 			}
 		}
@@ -348,7 +337,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			cax1 += m; cax2 += m;
 			if (stepx <= cax1){
 				cax1 = stepx;
-				cax2 = cax1 - 100.0f;
+				cax2 = cax1 - 50.0f;
 				movf = TRUE;
 			}
 		}

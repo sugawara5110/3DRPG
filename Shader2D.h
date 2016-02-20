@@ -59,13 +59,3 @@ char *Shader2D =
 "	return input.Col * g_texColor.Sample(g_samLinear, input.Tex);\n"
 "}\n";
 //**************************テクスチャピクセル**************************//
-
-
-
-
-
-
-
-
-
-
