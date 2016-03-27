@@ -20,7 +20,7 @@ PolygonData::PolygonData(){
 	pTexview = NULL;
 	pTex = NULL;
 	pMyVB = NULL;
-	lock = FALSE;  //ロック,頂点設定前
+	lockV = FALSE;  //ロック,頂点設定前
 	lockI = FALSE;//ロック,インデックス設定前
 	CPUAccess = TRUE;
 	lighteffect = FALSE;
@@ -186,7 +186,7 @@ void PolygonData::SetTextureMPixel(int **m_pix, BYTE r, BYTE g, BYTE b, int a){
 	UCHAR *ptex = (UCHAR*)pData.pData;
 
 	for (int j = 0; j < height; j++){
-		UINT j1 = j * pData.RowPitch;
+		UINT j1 = j * pData.RowPitch;//RowPitchデータの行ピッチ、行幅、または物理サイズ (バイト単位)
 		for (int i = 0; i < width; i++){
 			UINT ptexI = i * 4 + j1;
 			ptex[ptexI + 0] = m_pix[j][i] >> 16 & r;
@@ -265,7 +265,7 @@ void PolygonData::D3primitive(float x, float y, float z, float r, float g, float
 	if (pDomainShader != NULL)dx->pDeviceContext->DSSetShader(pDomainShader, NULL, 0);
 
 	//コントロールポイントでバーテックスバッファー作成
-	if (CPUAccess == FALSE && lock == FALSE){
+	if (CPUAccess == FALSE && lockV == FALSE){
 		//頂点バッファ取得
 		bd.Usage = D3D11_USAGE_DEFAULT;
 		bd.ByteWidth = sizeof(MY_VERTEX) * ver;
@@ -291,7 +291,7 @@ void PolygonData::D3primitive(float x, float y, float z, float r, float g, float
 		D3D11_SUBRESOURCE_DATA IndexData;
 		IndexData.pSysMem = d3varrayI;
 		dx->pDevice->CreateBuffer(&bdI, &IndexData, &pMyVBI);
-		lock = TRUE;
+		lockV = TRUE;
 	}
 
 	D3D11_MAPPED_SUBRESOURCE pData, pData1;
@@ -304,11 +304,11 @@ void PolygonData::D3primitive(float x, float y, float z, float r, float g, float
 	}
 
 	//頂点配列書き換えの場合処理(最初の1回は必ず実行される,その後は任意)
-	if (CPUAccess == TRUE && (lock == FALSE || lock == TRUE)){
+	if (CPUAccess == TRUE && (lockV == FALSE || lock == TRUE)){
 		dx->pDeviceContext->Map(pMyVB, 0, D3D11_MAP_WRITE_DISCARD, 0, &pData1);
 		memcpy_s(pData1.pData, pData1.RowPitch, (void*)d3varray, sizeof(MY_VERTEX) * ver);
 		dx->pDeviceContext->Unmap(pMyVB, 0);
-		lock = TRUE;
+		lockV = TRUE;
 	}
 
 	//シェーダーのコンスタントバッファーに各種データを渡す

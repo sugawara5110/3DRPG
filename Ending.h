@@ -7,7 +7,6 @@
 #ifndef Class_Ending_Header
 #define Class_Ending_Header
 
-#include "Dx11Process.h"
 #include "MovieSoundManager.h"
 #include "DxText.h"
 

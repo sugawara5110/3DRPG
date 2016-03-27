@@ -4,7 +4,6 @@
 //**                                   Magiccreateä÷êî                                   **//
 //*****************************************************************************************//
 
-#include "Dx11Process.h"
 #include "EnemySide.h"
 
 EnemySide::EnemySide(){}

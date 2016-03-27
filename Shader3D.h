@@ -143,7 +143,7 @@ char *Shader3D =
 "       NL = max(saturate(dot(input.Nor, D_LightDir)), g_DLightst.z);\n"
 "       Col = Col + g_DLightColor * g_DLightst.x * NL;\n"
 "    }\n"
-
+"    if(T.w <= 0.0f)discard;\n"//アルファ値0の場合ピクセル破棄
 "    return float4(Col, a) * T + g_ObjCol;\n"
 "}\n"
 
@@ -165,6 +165,7 @@ char *Shader3D =
 "          T = ff * T + (1.0f - ff) * g_FogColor;\n"
 "       }\n"
 "    }\n"
+"    if(T.w <= 0.0f)discard;\n"//アルファ値0の場合ピクセル破棄
 "    return input.Col * T + g_ObjCol;\n"
 "}\n"
 //****************************************テクスチャピクセル**********************************************************//

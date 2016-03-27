@@ -4,7 +4,6 @@
 //**                                   Magiccreate関数                                   **//
 //*****************************************************************************************//
 
-#include "Dx11Process.h"
 #include "EnemyBoss.h"
 #include <time.h>
 
@@ -14,7 +13,7 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 
 	h_pos = h_po;
 	e_pos = e_po;
-	mag_size = 200;
+	mag_size = 0.1f;
 	//t_no=敵№
 	int e;
 	switch (t_no){
@@ -97,7 +96,7 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 		pos_offset = 30.0f;
 		size_x = 110.0f;
 		size_y = 110.0f;
-		mag_size = 300;
+		mag_size = 0.15f;
 		break;
 	case 4:
 		e = 59;
@@ -118,7 +117,7 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 		pos_offset = 100.0f;
 		size_x = 200.0f;
 		size_y = 135.0f;
-		mag_size = 500;
+		mag_size = 0.25f;
 		break;
 	}
 	p_data.HP = s_MHP();
@@ -130,9 +129,8 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 	en.GetTexture(e);
 	en.GetVBarrayCPUNotAccess(1);
 	en.Light(TRUE);
-	mag = new PolygonData();
-	mag->GetTexture(61);
-	mag->GetVBarray(SQUARE, 1);
+	mag_boss = new ParticleData();
+	mag_boss->CreateParticle(61, mag_size, 5.0f);
 
 	Enemycreate(size_x, size_y);
 }
@@ -185,42 +183,15 @@ bool EnemyBoss::LostAction(float x, float y, float z){
 
 //@Override
 bool EnemyBoss::Magiccreate(float x, float y, float z){
-
-	float si = mag_size / 2;
-	//マジック左上
-	mag->SetVertex(0, 0,
-		(float)-si, (float)-si, 2.0f,
-		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-		0.0f, 0.0f);
-
-	//マジック右上
-	mag->SetVertex(1, 4, 1,
-		(float)si, (float)-si, 2.0f,
-		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-		1.0f, 0.0f);
-
-	//マジック左下
-	mag->SetVertex(2, 3, 2,
-		(float)-si, (float)si, 2.0f,
-		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-		0.0f, 1.0f);
-
-	//マジック右下
-	mag->SetVertex(5, 3,
-		(float)si, (float)si, 2.0f,
-		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-		1.0f, 1.0f);
-
 	float m = tfloat.Add(0.15f);
 	MovieSoundManager::Magic_sound(TRUE);
-	mag->D3primitive(x + mov_x, y + mov_y, z + 1.0f + mov_z, 0, 0, 0, count, TRUE, FALSE, 0);
+	if (count == 0.0f)mag_boss->Draw(x + mov_x, y + mov_y, z + 5.0f + mov_z, (float)((int)count % 360), 0.3f, TRUE, mag_size);
+	if (count != 0.0f)mag_boss->Draw(x + mov_x, y + mov_y, z + 5.0f + mov_z, (float)((int)count % 360), 0.3f, FALSE, mag_size);
+	dx->PointLightPosSet(3, x, y, z, 0.7f, 0.2f, 0.2f, 1.0f, mag_size * 500.0f, mag_size * 100.0f, 2.0f, TRUE);
 
-	if ((count += m) > 200.0f){
+	if ((count += m) > 900){
 		count = 0.0f;
+		dx->PointLightPosSet(3, x, y, z, 0.7f, 0.2f, 0.2f, 1.0f, mag_size * 1000.0f, 100.0f, 2.0f, FALSE);
 		return FALSE;
 	}
 	return TRUE;
@@ -300,6 +271,6 @@ void EnemyBoss::M_select(int *r, int *r1){
 
 EnemyBoss::~EnemyBoss(){
 
-	delete mag;
-	mag = NULL;
+	delete mag_boss;
+	mag_boss = NULL;
 }

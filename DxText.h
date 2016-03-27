@@ -8,16 +8,19 @@
 #define Class_DxText_Header
 
 #include "Dx11Process.h"
+#define STRTEX_MAX_PCS 40
+#define STR_MAX_LENGTH 40
+#define VAL_PCS 10
 
 class DxText{
 
 private:
 	Dx11Process *dx;
-	PolygonData2D text[20];  //文字描画用
-	PolygonData2D value[10];//可変数字用
-	TCHAR str[20][40];                 //登録テキスト
-	float f_size[20];                  //登録テキストのフォントサイズ
-	int strcnt[20];                   //登録テキスト文字数 
+	PolygonData2D text[STRTEX_MAX_PCS];       //文字描画用
+	PolygonData2D value[VAL_PCS];              //可変数字用
+	TCHAR str[STRTEX_MAX_PCS][STR_MAX_LENGTH]; //登録テキスト
+	float f_size[STRTEX_MAX_PCS];              //登録テキストのフォントサイズ
+	int strcnt[STRTEX_MAX_PCS];       //登録テキスト文字数 
 	HFONT hFont, oldFont;           //フォント
 	HDC hdc;                       //デバイスコンテキスト
 	int CreateTextNo;              //テキスト作成ターゲット

@@ -49,7 +49,7 @@ private:
 
 	static Movie *mo;
 	static Movie *f_wall;
-	static Sound_ *dungeon_so;
+	static Sound_ *dungeon_so[5];
 	static Sound_ *rain_so;
 	static Sound_ *enemy_so;
 	static Sound_ *title_so;
@@ -58,6 +58,7 @@ private:
 	static Sound_ *select_so, *enter_so;
 	static Sound_ *ending_so;
 	static Sound_ *bosslost_so;
+	static int map_n;//dungeon_so[5]“Y‚¦Žš
 	
 	MovieSoundManager();
 
@@ -66,6 +67,7 @@ public:
 	static void ObjCreate_title();
 	static void ObjDelete_title();
 	static void ObjCreate_map(int map_no);
+	static void ObjChange_map();
 	static void ObjDelete_map();
 	static void ObjCreate_battle(int n);
 	static void ObjDelete_battle();
@@ -74,8 +76,8 @@ public:
 	static void ObjDelete();
 	static int **Torch_GetFrame(int width, int height);
 	static int **FireWall_GetFrame(int width, int height);
-	static void Dungeon_sound(bool repeat);
-	static void Dungeon_soundoff();
+	static void Dungeon_sound(bool repeat, int map);
+	static void Dungeon_soundoff(int map);
 	static void Rain_sound(bool repeat);
 	static void Rain_soundoff();
 	static void Enemy_sound(bool repeat);

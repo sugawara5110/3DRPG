@@ -6,7 +6,6 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
-#include "Dx11Process.h"
 #include "DxText.h"
 #include <new>     //placement new
 #include <stdlib.h>

@@ -22,6 +22,7 @@
 #include <stdlib.h >
 
 #define LIGHT_PCS 150
+#define LIGHT_PCS_init 7
 #pragma comment(lib,"winmm.lib")
 #pragma comment(lib,"d3d11.lib")
 #pragma comment(lib,"d3dCompiler.lib")
@@ -31,6 +32,7 @@ class DxText;
 class MeshData;
 class PolygonData;
 class PolygonData2D;
+class ParticleData;
 //***********************//
 
 struct MATRIX{
@@ -83,6 +85,7 @@ private:
 	friend MeshData;
 	friend PolygonData;
 	friend PolygonData2D;
+	friend ParticleData;
 	ID3D11Device                *pDevice;
 	ID3D11DeviceContext        *pDeviceContext;
 	IDXGISwapChain             *pSwapChain;
@@ -91,6 +94,9 @@ private:
 	ID3D11DepthStencilView    *pDSV;
 
 	//各シェーダーはこのクラスでコンパイル, 保持, 解放を行う 使用する時はポインタを渡す
+	ID3D11GeometryShader       *pGeometryShader_PSO;
+	ID3D11GeometryShader       *pGeometryShader_P;
+
 	ID3D11HullShader           *pHullShader_MESH_D;
 	ID3D11HullShader           *pHullShader_DISPL;
 	ID3D11HullShader           *pHullShader_DISP;
@@ -99,6 +105,7 @@ private:
 	ID3D11DomainShader         *pDomainShader_DISPL;
 	ID3D11DomainShader         *pDomainShader_DISP;
 
+	ID3D11InputLayout          *pVertexLayout_P;
 	ID3D11InputLayout          *pVertexLayout_MESH_D;
 	ID3D11InputLayout          *pVertexLayout_MESH;
 	ID3D11InputLayout          *pVertexLayout_DISPL;
@@ -109,6 +116,8 @@ private:
 	ID3D11InputLayout          *pVertexLayout_2D;
 	ID3D11InputLayout          *pVertexLayout_2DTC;
 
+	ID3D11VertexShader         *pVertexShader_PSO;
+	ID3D11VertexShader         *pVertexShader_P;
 	ID3D11VertexShader         *pVertexShader_MESH_D;
 	ID3D11VertexShader         *pVertexShader_MESH;
 	ID3D11VertexShader         *pVertexShader_DISPL;
@@ -119,6 +128,7 @@ private:
 	ID3D11VertexShader         *pVertexShader_2D;
 	ID3D11VertexShader         *pVertexShader_2DTC;
 
+	ID3D11PixelShader          *pPixelShader_P;
 	ID3D11PixelShader          *pPixelShader_MESH_D;
 	ID3D11PixelShader          *pPixelShader_MESH;
 	ID3D11PixelShader          *pPixelShader_DISPL;
@@ -131,7 +141,8 @@ private:
 
 	ID3D11Buffer                *pConstantBuffer;
 	ID3D11SamplerState         *pSampleLinear;
-	ID3D11ShaderResourceView  **pTexture;
+	ID3D11ShaderResourceView  **pTexture;     //通常のテクスチャ
+	ID3D11Texture2D            **pTexCPUAcc;   //ピクセルデータ読み込み用
 	ID3D11BlendState           *pBlendState;
 	ID3D11RasterizerState     *pRasterizeState;
 	D3D11_BLEND_DESC            bld;
@@ -147,6 +158,14 @@ private:
 
 	//現在位置
 	float cx, cy, cz;
+	//カメラ画角
+	float ViewY_theta;
+	//アスペクト比
+	float aspect;
+	//nearプレーン
+	float NearPlane;
+	//farプレーン
+	float FarPlane;
 
 	//ポイントライト
 	struct PointLight{
@@ -206,6 +225,7 @@ private:
 	~Dx11Process();
 	void TextureBinaryDecode(char *Bpass, int i);//暗号化済み画像バイナリデコード
 	HRESULT MakeShader(LPSTR szFileName, size_t size, LPSTR szFuncName, LPSTR szProfileName, void** ppShader, ID3DBlob** ppBlob);
+	HRESULT MakeShaderGeometrySO(LPSTR szFileName, size_t size, LPSTR szFuncName, LPSTR szProfileName, void** ppShader, ID3DBlob** ppBlob, D3D11_SO_DECLARATION_ENTRY *Decl, UINT Declsize);
 	void ChangeBlendState(BOOL at, BOOL a);
 	void MatrixMap(ID3D11Buffer *pCBuffer, float x, float y, float z, float r, float g, float b, float theta, float size, float disp);
 	//行列初期化
@@ -235,13 +255,17 @@ public:
 	void ResetPointLight();
 	void P_ShadowBright(float val);
 	void PointLightPosSet(int Idx, float x, float y, float z, float r, float g, float b, float a, float range,
-		float brightness, float attenuation, bool on_off);
+		float brightness, float attenuation, bool on_off);//0:視点, 1:ラスボス, 2:出入り口, 3456:戦闘
 	void DirectionLight(float x, float y, float z, float r, float g, float b, float bright, float ShadowBright);
 	void SetDirectionLight(bool onoff);
 	void Fog(float r, float g, float b, float amount, float density, bool onoff);
 	void TextureBinaryDecodeAll();
 	void GetTexture();
 	void Drawscreen();
+	float GetViewY_theta();
+	float Getaspect();
+	float GetNearPlane();
+	float GetFarPlane();
 };
 
 //*********************************MeshDataクラス*************************************//
@@ -258,7 +282,7 @@ private:
 	ID3D11PixelShader          *pPixelShader;
 	ID3D11Buffer                *pConstantBuffer;
 
-	ID3D11Buffer                *pConstantBuffer_MESH;//クラス内生成解放
+	ID3D11Buffer                *pConstantBuffer_MESH;//クラス内生成解放(マテリアル渡し用)
 	ID3D11Buffer                *pMyVB;       //頂点バッファ
 	ID3D11Buffer                **pMyVBI;    //インデックスバッファ(マテリアルの数だけ必要)
 	DWORD                        VerCount;   //頂点数    
@@ -339,7 +363,7 @@ private:
 	};
 	MY_VERTEX                  *d3varray;  //頂点配列
 	UINT                        *d3varrayI;//頂点インデックス
-	bool                         lock;     //ロック,頂点設定済み
+	bool                         lockV;    //ロック,頂点設定済み
 	bool                         lockI;   //ロック,インデックス設定済み
 	bool                         CPUAccess;   //CPUアクセス有無
 	bool                         lighteffect;//ライトの影響有無
@@ -384,7 +408,7 @@ private:
 
 	//メニュー用頂点(2D)
 	struct MY_VERTEX2{
-		float         x, y, z;
+		float    x, y, z;
 		VECTOR4 color;
 		VECTOR2 tex;    //テクスチャ座標
 	};
@@ -396,7 +420,7 @@ public:
 	D3D11_BUFFER_DESC          bd;         //バッファリソース内容
 	ID3D11Buffer                *pMyVB;     //頂点バッファ
 	MY_VERTEX2                 *d3varray;  //頂点配列
-	bool                         lock;
+	bool                         lockV;
 
 	PolygonData2D();
 	~PolygonData2D();
@@ -404,7 +428,7 @@ public:
 	void D2primitive(bool a, bool lock);
 };
 
-//移動量一定化
+//**************移動量一定化*************//
 class T_float{
 
 private:
@@ -413,6 +437,51 @@ private:
 public:
 	static void GetTime();//常に実行
 	float Add(float f);
+};
+
+//*********************************ParticleDataクラス*************************************//
+
+class ParticleData{
+
+private:
+	friend Dx11Process;
+	Dx11Process                 *dx;
+	//シェーダー, コンスタントバッファを使う場合はDx11Processクラスからポインタを渡す,このクラスで生成しない
+	ID3D11GeometryShader       *pGeometryShaderSO;
+	ID3D11VertexShader         *pVertexShaderSO;
+	ID3D11GeometryShader       *pGeometryShader;
+	ID3D11InputLayout          *pVertexLayout;
+	ID3D11VertexShader         *pVertexShader;
+	ID3D11PixelShader          *pPixelShader;
+
+	ID3D11Buffer                *pConstantBuffer;//クラス内生成(WVP用)
+
+	int                          ver;        //頂点数
+	ID3D11Buffer               *pMyVB;    //頂点バッファ描画
+	ID3D11Buffer               *pMyVB_SO;//頂点バッファ計算後
+
+	struct CONSTANT_BUFFER_P{
+		MATRIX  WV;
+		MATRIX  Proj;
+		VECTOR4 size;//xパーティクル大きさ, yパーティクル初期化フラグ, zスピード
+	};
+	struct PartPos{
+		VECTOR3 CurrentPos; //描画に使う
+		VECTOR3 PosSt;     //開始位置
+		VECTOR3 PosEnd;   //終了位置
+		VECTOR4 Col;
+	};
+	PartPos *P_pos;//パーティクルデータ配列
+	bool Drawfirst;
+
+	void GetShaderPointer();
+	void MatrixMap(float x, float y, float z, float theta, float size, bool init, float speed);
+
+public:
+	ParticleData();
+	~ParticleData();
+	void CreateParticle(int texture_no, float size, float density);//テクスチャを元にパーティクルデータ生成, 全体サイズ倍率, 密度
+	void Draw(float x, float y, float z, float theta, float size, bool init, float speed);//sizeパーティクル1個のサイズ
 };
 
 #endif

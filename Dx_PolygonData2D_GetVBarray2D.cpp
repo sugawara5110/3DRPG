@@ -14,7 +14,7 @@ PolygonData2D::PolygonData2D(){
 	pPixelShader = NULL;
 	pMyVB = NULL;
 	d3varray = NULL;
-	lock = FALSE;
+	lockV = FALSE;
 	pTexview = NULL;
 }
 
@@ -82,11 +82,11 @@ void PolygonData2D::D2primitive(bool a, bool lock){//2D描画
 
 	//頂点配列書き換えの場合処理(最初の1回は必ず実行される,その後は任意)
 	D3D11_MAPPED_SUBRESOURCE pData;
-	if (lock == FALSE || lock == TRUE){
+	if (lockV == FALSE || lock == TRUE){
 		dx->pDeviceContext->Map(pMyVB, 0, D3D11_MAP_WRITE_DISCARD, 0, &pData);
 		memcpy_s(pData.pData, pData.RowPitch, (void*)d3varray, sizeof(MY_VERTEX2) * ver);
 		dx->pDeviceContext->Unmap(pMyVB, 0);
-		lock = TRUE;
+		lockV = TRUE;
 	}
 
 	//バーテックスバッファーをセット

@@ -8,7 +8,7 @@
 
 MovieSoundManager::Movie *MovieSoundManager::mo;
 MovieSoundManager::Movie *MovieSoundManager::f_wall;
-MovieSoundManager::Sound_ *MovieSoundManager::dungeon_so;
+MovieSoundManager::Sound_ *MovieSoundManager::dungeon_so[5];
 MovieSoundManager::Sound_ *MovieSoundManager::rain_so;
 MovieSoundManager::Sound_ *MovieSoundManager::enemy_so;
 MovieSoundManager::Sound_ *MovieSoundManager::title_so;
@@ -21,14 +21,15 @@ MovieSoundManager::Sound_ *MovieSoundManager::select_so;
 MovieSoundManager::Sound_ *MovieSoundManager::enter_so;
 MovieSoundManager::Sound_ *MovieSoundManager::ending_so;
 MovieSoundManager::Sound_ *MovieSoundManager::bosslost_so;
+int MovieSoundManager::map_n;
 
 MovieSoundManager::MovieSoundManager(){}
 
 void MovieSoundManager::ObjInit(){
 
-	mo = NULL;
-	f_wall = NULL;
-	dungeon_so = NULL;
+	mo = new Movie(0);
+	f_wall = new Movie(1);
+	for (int i = 0; i < 5; i++)dungeon_so[i] = NULL;
 	rain_so = NULL;
 	enemy_so = NULL;
 	bosslost_so = NULL;
@@ -41,6 +42,7 @@ void MovieSoundManager::ObjInit(){
 	magic_so = new Sound_(3);
 	select_so = new Sound_(4);
 	enter_so = new Sound_(5);
+	map_n = 0;
 }
 
 void MovieSoundManager::ObjCreate_title(){
@@ -56,48 +58,50 @@ void MovieSoundManager::ObjDelete_title(){
 }
 
 void MovieSoundManager::ObjCreate_map(int map_no){
-
+	map_n = map_no;
 	switch (map_no){
 	case 0:
-		if (mo == NULL)mo = new Movie(0);
-		if (dungeon_so == NULL)dungeon_so = new Sound_(21);
+		if (dungeon_so[0] == NULL)dungeon_so[0] = new Sound_(21);
 		break;
 	case 1:
-		if (mo == NULL)mo = new Movie(0);
-		if (f_wall == NULL)f_wall = new Movie(1);
-		if (dungeon_so == NULL)dungeon_so = new Sound_(22);
+		if (dungeon_so[1] == NULL)dungeon_so[1] = new Sound_(22);
 		if (rain_so == NULL)rain_so = new Sound_(23);
 		break;
 	case 2:
-		if (mo == NULL)mo = new Movie(0);
-		if (f_wall == NULL)f_wall = new Movie(1);
-		if (dungeon_so == NULL)dungeon_so = new Sound_(24);
+		if (dungeon_so[2] == NULL)dungeon_so[2] = new Sound_(24);
 		break;
 	case 3:
-		if (mo == NULL)mo = new Movie(0);
-		if (f_wall == NULL)f_wall = new Movie(1);
-		if (dungeon_so == NULL)dungeon_so = new Sound_(25);
+		if (dungeon_so[3] == NULL)dungeon_so[3] = new Sound_(25);
 		break;
 	case 4:
-		if (mo == NULL)mo = new Movie(0);
-		if (dungeon_so == NULL)dungeon_so = new Sound_(26);
+		if (dungeon_so[4] == NULL)dungeon_so[4] = new Sound_(26);
 		break;
 	}
 }
 
-void MovieSoundManager::ObjDelete_map(){
+void MovieSoundManager::ObjChange_map(){
+	for (int i = 0; i < 5; i++){
+		if (map_n != i){
+			delete dungeon_so[i];
+			dungeon_so[i] = NULL;
+		}
+	}
+	if (map_n != 1 && rain_so != NULL){
+		delete rain_so;
+		rain_so = NULL;
+	}
+}
 
-	if (mo != NULL){
-		delete mo; mo = NULL;
-	}
-	if (f_wall != NULL){
-		delete f_wall; f_wall = NULL;
-	}
-	if (dungeon_so != NULL){
-		delete dungeon_so; dungeon_so = NULL;
+void MovieSoundManager::ObjDelete_map(){
+	for (int i = 0; i < 5; i++){
+		if (dungeon_so[i] != NULL){
+			delete dungeon_so[i];
+			dungeon_so[i] = NULL;
+		}
 	}
 	if (rain_so != NULL){
-		delete rain_so; rain_so = NULL;
+		delete rain_so;
+		rain_so = NULL;
 	}
 }
 
@@ -147,6 +151,14 @@ void MovieSoundManager::ObjDelete(){
 	ObjDelete_battle();
 	ObjDelete_ending();
 
+	if (mo != NULL){
+		delete mo; 
+		mo = NULL;
+	}
+	if (f_wall != NULL){
+		delete f_wall; 
+		f_wall = NULL;
+	}
 	if (att_so != NULL){
 		delete att_so;
 		att_so = NULL;
@@ -181,12 +193,12 @@ int **MovieSoundManager::FireWall_GetFrame(int width, int height){
 	return f_wall->GetFrame(width, height);
 }
 
-void MovieSoundManager::Dungeon_sound(bool repeat){
-	dungeon_so->sound(repeat, -1000);
+void MovieSoundManager::Dungeon_sound(bool repeat, int map){
+	dungeon_so[map]->sound(repeat, -1000);
 }
 
-void MovieSoundManager::Dungeon_soundoff(){
-	dungeon_so->soundoff();
+void MovieSoundManager::Dungeon_soundoff(int map){
+	dungeon_so[map]->soundoff();
 }
 
 void MovieSoundManager::Rain_sound(bool repeat){

@@ -60,6 +60,23 @@ bool StateMenu::TitleMenu(Directionkey direction){
 				savedata.p_data[i].Rpoint = 10;
 				*/
 
+				savedata.p_data[i].Attack = 10;
+				savedata.p_data[i].Magic = 10;
+				savedata.p_data[i].Agility = 10;
+				savedata.p_data[i].Vitality = 10;
+				savedata.p_data[i].Exp = 100;
+				savedata.p_data[i].LV = 10;
+				savedata.p_data[i].ParameterPoint = 0;
+				savedata.p_data[i].HP = s_MAX_HP;
+				savedata.p_data[i].MP = s_MAX_MP;
+				savedata.p_data[i].FlameATT_LV = 10;
+				savedata.p_data[i].Fpoint = 100;
+				savedata.p_data[i].Healing_LV = 10;
+				savedata.p_data[i].Hpoint = 100;
+				savedata.p_data[i].Recover_LV = 10;
+				savedata.p_data[i].Rpoint = 100;
+
+				/*
 				savedata.p_data[i].Attack = 100;
 				savedata.p_data[i].Magic = 100;
 				savedata.p_data[i].Agility = 100;
@@ -75,7 +92,7 @@ bool StateMenu::TitleMenu(Directionkey direction){
 				savedata.p_data[i].Hpoint = 1000;
 				savedata.p_data[i].Recover_LV = 100;
 				savedata.p_data[i].Rpoint = 1000;
-
+				*/
 			}
 
 			savedata.h_pos.cx1 = 1150.0f;

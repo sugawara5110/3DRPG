@@ -5,6 +5,7 @@
 //*****************************************************************************************//
 
 #include "Dx11Process.h"
+#include "ShaderParticle.h"
 #include "ShaderMesh_D.h"
 #include "ShaderMesh.h"
 #include "ShaderDisp.h"
@@ -80,6 +81,31 @@ HRESULT Dx11Process::MakeShader(LPSTR szFileName, size_t size, LPSTR szFuncName,
 		pErrors->Release();
 		pErrors = NULL;
 	}
+	return S_OK;
+}
+
+HRESULT Dx11Process::MakeShaderGeometrySO(LPSTR szFileName, size_t size, LPSTR szFuncName, LPSTR szProfileName, void** ppShader, ID3DBlob** ppBlob, D3D11_SO_DECLARATION_ENTRY *Decl, UINT Declsize){
+	ID3DBlob *pErrors = NULL;
+	if (FAILED(D3DCompile(szFileName, size, NULL, NULL, NULL, szFuncName, szProfileName, D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION, 0, ppBlob, &pErrors)))
+	{
+		char*p = (char*)pErrors->GetBufferPointer();
+		MessageBoxA(0, p, 0, MB_OK);
+		return E_FAIL;
+	}
+	char szProfile[3] = { 0 };
+	memcpy(szProfile, szProfileName, 2);
+	UINT BufferStrides[] = { sizeof(ParticleData::PartPos) };
+	HRESULT hr;
+	hr = pDevice->CreateGeometryShaderWithStreamOutput(
+		(*ppBlob)->GetBufferPointer(), //バイト・コードへのポインタ
+		(*ppBlob)->GetBufferSize(),   //バイト・コードの長さ
+		Decl,                        //出力するデータ定義
+		Declsize,                //出力する1データの要素数
+		BufferStrides,          //出力する1データのサイズ
+		_countof(BufferStrides),
+		0,                        //機能レベルが「11.0」より低い場合
+		NULL,
+		(ID3D11GeometryShader**)ppShader);//作成されたジオメトリ・シェーダを受け取る変数
 	return S_OK;
 }
 
@@ -268,6 +294,12 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	pRTV = NULL;
 	pDS = NULL;
 	pDSV = NULL;
+	pGeometryShader_PSO = NULL;
+	pVertexShader_PSO = NULL;
+	pGeometryShader_P = NULL;
+	pVertexLayout_P = NULL;
+	pVertexShader_P = NULL;
+	pPixelShader_P = NULL;
 	pDomainShader_MESH_D = NULL;
 	pHullShader_MESH_D = NULL;
 	pVertexLayout_MESH_D = NULL;
@@ -364,15 +396,68 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	vp.TopLeftX = 0;
 	vp.TopLeftY = 0;
 	pDeviceContext->RSSetViewports(1, &vp);
+	//カメラ画角
+	ViewY_theta = 55.0f;
 	// アスペクト比の計算
-	float aspect;
 	aspect = (float)vp.Width / (float)vp.Height;
+	//nearプレーン
+	NearPlane = 1.0f;
+	//farプレーン
+	FarPlane = 10000.0f;
 	// 射影マトリックスを作成
 	MatrixPerspectiveFovLH(&Proj,
-		55.0f,           // カメラの画角
-		aspect,		    // アスペクト比
-		1.0f,		   // nearプレーン
-		10000.0f);	  // farプレーン
+		ViewY_theta,
+		aspect,
+		NearPlane,
+		FarPlane);
+
+	//ストリーム出力データ定義(パーティクル用)
+	D3D11_SO_DECLARATION_ENTRY Decl[] =
+	{
+		{ 0, "POSITION", 0, 0, 3, 0 }, //「x,y,z」をスロット「0」の「POSITION」に出力
+		{ 0, "POSITION", 1, 0, 3, 0 },
+		{ 0, "POSITION", 2, 0, 3, 0 },
+		{ 0, "COLOR", 0, 0, 4, 0 }
+	};
+	ID3DBlob *pCompiledShader = NULL;
+	UINT Declsize = sizeof(Decl) / sizeof(Decl[0]);
+	//**********************************ジオメトリシェーダー***********************************************************//
+	MakeShaderGeometrySO(ShaderParticle, strlen(ShaderParticle), "GS_Point_SO", "gs_5_0", (void**)&pGeometryShader_PSO, &pCompiledShader, Decl, Declsize);
+	pCompiledShader->Release();
+	pCompiledShader = NULL;
+
+	//**********************************頂点シェーダー***************************************************************//
+	MakeShader(ShaderParticle, strlen(ShaderParticle), "VS_SO", "vs_5_0", (void**)&pVertexShader_PSO, &pCompiledShader);
+	pCompiledShader->Release();
+	pCompiledShader = NULL;
+
+	//パーティクル頂点インプットレイアウトを定義
+	D3D11_INPUT_ELEMENT_DESC layout_P[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "POSITION", 1, DXGI_FORMAT_R32G32B32_FLOAT, 0, 4 * 3, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "POSITION", 2, DXGI_FORMAT_R32G32B32_FLOAT, 0, 4 * 3 * 2, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 4 * 3 * 3, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+	UINT numElements = sizeof(layout_P) / sizeof(layout_P[0]);
+	pCompiledShader = NULL;
+
+	//**********************************ジオメトリシェーダー***********************************************************//
+	MakeShader(ShaderParticle, strlen(ShaderParticle), "GS_Point", "gs_5_0", (void**)&pGeometryShader_P, &pCompiledShader);
+	pCompiledShader->Release();
+	pCompiledShader = NULL;
+
+	//**********************************頂点シェーダー***************************************************************//
+	MakeShader(ShaderParticle, strlen(ShaderParticle), "VS", "vs_5_0", (void**)&pVertexShader_P, &pCompiledShader);
+	//頂点インプットレイアウトを作成
+	pDevice->CreateInputLayout(layout_P, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_P);
+	pCompiledShader->Release();
+	pCompiledShader = NULL;
+
+	//**********************************ピクセルシェーダー***********************************************************//
+	MakeShader(ShaderParticle, strlen(ShaderParticle), "PS", "ps_5_0", (void**)&pPixelShader_P, &pCompiledShader);
+	pCompiledShader->Release();
+	pCompiledShader = NULL;
 
 	//メッシュ頂点インプットレイアウトを定義
 	D3D11_INPUT_ELEMENT_DESC layout_MESH[] =
@@ -381,8 +466,8 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 4 * 3, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 4 * 3 * 2, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
-	UINT numElements = sizeof(layout_MESH) / sizeof(layout_MESH[0]);
-	ID3DBlob *pCompiledShader = NULL;
+	numElements = sizeof(layout_MESH) / sizeof(layout_MESH[0]);
+	pCompiledShader = NULL;
 
 	//**********************************ハルシェーダー***************************************************************//
 	MakeShader(ShaderMesh_D, strlen(ShaderMesh_D), "HSMesh", "hs_5_0", (void**)&pHullShader_MESH_D, &pCompiledShader);
@@ -622,10 +707,12 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	pDevice->CreateSamplerState(&sadesc, &pSampleLinear);
 
 	pTexture = (ID3D11ShaderResourceView**)malloc(sizeof(ID3D11ShaderResourceView*) * 100);
+	pTexCPUAcc = (ID3D11Texture2D**)malloc(sizeof(ID3D11Texture2D*) * 100);
 	binary_ch = (char**)malloc(sizeof(char*) * 100);
 	binary_size = (int*)malloc(sizeof(int) * 100);
 	for (int i = 0; i < 100; i++){
 		pTexture[i] = NULL;
+		pTexCPUAcc[i] = NULL;
 		binary_ch[i] = NULL;
 		binary_size[i] = 0;
 	}
@@ -652,7 +739,7 @@ HRESULT Dx11Process::Sclear(){//スクリーンクリア
 	//レンダーターゲットビューとデプスステンシルビューをセット
 	pDeviceContext->OMSetRenderTargets(1, &pRTV, pDSV);
 	//画面クリア
-	float ClearColor[4] = { 0, 0, 0.5, 1 };// クリア色作成　RGBAの順
+	float ClearColor[4] = { 0, 0, 0, 1 };// クリア色作成　RGBAの順
 	pDeviceContext->ClearRenderTargetView(pRTV, ClearColor);//カラーバッファクリア
 	pDeviceContext->ClearDepthStencilView(pDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);//デプスステンシルバッファクリア
 	return S_OK;
@@ -687,11 +774,11 @@ void Dx11Process::P_ShadowBright(float val){
 void Dx11Process::PointLightPosSet(int Idx, float x, float y, float z, float r, float g, float b, float a, float range,
 	float brightness, float attenuation, bool on_off){
 
-	static int pcs = 3;//個数初期値(予約済み)
+	static int pcs = LIGHT_PCS_init;//個数初期値(予約済み)
 
 	if (Idx > LIGHT_PCS - 1 || Idx < 0)return;//エラー防止
 
-	if (Idx > 2 && on_off == TRUE)pcs = Idx + 1;
+	if (Idx > LIGHT_PCS_init - 1 && on_off == TRUE)pcs = Idx + 1;
 
 	float onoff;
 	if (on_off == TRUE)onoff = 1.0f; else onoff = 0.0f;
@@ -908,10 +995,15 @@ void Dx11Process::TextureBinaryDecodeAll(){
 }
 
 void Dx11Process::GetTexture(){
+	ID3D11Resource *t;
 
 	for (int i = 0; i < 100; i++){
 		if (binary_size[i] == 0)continue;
-		//テクスチャー作成
+		//CPUアクセス可テクスチャー作成(ピクセル取得用)
+		DirectX::CreateWICTextureFromMemoryEx(pDevice, (uint8_t*)binary_ch[i], binary_size[i], binary_size[i],
+			D3D11_USAGE_STAGING, 0, D3D11_CPU_ACCESS_READ, 0, TRUE, &t, NULL);
+		pTexCPUAcc[i] = (ID3D11Texture2D*)t;
+		//CPUアクセス不可テクスチャー作成
 		DirectX::CreateWICTextureFromMemoryEx(pDevice, (uint8_t*)binary_ch[i], binary_size[i], binary_size[i],
 			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, TRUE, NULL, &pTexture[i]);
 	}
@@ -928,12 +1020,30 @@ void  Dx11Process::Drawscreen(){//スクリーン描画
 	pSwapChain->Present(0, 0);//画面更新
 }
 
+float Dx11Process::GetViewY_theta(){
+	return ViewY_theta;
+}
+
+float Dx11Process::Getaspect(){
+	return aspect;
+}
+
+float Dx11Process::GetNearPlane(){
+	return NearPlane;
+}
+
+float Dx11Process::GetFarPlane(){
+	return FarPlane;
+}
+
 Dx11Process::~Dx11Process(){
 
 	for (int i = 0; i < 100; i++){
 		if (pTexture[i] == NULL)continue;
 		pTexture[i]->Release();
 		pTexture[i] = NULL;
+		pTexCPUAcc[i]->Release();
+		pTexCPUAcc[i] = NULL;
 	}
 
 	if (pRasterizeState != NULL){
@@ -949,6 +1059,11 @@ Dx11Process::~Dx11Process(){
 	pConstantBuffer->Release();
 	pConstantBuffer = NULL;
 
+	pGeometryShader_PSO->Release();
+	pGeometryShader_PSO = NULL;
+	pGeometryShader_P->Release();
+	pGeometryShader_P = NULL;
+
 	pHullShader_MESH_D->Release();
 	pHullShader_MESH_D = NULL;
 	pHullShader_DISPL->Release();
@@ -963,6 +1078,8 @@ Dx11Process::~Dx11Process(){
 	pDomainShader_DISP->Release();
 	pDomainShader_DISP = NULL;
 
+	pPixelShader_P->Release();
+	pPixelShader_P = NULL;
 	pPixelShader_MESH_D->Release();
 	pPixelShader_MESH_D = NULL;
 	pPixelShader_MESH->Release();
@@ -982,6 +1099,10 @@ Dx11Process::~Dx11Process(){
 	pPixelShader_2DTC->Release();
 	pPixelShader_2DTC = NULL;
 
+	pVertexShader_PSO->Release();
+	pVertexShader_PSO = NULL;
+	pVertexShader_P->Release();
+	pVertexShader_P = NULL;
 	pVertexShader_MESH_D->Release();
 	pVertexShader_MESH_D = NULL;
 	pVertexShader_MESH->Release();
@@ -1001,6 +1122,8 @@ Dx11Process::~Dx11Process(){
 	pVertexShader_2DTC->Release();
 	pVertexShader_2DTC = NULL;
 
+	pVertexLayout_P->Release();
+	pVertexLayout_P = NULL;
 	pVertexLayout_MESH_D->Release();
 	pVertexLayout_MESH_D = NULL;
 	pVertexLayout_MESH->Release();

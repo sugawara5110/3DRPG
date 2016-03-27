@@ -23,6 +23,7 @@ protected:
 	Position::H_Pos *h_pos;
 	Position::E_Pos *e_pos;
 	PolygonData en, *mag, effect;
+	ParticleData *mag_boss;    //ボス用
 	float mag_size;             //ボス用
 
 	bool esc;//エスケープ可否 TRUE==エスケープ可

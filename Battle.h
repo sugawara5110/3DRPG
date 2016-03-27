@@ -37,6 +37,8 @@ private:
 	bool time_stop_flg;       //バトル中時間ストップフラグ
 	float Escape_f;          //エスケープ表示フラグ,座標
 	bool Escape_s;          //エスケープ成功
+	bool battlefirst;      //出現完了フラグ
+	float battlefirsttime;//戦闘開始時間
 
 	CommandSelect com_select;   //コマンド入力
 	CommandSelect E_com_select;//敵用
@@ -67,7 +69,7 @@ private:
 	Position::H_Pos *h_pos;
 
 	void Debug(Enemy *enemy);//デバック用
-	Battle();
+	Battle();                //引数無し生成禁止
 	void Menucreate();
 	void Cursor_h(int no);
 	void Cursor_e(int select);
@@ -172,14 +174,14 @@ private:
 	}
 
 	template<typename T_rcv>
-	void RCVdraw(T_rcv *rcv, Draw *at, float DMdrawYMAX){
+	void RCVdraw(T_rcv *rcv, Draw *at, float DMdrawYMAX, float adjustY){
 		if (at->RCVdrawY != 0){
 			if ((at->RCVdrawY += tfloat.Add(0.1f)) < DMdrawYMAX){
-				text->DrawValue(at->RCVdata, at->draw_x, at->RCVdrawY, 30.0f, 5, { 0.3f, 1.0f, 0.3f, 1.0f });
+				text->DrawValue(at->RCVdata, at->draw_x, at->RCVdrawY + adjustY, 30.0f, 5, { 0.3f, 1.0f, 0.3f, 1.0f });
 			}
 			else{
 				if (at->RCVdrawY >= DMdrawYMAX && at->RCVdrawY < DMdrawYMAX + 20){
-					text->DrawValue(at->RCVdata, at->draw_x, DMdrawYMAX, 30.0f, 5, { 0.3f, 1.0f, 0.3f, 1.0f });
+					text->DrawValue(at->RCVdata, at->draw_x, DMdrawYMAX + adjustY, 30.0f, 5, { 0.3f, 1.0f, 0.3f, 1.0f });
 				}
 				else {
 					rcv->UpHP(at->RCVdata);
@@ -191,14 +193,14 @@ private:
 	}
 
 	template<typename T_dm>
-	void DMdraw(T_dm *dm, Draw *d, float DMdrawYMAX){
+	void DMdraw(T_dm *dm, Draw *d, float DMdrawYMAX, float adjustY){
 		if (d->DMdrawY != 0){
 			if ((d->DMdrawY += tfloat.Add(0.1f)) < DMdrawYMAX){
-				text->DrawValue(d->DMdata, d->draw_x, d->DMdrawY, 30.0f, 5, { 1.0f, 0.3f, 0.3f, 1.0f });
+				text->DrawValue(d->DMdata, d->draw_x, d->DMdrawY + adjustY, 30.0f, 5, { 1.0f, 0.3f, 0.3f, 1.0f });
 			}
 			else{
 				if (d->DMdrawY >= DMdrawYMAX && d->DMdrawY < DMdrawYMAX + 20){
-					text->DrawValue(d->DMdata, d->draw_x, DMdrawYMAX, 30.0f, 5, { 1.0f, 0.3f, 0.3f, 1.0f });
+					text->DrawValue(d->DMdata, d->draw_x, DMdrawYMAX + adjustY, 30.0f, 5, { 1.0f, 0.3f, 0.3f, 1.0f });
 				}
 				else {
 					dm->DownHP(d->DMdata);

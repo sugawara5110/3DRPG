@@ -8,8 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "Dx11Process.h"
-#include "DxText.h"
 #include "Hero.h"
 #include "Battle.h"
 

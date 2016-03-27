@@ -61,7 +61,6 @@ Map::Map(Position::H_Pos *h_p){
 	elevator_step = 0.0f;
 	wood = NULL;
 	wall1 = NULL;
-	MovieSoundManager::ObjCreate_map(map_no);
 
 	switch (map_no){
 	case 0:
@@ -913,79 +912,92 @@ void Map::Mapdraw_Ds(){
 	for (int k3 = 0; k3 < mxy.z; k3++){
 		for (int j = 0; j < mxy.y; j++){
 			for (int i = 0; i < mxy.x; i++){
-
+				
+				//松明有壁以外スキップ
 				if (mxy.m[k3 * mxy.y * mxy.x + j * mxy.x + i] != 52 &&
 					mxy.m[k3 * mxy.y * mxy.x + j * mxy.x + i] != 78 &&
 					mxy.m[k3 * mxy.y * mxy.x + j * mxy.x + i] != 79)continue;
 
 				//左(マップ端に配置する場合アクセス違反防止を追加すること)
 				if (mxy.m[k3 * mxy.y * mxy.x + j * mxy.x + i - 1] == 48){
-					poMo.D3primitive((float)i * 100.0f - 10.0f, (float)j * 100.0f + 50.0f, (float)k3 * 100.0f, 0, 0, 0, src_theta, TRUE, FALSE, 0);
-					light[licnt].x = i * 100.0f - 10.0f;
-					light[licnt].y = j * 100.0f + 50.0f;
-					light[licnt].z = k3 * 100.0f + 75.0f;
-					light[licnt].r = 1.0f;
-					light[licnt].g = 0.4f;
-					light[licnt].b = 0.4f;
-					light[licnt].a = 1.0f;
-					light[licnt].range = 80.0f;
-					light[licnt].brightness = 0.6f;
-					light[licnt].attenuation = 2.0f;
-					light[licnt].on_off = TRUE;
-					licnt++;
+					//視野外スキップ
+					if (ViewCulling((float)i * 100.0f - 10.0f, (float)j * 100.0f + 50.0f, (float)k3 * 100.0f) == TRUE){
+						poMo.D3primitive((float)i * 100.0f - 10.0f, (float)j * 100.0f + 50.0f, (float)k3 * 100.0f, 0, 0, 0, src_theta, TRUE, FALSE, 0);
+						light[licnt].x = i * 100.0f - 10.0f;
+						light[licnt].y = j * 100.0f + 50.0f;
+						light[licnt].z = k3 * 100.0f + 75.0f;
+						light[licnt].r = 1.0f;
+						light[licnt].g = 0.4f;
+						light[licnt].b = 0.4f;
+						light[licnt].a = 1.0f;
+						light[licnt].range = 80.0f;
+						light[licnt].brightness = 0.6f;
+						light[licnt].attenuation = 2.0f;
+						light[licnt].on_off = TRUE;
+						licnt++;
+					}
 				}
 				//右
 				if (mxy.m[k3 * mxy.y * mxy.x + j * mxy.x + i + 1] == 48){
-					poMo.D3primitive((float)i * 100.0f + 110.0f, (float)j * 100.0f + 50.0f, (float)k3 * 100.0f, 0, 0, 0, src_theta, TRUE, FALSE, 0);
-					light[licnt].x = i * 100.0f + 110.0f;
-					light[licnt].y = j * 100.0f + 50.0f;
-					light[licnt].z = k3 * 100.0f + 75.0f;
-					light[licnt].r = 1.0f;
-					light[licnt].g = 0.4f;
-					light[licnt].b = 0.4f;
-					light[licnt].a = 1.0f;
-					light[licnt].range = 80.0f;
-					light[licnt].brightness = 0.6f;
-					light[licnt].attenuation = 2.0f;
-					light[licnt].on_off = TRUE;
-					licnt++;
+					//視野外スキップ
+					if (ViewCulling((float)i * 100.0f + 110.0f, (float)j * 100.0f + 50.0f, (float)k3 * 100.0f) == TRUE){
+						poMo.D3primitive((float)i * 100.0f + 110.0f, (float)j * 100.0f + 50.0f, (float)k3 * 100.0f, 0, 0, 0, src_theta, TRUE, FALSE, 0);
+						light[licnt].x = i * 100.0f + 110.0f;
+						light[licnt].y = j * 100.0f + 50.0f;
+						light[licnt].z = k3 * 100.0f + 75.0f;
+						light[licnt].r = 1.0f;
+						light[licnt].g = 0.4f;
+						light[licnt].b = 0.4f;
+						light[licnt].a = 1.0f;
+						light[licnt].range = 80.0f;
+						light[licnt].brightness = 0.6f;
+						light[licnt].attenuation = 2.0f;
+						light[licnt].on_off = TRUE;
+						licnt++;
+					}
 				}
 				//上
 				if (mxy.m[k3 * mxy.y * mxy.x + (j - 1) * mxy.x + i] == 48){
-					poMo.D3primitive((float)i * 100.0f + 50.0f, (float)j * 100.0f - 10.0f, (float)k3 * 100.0f, 0, 0, 0, src_theta, TRUE, FALSE, 0);
-					light[licnt].x = i * 100.0f + 50.0f;
-					light[licnt].y = j * 100.0f - 10.0f;
-					light[licnt].z = k3 * 100.0f + 75.0f;
-					light[licnt].r = 1.0f;
-					light[licnt].g = 0.4f;
-					light[licnt].b = 0.4f;
-					light[licnt].a = 1.0f;
-					light[licnt].range = 80.0f;
-					light[licnt].brightness = 0.6f;
-					light[licnt].attenuation = 2.0f;
-					light[licnt].on_off = TRUE;
-					licnt++;
+					//視野外スキップ
+					if (ViewCulling((float)i * 100.0f + 50.0f, (float)j * 100.0f - 10.0f, (float)k3 * 100.0f) == TRUE){
+						poMo.D3primitive((float)i * 100.0f + 50.0f, (float)j * 100.0f - 10.0f, (float)k3 * 100.0f, 0, 0, 0, src_theta, TRUE, FALSE, 0);
+						light[licnt].x = i * 100.0f + 50.0f;
+						light[licnt].y = j * 100.0f - 10.0f;
+						light[licnt].z = k3 * 100.0f + 75.0f;
+						light[licnt].r = 1.0f;
+						light[licnt].g = 0.4f;
+						light[licnt].b = 0.4f;
+						light[licnt].a = 1.0f;
+						light[licnt].range = 80.0f;
+						light[licnt].brightness = 0.6f;
+						light[licnt].attenuation = 2.0f;
+						light[licnt].on_off = TRUE;
+						licnt++;
+					}
 				}
 				//下
 				if (mxy.m[k3 * mxy.y * mxy.x + (j + 1) * mxy.x + i] == 48){
-					poMo.D3primitive((float)i * 100.0f + 50.0f, (float)j * 100.0f + 110.0f, (float)k3 * 100.0f, 0, 0, 0, src_theta, TRUE, FALSE, 0);
-					light[licnt].x = i * 100.0f + 50.0f;
-					light[licnt].y = j * 100.0f + 110.0f;
-					light[licnt].z = k3 * 100.0f + 75.0f;
-					light[licnt].r = 1.0f;
-					light[licnt].g = 0.4f;
-					light[licnt].b = 0.4f;
-					light[licnt].a = 1.0f;
-					light[licnt].range = 80.0f;
-					light[licnt].brightness = 0.6f;
-					light[licnt].attenuation = 2.0f;
-					light[licnt].on_off = TRUE;
-					licnt++;
+					//視野外スキップ
+					if (ViewCulling((float)i * 100.0f + 50.0f, (float)j * 100.0f + 110.0f, (float)k3 * 100.0f) == TRUE){
+						poMo.D3primitive((float)i * 100.0f + 50.0f, (float)j * 100.0f + 110.0f, (float)k3 * 100.0f, 0, 0, 0, src_theta, TRUE, FALSE, 0);
+						light[licnt].x = i * 100.0f + 50.0f;
+						light[licnt].y = j * 100.0f + 110.0f;
+						light[licnt].z = k3 * 100.0f + 75.0f;
+						light[licnt].r = 1.0f;
+						light[licnt].g = 0.4f;
+						light[licnt].b = 0.4f;
+						light[licnt].a = 1.0f;
+						light[licnt].range = 80.0f;
+						light[licnt].brightness = 0.6f;
+						light[licnt].attenuation = 2.0f;
+						light[licnt].on_off = TRUE;
+						licnt++;
+					}
 				}
 			}
 		}
 	}
-	int loopcount = 3;//ライトのインデックス(0,1,2は固定)
+	int loopcount = LIGHT_PCS_init;//ライトのインデックス(0:視点用, 1:ラスボス用, 2:出入口用, 3,4,5,6:戦闘用は固定)
 	//各ライト設定
 	for (int i = 0; i < licnt && loopcount < LIGHT_PCS; i++){
 		dx->PointLightPosSet(loopcount, light[i].x, light[i].y, light[i].z, light[i].r, light[i].g, light[i].b, light[i].a, light[i].range, light[i].brightness, light[i].attenuation, light[i].on_off);
@@ -1112,7 +1124,7 @@ void Map::Mapcreate_EXIT(float x, float y, float z, float xsize){
 }
 
 Map::~Map(){
-
+	dx->PointLightPosSet(2, 450.0f, 0.0f, 50.0f, 1.0f, 1.0f, 1.0f, 1.0f, 250.0f, 300.0f, 2.0f, FALSE);//出口ライト消す
 	if (wood != NULL){
 		delete[] wood;
 		wood = NULL;
@@ -1125,5 +1137,58 @@ Map::~Map(){
 	light = NULL;
 	free(mxy.m);
 	mxy.m = NULL;
-	MovieSoundManager::ObjDelete_map();
+}
+
+bool Map::ViewCulling(float obj_x, float obj_y, float obj_z){
+	//対象オブジェクトまでの方角計算
+	int theta;
+	float radian;
+	float dist_x = obj_x - cax1;
+	float dist_y = cay1 - obj_y;
+
+	//オブジェクトと現在位置のxyが等しい場合(2フロア以上の場合発生する)
+	if (dist_x == 0 && dist_y == 0)return FALSE;
+
+	if (dist_x == 0){
+		if (cay1 > obj_y)theta = 0;
+		if (cay1 < obj_y)theta = 180;
+	}
+	if (dist_y == 0){
+		if (cax1 < obj_x)theta = 90;
+		if (cax1 > obj_x)theta = 270;
+	}
+	if (cax1 != obj_x && cay1 != obj_y){
+		radian = atan(dist_x / dist_y);
+		theta = (int)(180.0 * radian / 3.14159265359);
+		if (cax1 < obj_x && cay1 < obj_y)theta += 180;
+		if (cax1 > obj_x){
+			if (cay1 < obj_y)theta += 180;
+			if (cay1 > obj_y)theta += 360;
+		}
+	}
+
+	//XY視野内判定
+	int viewleft = (int)(src_theta - dx->GetViewY_theta() / 1.5);
+	int viewright = (int)(src_theta + dx->GetViewY_theta() / 1.5);
+	viewleft = (viewleft + 360) % 360;
+	viewright = viewright % 360;
+	bool ret = FALSE;
+	if (viewleft < viewright){
+		if (viewleft < theta && viewright > theta)ret = TRUE;
+	}
+	if (viewleft > viewright){
+		if (viewleft < theta || viewright > theta)ret = TRUE;
+	}
+
+	//XYZ視野内判定
+	if (ret == TRUE){
+		float dist_z = fabsf(posz * 100.0f - obj_z);
+		if (dist_z == 0)return TRUE;
+		float dist_xy = sqrt(dist_x * dist_x + dist_y * dist_y);
+		radian = atan(dist_z / dist_xy);
+		theta = (int)(180.0 * radian / 3.14159265359);
+		if (theta < dx->GetViewY_theta() / 1.5)return TRUE;
+	}
+
+	return FALSE;
 }

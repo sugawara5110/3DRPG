@@ -4,7 +4,6 @@
 //**                                    Menucreate関数                                   **//
 //*****************************************************************************************//
 
-#include "Dx11Process.h"
 #include <new>     //placement new
 #include <time.h>
 #include "Enemy.h"
@@ -27,6 +26,10 @@ Battle::Battle(Position::E_Pos *e_po, Position::H_Pos *h_po, Encount encount, in
 	Escape_f = 0;
 	Escape_s = FALSE;
 	E_select.GetVBarray(SQUARE, 1);
+	battlefirst = FALSE;
+	battlefirsttime = 0.0f;
+
+	srand((unsigned)time(NULL));
 
 	int en_bgm;
 	if (encount == SIDE)en_bgm = 0;
@@ -43,9 +46,10 @@ Battle::Battle(Position::E_Pos *e_po, Position::H_Pos *h_po, Encount encount, in
 		//通常の敵の生成
 		enemyside = new EnemySide[e_num];
 
+		int rnd;
 		//アップキャスト前に初期化
 		for (int i = 0; i < e_num; i++) {
-			int rnd = rand() % 4 + no * 4;
+			rnd = (rand() % 4) + no * 4;
 			new(enemyside + i) EnemySide(rnd, i, h_pos, e_pos);// 配列をplacement newを使って初期化する
 		}
 

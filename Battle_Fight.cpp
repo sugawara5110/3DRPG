@@ -6,7 +6,6 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
-#include "Dx11Process.h"
 #include <new>     //placement new
 #include <stdlib.h>
 #include <time.h>
@@ -82,6 +81,8 @@ Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 		h_draw[i].action = NORMAL;
 	}
 
+	//Debug(enemy);//デバック用
+
 	//GAMEOVER時ループスキップ
 	if (result == DIE){
 		MovieSoundManager::Die_sound(TRUE);
@@ -89,6 +90,12 @@ Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 	}
 
 	MovieSoundManager::Enemy_sound(TRUE);
+
+	//戦闘開始時間
+	if (battlefirst == FALSE){
+		if ((battlefirsttime += tfloat.Add(1.0f)) < 1000.0f)return IN_BATTLE;
+		battlefirst = TRUE;
+	}
 
 	//敵攻撃パターン決定
 	E_com_select = E_AT_select(hero);
@@ -122,9 +129,13 @@ Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 		E_com_select = NOSELECT;
 	}
 	//敵回復
-	for (int i = 0; i < e_num; i++)RCVdraw<Enemy>(&enemy[i], &e_draw[i], E_DMdrawYMAX);
+	for (int i = 0; i < e_num; i++){
+		float adj = 0.0f;
+		if (i == 2)adj = -40.0f;
+		RCVdraw<Enemy>(&enemy[i], &e_draw[i], E_DMdrawYMAX, adj);
+	}
 	//プレイヤーダメージ
-	for (int i = 0; i < 4; i++)DMdraw<Hero>(&hero[i], &h_draw[i], H_DMdrawYMAX);
+	for (int i = 0; i < 4; i++)DMdraw<Hero>(&hero[i], &h_draw[i], H_DMdrawYMAX, 0.0f);
 
 	//プレイヤー全滅
 	if (hero[0].Dieflg() == TRUE && hero[1].Dieflg() == TRUE && hero[2].Dieflg() == TRUE && hero[3].Dieflg() == TRUE){
@@ -211,9 +222,13 @@ Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 		com_select = NOSELECT;
 	}
 	//プレイヤー回復
-	for (int i = 0; i < 4; i++)RCVdraw<Hero>(&hero[i], &h_draw[i], H_DMdrawYMAX);
+	for (int i = 0; i < 4; i++)RCVdraw<Hero>(&hero[i], &h_draw[i], H_DMdrawYMAX, 0.0f);
 	//敵ダメージ
-	for (int i = 0; i < e_num; i++)DMdraw<Enemy>(&enemy[i], &e_draw[i], E_DMdrawYMAX);
+	for (int i = 0; i < e_num; i++){
+		float adj = 0.0f;
+		if (i == 2)adj = -40.0f;
+		DMdraw<Enemy>(&enemy[i], &e_draw[i], E_DMdrawYMAX, adj);
+	}
 	//エスケープ表示
 	if (Escapedraw() == FALSE)if (Escape_s == TRUE)return WIN;
 
@@ -240,7 +255,7 @@ Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 		}
 		return WIN;
 	}
-	//Debug(enemy);//デバック用
+
 	return IN_BATTLE;
 }
 

@@ -123,6 +123,7 @@ private:
 	bool MoveDownCond(int Ind);
 	Encount Move(MapState *mapstate, Directionkey direction);
 	void MapText(TCHAR str[30]);
+	bool ViewCulling(float obj_x, float obj_y, float obj_z);
 
 public:
 	static int GetMapNo();

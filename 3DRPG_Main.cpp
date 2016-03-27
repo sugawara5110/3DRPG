@@ -13,11 +13,10 @@
 #include <new>
 #include "Map.h"
 #include "Control.h"
-#include "Battle.h"
+#include "InstanceCreate.h"
 #include "Hero.h"
 #include "StateMenu.h"
 #include <Process.h>
-#include "NowLoading.h"
 #include "Ending.h"
 #pragma comment(lib,"winmm.lib")
 
@@ -135,27 +134,35 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (dx->Initialize(hWnd) == E_FAIL)return -1;
 	//DxTextオブジェクト生成
 	DxText::InstanceCreate();
-
-	bool loop = TRUE;
-	HANDLE now_loading_h = (HANDLE)_beginthreadex(NULL, 0, NowLoading, &loop, 0, NULL);
-	dx->TextureBinaryDecodeAll();
-	MovieSoundManager::ObjInit();
-	loop = FALSE;
-	WaitForSingleObject(now_loading_h, INFINITE);//スレッドが終了するまで待つ
-	CloseHandle(now_loading_h);//ハンドルを閉じる
-
+	//スレッド生成
+	InstanceCreate::CreateThread_R();
+	double i = 300.0;
+	bool down = TRUE;
+	while (1){
+		if (InstanceCreate::Resource_load_f() == TRUE)break;
+		dx->Sclear();
+		DxText::GetInstance()->Drawtext(L"ＮｏｗＬｏａｄｉｎｇ", 215.0f, (float)i, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+		dx->Drawscreen();
+		if (down == TRUE)i += 0.01;
+		if (down == FALSE)i -= 0.01;
+		if (i > 320.0)down = FALSE;
+		if (i < 280.0)down = TRUE;
+	}
+	//スレッド解放
+	InstanceCreate::DeleteThread_R();
 	dx->GetTexture();
+	bool battle_flg = FALSE;
 	Control control;
 	Hero *hero = NULL;
-	Battle *battle = NULL;
-	Map *map = NULL;
 	Map::SetBossKilled(-1, 0);//ボス撃破履歴初期化
 	int map_no = 0;
-	map = new Map(NULL);
+	InstanceCreate::MapCreate();
+	InstanceCreate::MapObjSet();
 	StateMenu statemenu;
 	Encount encount = NOENCOUNT;
 	bool menu = FALSE;
 	bool title = TRUE;
+	bool title_in = TRUE;
 	Result result = WIN;
 	MapState mapstate = NORMAL_MAP;
 	Ending *ending = NULL;
@@ -182,7 +189,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		//FPS計測
 		frame++;
 		sprintf(str, "     Ctrl:決定  Delete:キャンセル  fps=%d", frame);
-		if (timeGetTime() - time>1000)
+		if (timeGetTime() - time > 1000)
 		{
 			time = timeGetTime();
 			frame = 0;
@@ -193,28 +200,42 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}
 
 		if (title == TRUE){
-			title = statemenu.TitleMenu(control.Direction());
-			if (title == FALSE){
-				hero = new Hero[4];
-				for (int i = 0; i < 4; i++)new(hero + i) Hero(statemenu.SetP_Data(i), i);//配列をplacement newを使って初期化する
-				if (map != NULL){
-					delete map;
-					map = NULL;
+			if (title_in == TRUE){
+				title_in = statemenu.TitleMenu(control.Direction());
+			}
+			if (title_in == FALSE){
+				if (hero == NULL){
+					hero = new Hero[4];
+					for (int i = 0; i < 4; i++)new(hero + i) Hero(statemenu.SetP_Data(i), i);//配列をplacement newを使って初期化する
 				}
-				Map::SetMapNo(statemenu.SetMap_No());
-				for (int i = 0; i < 5; i++)Map::SetBossKilled(i, statemenu.Set_boss_kil(i));
-				map = new Map(statemenu.SetH_Pos());
-				map_no = Map::GetMapNo();
+				if (InstanceCreate::GetHANDLE_M() == NULL){
+					Map::SetMapNo(statemenu.SetMap_No());
+					for (int i = 0; i < 5; i++)Map::SetBossKilled(i, statemenu.Set_boss_kil(i));
+					InstanceCreate::SetInstanceParameter_M(statemenu.SetH_Pos());
+					InstanceCreate::CreateThread_M();
+					map_no = Map::GetMapNo();
+				}
+				if (InstanceCreate::GetHANDLE_M() != NULL && InstanceCreate::MapCreate_f() == TRUE){
+					InstanceCreate::MapObjSet();
+					InstanceCreate::DeleteThread_M();
+					title = FALSE;
+				}
 			}
 		}
 
-		encount = map->Mapdraw(&mapstate, control.Direction(TRUE), encount, menu, title, endingflg);
+		encount = InstanceCreate::GetInstance_M()->Mapdraw(&mapstate, control.Direction(TRUE), encount, menu, title, endingflg);
 
 		if (mapstate == CHANGE_MAP){
-			delete map;
-			map = new Map(NULL);
-			map_no = Map::GetMapNo();
-			mapstate = NORMAL_MAP;
+			if (InstanceCreate::GetHANDLE_M() == NULL){
+				InstanceCreate::SetInstanceParameter_M(NULL);
+				InstanceCreate::CreateThread_M();
+				map_no = Map::GetMapNo();
+			}
+			if (InstanceCreate::GetHANDLE_M() != NULL && InstanceCreate::MapCreate_f() == TRUE){
+				InstanceCreate::MapObjSet();
+				InstanceCreate::DeleteThread_M();
+				mapstate = NORMAL_MAP;
+			}
 		}
 
 		if (mapstate == RECOV_MAP){
@@ -227,7 +248,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		if (endingflg == FALSE && title == FALSE && encount == NOENCOUNT && menu == FALSE && control.Direction() == ENTER)menu = TRUE;
 
 		if (endingflg == FALSE && title == FALSE && encount != NOENCOUNT && menu == FALSE){
-			if (battle == NULL){
+			if (battle_flg == FALSE){
 				if (encount == SIDE){
 					int LV = (hero[0].s_LV() + hero[1].s_LV() + hero[2].s_LV() + hero[3].s_LV()) / 4;
 					//レベルによって敵出現数制限
@@ -237,12 +258,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					if ((map_no + 1) * 7 < LV)rnd = rand() % 4;
 				}
 				else rnd = 0;
-				battle = new Battle(map->Getposition(rnd), map->Getposition(), encount, map_no, rnd + 1);
+
+				if (InstanceCreate::GetHANDLE_B() == NULL){
+					InstanceCreate::SetInstanceParameter_B(InstanceCreate::GetInstance_M()->Getposition(rnd),
+						InstanceCreate::GetInstance_M()->Getposition(), encount, map_no, rnd + 1);
+					InstanceCreate::CreateThread_B();
+				}
+
+				if (InstanceCreate::GetHANDLE_B() != NULL){
+					bool bf = InstanceCreate::BattleCreate_f();
+					if (bf == TRUE){
+						battle_flg = TRUE;
+						InstanceCreate::DeleteThread_B();
+					}
+				}
+
 			}
-			if (battle != NULL)result = battle->Fight(hero, control.Direction(), result);
-			if (result == WIN && battle != NULL){
-				delete battle;
-				battle = NULL;
+			if (battle_flg != FALSE)result = InstanceCreate::GetInstance_B()->Fight(hero, control.Direction(), result);
+			if (result == WIN && battle_flg != FALSE){
+				InstanceCreate::BattleDelete();
+				battle_flg = FALSE;
 				if (encount == BOSS)Map::SetBossKilled(map_no, 1);//ボス撃破履歴更新
 				encount = NOENCOUNT;
 			}
@@ -257,8 +292,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}
 		if (endingflg == TRUE)ending->StaffRoll();
 
-		if (endingflg == FALSE && title == FALSE && encount == NOENCOUNT && menu == TRUE){
-			menu = statemenu.Menudraw(map->Getposition(), map_no, Map::GetBossKilled(), hero, control.Direction());
+		if (mapstate == NORMAL_MAP && endingflg == FALSE && title == FALSE && encount == NOENCOUNT && menu == TRUE){
+			menu = statemenu.Menudraw(InstanceCreate::GetInstance_M()->Getposition(),
+				map_no, Map::GetBossKilled(), hero, control.Direction());
 		}
 
 		T_float::GetTime();
@@ -266,15 +302,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	MovieSoundManager::ObjDelete();
-
-	if (battle != NULL){
-		delete battle;
-		battle = NULL;
-	}
-	if (map != NULL){
-		delete map;
-		map = NULL;
-	}
+	InstanceCreate::BattleDelete();
+	InstanceCreate::MapDelete();
 	if (hero != NULL){
 		delete[] hero;
 		hero = NULL;

@@ -4,9 +4,7 @@
 //**                                      GetAttackä÷êî                                  **//
 //*****************************************************************************************//
 
-#include "Dx11Process.h"
 #include "Parameter.h"
-#include "DxText.h"
 
 Parameter::Parameter(){
 

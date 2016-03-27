@@ -37,14 +37,14 @@ DxText::DxText(){
 	dx = Dx11Process::GetInstance();
 
 	//文字列用バッファ初期化
-	for (int i = 0; i < 20; i++){
+	for (int i = 0; i < STRTEX_MAX_PCS; i++){
 		text[i].GetVBarray2D(1);
-		_tcscpy_s(str[i], 40 * sizeof(TCHAR), _T("***************************************"));//直接代入
+		_tcscpy_s(str[i], STR_MAX_LENGTH * sizeof(TCHAR), _T("***************************************"));//直接代入
 		f_size[i] = 0;
 	}
 
 	//可変用
-	for (int i = 0; i < 10; i++){
+	for (int i = 0; i < VAL_PCS; i++){
 		value[i].GetVBarray2D(1);
 		CreateText(value, CreateTextValue(i), i, 15.0f);
 	}
@@ -235,7 +235,7 @@ TCHAR *DxText::CreateTextValue(int val){
 
 	int cnt = 0;
 	int va = val;
-	static TCHAR c[40];
+	static TCHAR c[STR_MAX_LENGTH];
 	_tcscpy_s(c, L"");//初期化
 
 	//桁数カウント
@@ -291,7 +291,7 @@ void DxText::Drawtext(TCHAR *c, float x, float y, float fontsize, VECTOR4 cl){//
 	int texNo = -1;
 
 	//登録済みテキスト検索
-	for (int i = 0; i < 20; i++){
+	for (int i = 0; i < STRTEX_MAX_PCS; i++){
 		if (_tcscmp(c, str[i]) == 0 && f_size[i] == fontsize){
 			match = TRUE;
 			texNo = i;
@@ -299,7 +299,7 @@ void DxText::Drawtext(TCHAR *c, float x, float y, float fontsize, VECTOR4 cl){//
 	}
 
 	if (texNo == -1){
-		if (CreateTextNo == 20)CreateTextNo = 0;
+		if (CreateTextNo == STRTEX_MAX_PCS)CreateTextNo = 0;
 		texNo = CreateTextNo++;
 	}
 

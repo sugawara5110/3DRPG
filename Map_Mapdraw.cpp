@@ -19,7 +19,7 @@ void Map::MapdrawObj(){
 
 Encount Map::Mapdraw(MapState *mapstate, Directionkey direction, Encount encount, bool menu, bool title, bool ending){
 
-	Debug();//デバック用
+	//Debug();//デバック用
 
 	//ボス撃破後のマップ,テキスト処理
 	if (mxy.m[POS_CE] == 51 && boss_killed[map_no] == 1){
@@ -31,8 +31,8 @@ Encount Map::Mapdraw(MapState *mapstate, Directionkey direction, Encount encount
 		boss_count = 0;   //ポイント全て表示されないようにする。マップ中に複数使用の場合変更必要
 	}
 
-	if (ending == FALSE && title == FALSE && encount == NOENCOUNT && menu == FALSE)encount = Move(mapstate, direction);
-	if (ending == FALSE && title == FALSE && encount == NOENCOUNT)MovieSoundManager::Dungeon_sound(TRUE); else MovieSoundManager::Dungeon_soundoff();
+	if (*mapstate == NORMAL_MAP && ending == FALSE && title == FALSE && encount == NOENCOUNT && menu == FALSE)encount = Move(mapstate, direction);
+	if (ending == FALSE && title == FALSE && encount == NOENCOUNT)MovieSoundManager::Dungeon_sound(TRUE, map_no); else MovieSoundManager::Dungeon_soundoff(map_no);
 	if (title == FALSE && map_no == 1)MovieSoundManager::Rain_sound(TRUE);
 
 	//視点

@@ -8,8 +8,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include "Dx11Process.h"
-#include "DxText.h"
 #include "Enemy.h"
 #include "Battle.h"
 
@@ -115,7 +113,7 @@ Act_fin_flg Enemy::Enemydraw(Battle *battle, int *E_select_obj, Action action, M
 			break;
 		case 2:
 			mx = 400;
-			my = 200;
+			my = 170;
 			break;
 		case 3:
 			mx = 600;

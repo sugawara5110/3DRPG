@@ -87,8 +87,7 @@ enum Encount{
 enum MapState{
 	NORMAL_MAP,
 	RECOV_MAP,
-	CHANGE_MAP,
-	GAMECLEAR
+	CHANGE_MAP
 };
 
 enum MapStPos{
