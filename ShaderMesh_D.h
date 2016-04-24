@@ -152,12 +152,12 @@ char *ShaderMesh_D =
 "   float4 height;\n"
 "   float hei;\n"
 //テクスチャ有の場合
-"    if(g_Tex_f.x == 1.0f)\n"
-"    {\n"
+"   if(g_Tex_f.x == 1.0f)\n"
+"   {\n"
 //画像から高さを算出
-"       height = g_texColor.SampleLevel(g_samLinear, uv, 0) * g_DispAmount.x;\n"
-"       hei = (height.x + height.y + height.z) / 3;\n"
-"    }\n"
+"      height = g_texColor.SampleLevel(g_samLinear, uv, 0) * g_DispAmount.x;\n"
+"      hei = (height.x + height.y + height.z) / 3;\n"
+"   }\n"
 
 //pos座標計算
 "   float3 pos = patch[0].Pos * UV.x + patch[1].Pos * UV.y + patch[2].Pos * UV.z;\n"
@@ -168,31 +168,55 @@ char *ShaderMesh_D =
 //テクスチャ有の場合
 "   if(g_Tex_f.x == 1.0f)\n"
 "   {\n"
-//法線の方向によって頂点移動方向を決める
-"      if (patch[0].Nor.x == -1.0f){\n"
-"          output.Pos.x -= hei;\n"
-"      }\n"
-"      if (patch[0].Nor.x ==  1.0f){\n"
-"          output.Pos.x += hei;\n"
-"      }\n"
-"      if (patch[0].Nor.y == -1.0f){\n"
-"          output.Pos.y -= hei;\n"
-"      }\n"
-"      if (patch[0].Nor.y ==  1.0f){\n"
-"          output.Pos.y += hei;\n"
-"      }\n"
-"      if (patch[0].Nor.z == -1.0f){\n"
-"          output.Pos.z -= hei;\n"
-"      }\n"
-"      if (patch[0].Nor.z ==  1.0f){\n"
-"          output.Pos.z += hei;\n"
-"      }\n"
+//ローカル法線の方向にhei分頂点移動
+"      output.Pos.xyz += hei * patch[0].Nor;\n"
 //画像から法線計算
 "      nor = g_texColor.SampleLevel(g_samLinear, uv, 0) * 2 - 1;\n"
+//ローカル法線の絶対値が大きい方向に法線ベクトル変換
+"      float3 nor1;\n"
+"      float absNx = abs(patch[0].Nor.x);\n"
+"      float absNy = abs(patch[0].Nor.y);\n"
+"      float absNz = abs(patch[0].Nor.z);\n"
+"      if(absNx >= absNy && absNx >= absNz){\n"
+"        if (patch[0].Nor.x < 0){\n"
+"          nor1.x = -nor.y;\n"
+"          nor1.y =  nor.x;\n"
+"          nor1.z =  nor.z;\n"
+"        }\n"
+"        if (patch[0].Nor.x >= 0){\n"
+"          nor1.x =  nor.y;\n"
+"          nor1.y = -nor.x;\n"
+"          nor1.z =  nor.z;\n"
+"        }\n"
+"      }\n"
+"      if(absNy >= absNx && absNy >= absNz){\n"
+"        if (patch[0].Nor.y < 0){\n"
+"          nor1.x = -nor.x;\n"
+"          nor1.y = -nor.y;\n"
+"          nor1.z =  nor.z;\n"
+"        }\n"
+"        if (patch[0].Nor.y >= 0){\n"
+"          nor1.x =  nor.x;\n"
+"          nor1.y =  nor.y;\n"
+"          nor1.z =  nor.z;\n"
+"        }\n"
+"      }\n"
+"      if(absNz >= absNx && absNz >= absNy){\n"
+"        if (patch[0].Nor.z < 0){\n"
+"          nor1.x =  nor.x;\n"
+"          nor1.y =  nor.z;\n"
+"          nor1.z = -nor.y;\n"
+"        }\n"
+"        if (patch[0].Nor.z >= 0){\n"
+"          nor1.x =  nor.x;\n"
+"          nor1.y =  nor.z;\n"
+"          nor1.z =  nor.y;\n"
+"        }\n"
+"      }\n"
+"      nor.xyz = nor1;\n"
 "   }\n"
 
-"   float4 Normal = normalize(nor);\n"
-"   Normal.w = 0;\n"
+"   float3 Normal = normalize(nor.xyz);\n"
 
 //座標変換
 "   output.wPos = mul(output.Pos, g_World);\n"
@@ -237,13 +261,15 @@ char *ShaderMesh_D =
 
 //ライト計算
 "    for (int i = 0; i < g_ShadowLow_Lpcs.y; i++){\n"
-//ライトオフは飛ばす
-"        if (g_Lightst[i].w == 1.0f){\n"
+//頂点から光源までの距離を計算
+"         float distance = length(g_LightPos[i].xyz - input.wPos.xyz);\n"
+
+//ライトオフ, レンジ×3より外は飛ばす
+"        if (g_Lightst[i].w == 1.0f && distance < g_Lightst[i].x * 3){\n"
+
 //ライト方向正規化
 "           float3 L = normalize(abs(g_LightPos[i].xyz - input.wPos.xyz));\n"
 
-//頂点から光源までの距離を計算
-"            float distance = length(g_LightPos[i].xyz - input.wPos.xyz);\n"
 //デフォルト減衰率
 "            float attenuation = 2.0f;\n"
 //レンジ外減衰率増減適用

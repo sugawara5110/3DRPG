@@ -20,13 +20,9 @@ PolygonData2D::PolygonData2D(){
 
 PolygonData2D::~PolygonData2D(){
 
-	if (pTexview != NULL){
-		pTexview->Release();
-		pTexview = NULL;
-	}
+	RELEASE(pTexview);
 	if (pMyVB != NULL){
-		pMyVB->Release();
-		pMyVB = NULL;
+		RELEASE(pMyVB);
 		free(d3varray);
 		d3varray = NULL;
 	}

@@ -264,28 +264,28 @@ bool Hero::Effectdraw(Battle *battle, int *select_obj, Position::H_Pos *h_pos, P
 	switch ((int)h_pos->theta){
 	case 360:
 	case 0:
-		ey = 5.0f;
+		ey = 15.0f;
 		hx[0] = -6.5f; hy[0] = -10.0f;
 		hx[1] = -3.0f; hy[1] = -10.0f;
 		hx[2] = 0.5f; hy[2] = -10.0f;
 		hx[3] = 3.5f; hy[3] = -10.0f;
 		break;
 	case 90:
-		ex = -5.0f;
+		ex = -15.0f;
 		hx[0] = 10.0f; hy[0] = -6.5f;
 		hx[1] = 10.0f; hy[1] = -3.0f;
 		hx[2] = 10.0f; hy[2] = 0.5f;
 		hx[3] = 10.0f; hy[3] = 3.5f;
 		break;
 	case 180:
-		ey = -5.0f;
+		ey = -15.0f;
 		hx[0] = 6.5f; hy[0] = 10.0f;
 		hx[1] = 3.0f; hy[1] = 10.0f;
 		hx[2] = -0.5f; hy[2] = 10.0f;
 		hx[3] = -3.5f; hy[3] = 10.0f;
 		break;
 	case 270:
-		ex = 5.0f;
+		ex = 15.0f;
 		hx[0] = -10.0f; hy[0] = 6.5f;
 		hx[1] = -10.0f; hy[1] = 3.0f;
 		hx[2] = -10.0f; hy[2] = -0.5f;

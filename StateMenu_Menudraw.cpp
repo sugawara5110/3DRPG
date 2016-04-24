@@ -59,7 +59,7 @@ bool StateMenu::TitleMenu(Directionkey direction){
 				savedata.p_data[i].Recover_LV = 0;
 				savedata.p_data[i].Rpoint = 10;
 				*/
-
+				/*
 				savedata.p_data[i].Attack = 10;
 				savedata.p_data[i].Magic = 10;
 				savedata.p_data[i].Agility = 10;
@@ -75,8 +75,8 @@ bool StateMenu::TitleMenu(Directionkey direction){
 				savedata.p_data[i].Hpoint = 100;
 				savedata.p_data[i].Recover_LV = 10;
 				savedata.p_data[i].Rpoint = 100;
-
-				/*
+				*/
+				
 				savedata.p_data[i].Attack = 100;
 				savedata.p_data[i].Magic = 100;
 				savedata.p_data[i].Agility = 100;
@@ -92,9 +92,17 @@ bool StateMenu::TitleMenu(Directionkey direction){
 				savedata.p_data[i].Hpoint = 1000;
 				savedata.p_data[i].Recover_LV = 100;
 				savedata.p_data[i].Rpoint = 1000;
-				*/
+				
 			}
-
+			
+			savedata.h_pos.cx1 = 450.0f;//ボス前
+			savedata.h_pos.cx2 = 450.0f;
+			savedata.h_pos.cy1 = 1050.0f;
+			savedata.h_pos.cy2 = 1000.0f;
+			savedata.h_pos.px = 4;
+			savedata.h_pos.py = 10;//ボス前
+			
+			//通常のスタート位置
 			savedata.h_pos.cx1 = 1150.0f;
 			savedata.h_pos.cx2 = 1150.0f;
 			savedata.h_pos.cy1 = 3350.0f;
@@ -104,18 +112,31 @@ bool StateMenu::TitleMenu(Directionkey direction){
 			savedata.h_pos.pz = 0;
 			savedata.h_pos.theta = 0.0f;
 			savedata.map_no = 0;
+			//通常のスタート位置
 			/*
+			savedata.h_pos.cx1 = 950.0f;//ボス前
+			savedata.h_pos.cx2 = 950.0f;
+			savedata.h_pos.cy1 = 950.0f;
+			savedata.h_pos.cy2 = 900.0f;
+			savedata.h_pos.px = 9;
+			savedata.h_pos.py = 9;//ボス前
 			savedata.h_pos.cx1 = 1150.0f;
-			savedata.h_pos.cx2 = 1200.0f;
-			savedata.h_pos.cy1 = 3350.0f;
-			savedata.h_pos.cy2 = 3350.0f;
+			savedata.h_pos.cx2 = 1150.0f;
+			savedata.h_pos.cy1 = 3250.0f;
+			savedata.h_pos.cy2 = 3200.0f;
 			savedata.h_pos.px = 11;
-			savedata.h_pos.py = 33;
+			savedata.h_pos.py = 32;
 			savedata.h_pos.pz = 0;
-			savedata.h_pos.theta = 90.0f;
-			savedata.map_no = 0;
+			savedata.h_pos.theta = 0.0f;
+			savedata.map_no = 1;
 			*/
 			/*
+			savedata.h_pos.cx1 = 150.0f;//ボス前
+			savedata.h_pos.cx2 = 150.0f;
+			savedata.h_pos.cy1 = 1250.0f;
+			savedata.h_pos.cy2 = 1200.0f;
+			savedata.h_pos.px = 1;
+			savedata.h_pos.py = 12;//ボス前
 			savedata.h_pos.cx1 = 150.0f;
 			savedata.h_pos.cx2 = 150.0f;
 			savedata.h_pos.cy1 = 3750.0f;
@@ -127,6 +148,12 @@ bool StateMenu::TitleMenu(Directionkey direction){
 			savedata.map_no = 2;
 			*/
 			/*
+			savedata.h_pos.cx1 = 450.0f;//ボス前
+			savedata.h_pos.cx2 = 450.0f;
+			savedata.h_pos.cy1 = 750.0f;
+			savedata.h_pos.cy2 = 700.0f;
+			savedata.h_pos.px = 4;
+			savedata.h_pos.py = 7;//ボス前
 			savedata.h_pos.cx1 = 250.0f;
 			savedata.h_pos.cx2 = 250.0f;
 			savedata.h_pos.cy1 = 2750.0f;
@@ -137,15 +164,23 @@ bool StateMenu::TitleMenu(Directionkey direction){
 			savedata.h_pos.theta = 0.0f;
 			savedata.map_no = 3;
 			*/
-			/*
+			
 			//ラスダン
+			/*
+			savedata.h_pos.cx1 = 1450.0f;//ボス前
+			savedata.h_pos.cx2 = 1450.0f;
+			savedata.h_pos.cy1 = 1550.0f;
+			savedata.h_pos.cy2 = 1500.0f;
+			savedata.h_pos.px = 14;
+			savedata.h_pos.py = 15;
+			savedata.h_pos.pz = 6;//ボス前
 			savedata.h_pos.cx1 = 1150.0f;
 			savedata.h_pos.cx2 = 1150.0f;
 			savedata.h_pos.cy1 = 2750.0f;
 			savedata.h_pos.cy2 = 2700.0f;
 			savedata.h_pos.px = 11;
 			savedata.h_pos.py = 27;
-			savedata.h_pos.pz = 6;
+			savedata.h_pos.pz = 0;
 			savedata.h_pos.theta = 0.0f;
 			savedata.map_no = 4;
 			*/

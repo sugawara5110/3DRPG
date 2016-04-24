@@ -192,7 +192,7 @@ Encount Map::Mapdraw(MapState *mapstate, Directionkey direction, Encount encount
 		if (Elevator_count >= 1)poElevator.D3primitive(0, 0, 4.0f, 0, 0, 0, 0, TRUE, FALSE, 0);
 		break;
 	}
-
+	
 	MapText(m_tx);
 
 	return encount;

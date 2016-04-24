@@ -19,12 +19,16 @@ class Enemy :public Parameter{
 protected:
 	int o_no;//オブジェクトナンバー
 	int e_no;//敵ナンバー
-	float pos_offset;//
+	float pos_offset;//ボス位置オフセット
 	Position::H_Pos *h_pos;
 	Position::E_Pos *e_pos;
-	PolygonData en, *mag, effect;
-	ParticleData *mag_boss;    //ボス用
-	float mag_size;             //ボス用
+	PolygonData *en, *mag, effect;
+	MeshData *en_boss;         //ボス用
+	MeshData *en_boss_att;     //ボス用アタックアニメーション用
+	float en_boss_att_cnt;      //↑のアニメーションカウント
+	int en_boss_att_Ind;       //↑描画時のオブジェクトインデックス
+	ParticleData *mag_boss;  //ボス用
+	float mag_size;           //ボス用
 
 	bool esc;//エスケープ可否 TRUE==エスケープ可
 	float mov_z;
@@ -44,11 +48,13 @@ protected:
 	float cr, cg, cb;//敵画像色
 
 	void Enemycreate(float x, float y);
+	virtual void AttackAction();
 	virtual void DamageAction();
 	virtual void RecoverActionInit();
 	virtual void RecoverAction();
 	virtual bool LostAction(float x, float y, float z);
 	virtual bool Magiccreate(float x, float y, float z);
+	virtual void ObjDraw(float x, float y, float z, float r, float g, float b, float theta);
 	bool Effectdraw(Battle *battle, int *E_select_obj);
 	void PosOffset(int o_no);
 

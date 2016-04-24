@@ -77,10 +77,7 @@ HRESULT Dx11Process::MakeShader(LPSTR szFileName, size_t size, LPSTR szFuncName,
 	{
 		pDevice->CreateComputeShader((*ppBlob)->GetBufferPointer(), (*ppBlob)->GetBufferSize(), NULL, (ID3D11ComputeShader**)ppShader);
 	}
-	if (pErrors != NULL){
-		pErrors->Release();
-		pErrors = NULL;
-	}
+	RELEASE(pErrors)
 	return S_OK;
 }
 
@@ -164,128 +161,6 @@ void Dx11Process::MatrixMap(ID3D11Buffer *pCBuffer, float x, float y, float z, f
 	pDeviceContext->Unmap(pCBuffer, 0);
 }
 
-void Dx11Process::MatrixIdentity(MATRIX *mat){
-	mat->_11 = 1.0f; mat->_12 = 0.0f; mat->_13 = 0.0f; mat->_14 = 0.0f;
-	mat->_21 = 0.0f; mat->_22 = 1.0f; mat->_23 = 0.0f; mat->_24 = 0.0f;
-	mat->_31 = 0.0f; mat->_32 = 0.0f; mat->_33 = 1.0f; mat->_34 = 0.0f;
-	mat->_41 = 0.0f; mat->_42 = 0.0f; mat->_43 = 0.0f; mat->_44 = 1.0f;
-}
-
-void Dx11Process::MatrixScaling(MATRIX *mat, float sizex, float sizey, float sizez){
-	mat->_11 = sizex; mat->_12 = 0.0f; mat->_13 = 0.0f; mat->_14 = 0.0f;
-	mat->_21 = 0.0f; mat->_22 = sizey; mat->_23 = 0.0f; mat->_24 = 0.0f;
-	mat->_31 = 0.0f; mat->_32 = 0.0f; mat->_33 = sizez; mat->_34 = 0.0f;
-	mat->_41 = 0.0f; mat->_42 = 0.0f; mat->_43 = 0.0f; mat->_44 = 1.0f;
-}
-
-void Dx11Process::MatrixRotationZ(MATRIX *mat, float theta){
-	float the = theta * 3.14f / 180.0f;
-	mat->_11 = cos(the); mat->_12 = sin(the); mat->_13 = 0.0f; mat->_14 = 0.0f;
-	mat->_21 = -sin(the); mat->_22 = cos(the); mat->_23 = 0.0f; mat->_24 = 0.0f;
-	mat->_31 = 0.0f; mat->_32 = 0.0f; mat->_33 = 1.0f; mat->_34 = 0.0f;
-	mat->_41 = 0.0f; mat->_42 = 0.0f; mat->_43 = 0.0f; mat->_44 = 1.0f;
-}
-
-void Dx11Process::MatrixTranslation(MATRIX *mat, float movx, float movy, float movz){
-	mat->_11 = 1.0f; mat->_12 = 0.0f; mat->_13 = 0.0f; mat->_14 = 0.0f;
-	mat->_21 = 0.0f; mat->_22 = 1.0f; mat->_23 = 0.0f; mat->_24 = 0.0f;
-	mat->_31 = 0.0f; mat->_32 = 0.0f; mat->_33 = 1.0f; mat->_34 = 0.0f;
-	mat->_41 = movx; mat->_42 = movy; mat->_43 = movz; mat->_44 = 1.0f;
-}
-
-void Dx11Process::MatrixMultiply(MATRIX *mat, MATRIX *mat1, MATRIX *mat2){
-	mat->_11 = mat1->_11 * mat2->_11 + mat1->_12 * mat2->_21 + mat1->_13 * mat2->_31 + mat1->_14 * mat2->_41;
-	mat->_12 = mat1->_11 * mat2->_12 + mat1->_12 * mat2->_22 + mat1->_13 * mat2->_32 + mat1->_14 * mat2->_42;
-	mat->_13 = mat1->_11 * mat2->_13 + mat1->_12 * mat2->_23 + mat1->_13 * mat2->_33 + mat1->_14 * mat2->_43;
-	mat->_14 = mat1->_11 * mat2->_14 + mat1->_12 * mat2->_24 + mat1->_13 * mat2->_34 + mat1->_14 * mat2->_44;
-
-	mat->_21 = mat1->_21 * mat2->_11 + mat1->_22 * mat2->_21 + mat1->_23 * mat2->_31 + mat1->_24 * mat2->_41;
-	mat->_22 = mat1->_21 * mat2->_12 + mat1->_22 * mat2->_22 + mat1->_23 * mat2->_32 + mat1->_24 * mat2->_42;
-	mat->_23 = mat1->_21 * mat2->_13 + mat1->_22 * mat2->_23 + mat1->_23 * mat2->_33 + mat1->_24 * mat2->_43;
-	mat->_24 = mat1->_21 * mat2->_14 + mat1->_22 * mat2->_24 + mat1->_23 * mat2->_34 + mat1->_24 * mat2->_44;
-
-	mat->_31 = mat1->_31 * mat2->_11 + mat1->_32 * mat2->_21 + mat1->_33 * mat2->_31 + mat1->_34 * mat2->_41;
-	mat->_32 = mat1->_31 * mat2->_12 + mat1->_32 * mat2->_22 + mat1->_33 * mat2->_32 + mat1->_34 * mat2->_42;
-	mat->_33 = mat1->_31 * mat2->_13 + mat1->_32 * mat2->_23 + mat1->_33 * mat2->_33 + mat1->_34 * mat2->_43;
-	mat->_34 = mat1->_31 * mat2->_14 + mat1->_32 * mat2->_24 + mat1->_33 * mat2->_34 + mat1->_34 * mat2->_44;
-
-	mat->_41 = mat1->_41 * mat2->_11 + mat1->_42 * mat2->_21 + mat1->_43 * mat2->_31 + mat1->_44 * mat2->_41;
-	mat->_42 = mat1->_41 * mat2->_12 + mat1->_42 * mat2->_22 + mat1->_43 * mat2->_32 + mat1->_44 * mat2->_42;
-	mat->_43 = mat1->_41 * mat2->_13 + mat1->_42 * mat2->_23 + mat1->_43 * mat2->_33 + mat1->_44 * mat2->_43;
-	mat->_44 = mat1->_41 * mat2->_14 + mat1->_42 * mat2->_24 + mat1->_43 * mat2->_34 + mat1->_44 * mat2->_44;
-}
-
-void swap(float *a, float *b){
-	float tmp;
-	tmp = *a;
-	*a = *b;
-	*b = tmp;
-}
-
-void Dx11Process::MatrixTranspose(MATRIX *mat){
-	swap(&mat->_12, &mat->_21);
-	swap(&mat->_13, &mat->_31);
-	swap(&mat->_14, &mat->_41);
-	swap(&mat->_23, &mat->_32);
-	swap(&mat->_24, &mat->_42);
-	swap(&mat->_34, &mat->_43);
-}
-
-void Dx11Process::MatrixLookAtLH(MATRIX *mat, float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3){
-	//z軸
-	float zx = x2 - x1;
-	float zy = y2 - y1;
-	float zz = z2 - z1;
-	//正規化
-	float zzz = sqrt(zx * zx + zy * zy + zz * zz);
-	if (zzz != 0.0f){
-		zx = zx / zzz;
-		zy = zy / zzz;
-		zz = zz / zzz;
-	}
-
-	//x軸(外積)
-	float xx = y3 * zz - z3 * zy;
-	float xy = z3 * zx - x3 * zz;
-	float xz = x3 * zy - y3 * zx;
-	float xxx = sqrt(xx * xx + xy * xy + xz * xz);
-	if (xxx != 0.0f){
-		xx = xx / xxx;
-		xy = xy / xxx;
-		xz = xz / xxx;
-	}
-
-	//y軸(外積)
-	float yx = zy * xz - zz * xy;
-	float yy = zz * xx - zx * xz;
-	float yz = zx * xy - zy * xx;
-
-	//平行移動(内積)
-	float mx = -(x1 * xx + y1 * xy + z1 * xz);
-	float my = -(x1 * yx + y1 * yy + z1 * yz);
-	float mz = -(x1 * zx + y1 * zy + z1 * zz);
-
-	mat->_11 = xx; mat->_12 = yx; mat->_13 = zx; mat->_14 = 0.0f;
-	mat->_21 = xy; mat->_22 = yy; mat->_23 = zy; mat->_24 = 0.0f;
-	mat->_31 = xz; mat->_32 = yz; mat->_33 = zz; mat->_34 = 0.0f;
-	mat->_41 = mx; mat->_42 = my; mat->_43 = mz; mat->_44 = 1.0f;
-}
-
-void Dx11Process::MatrixPerspectiveFovLH(MATRIX *mat, float theta, float aspect, float Near, float Far){
-	float the = theta * 3.14f / 180.0f;
-	//透視変換後y方向スケーリング
-	float sy = 1.0f / (tan(the / 2.0f));
-	//x方向スケーリング
-	float sx = sy / aspect;
-	//z方向スケーリング
-	float sz = Far / (Far - Near);
-
-	mat->_11 = sx; mat->_12 = 0.0f; mat->_13 = 0.0f; mat->_14 = 0.0f;
-	mat->_21 = 0.0f; mat->_22 = sy; mat->_23 = 0.0f; mat->_24 = 0.0f;
-	mat->_31 = 0.0f; mat->_32 = 0.0f; mat->_33 = sz; mat->_34 = 1.0f;
-	mat->_41 = 0.0f; mat->_42 = 0.0f; mat->_43 = -(sz * Near); mat->_44 = 0.0f;
-}
-
 HRESULT Dx11Process::Initialize(HWND hWnd){
 
 	pDevice = NULL;
@@ -363,7 +238,7 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBack);
 
 	pDevice->CreateRenderTargetView(pBack, NULL, &pRTV);
-	pBack->Release();
+	RELEASE(pBack)
 
 	//デプスステンシルビュー(DSV)を作成
 	D3D11_TEXTURE2D_DESC descDepth;
@@ -423,13 +298,11 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	UINT Declsize = sizeof(Decl) / sizeof(Decl[0]);
 	//**********************************ジオメトリシェーダー***********************************************************//
 	MakeShaderGeometrySO(ShaderParticle, strlen(ShaderParticle), "GS_Point_SO", "gs_5_0", (void**)&pGeometryShader_PSO, &pCompiledShader, Decl, Declsize);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//**********************************頂点シェーダー***************************************************************//
 	MakeShader(ShaderParticle, strlen(ShaderParticle), "VS_SO", "vs_5_0", (void**)&pVertexShader_PSO, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//パーティクル頂点インプットレイアウトを定義
 	D3D11_INPUT_ELEMENT_DESC layout_P[] =
@@ -444,20 +317,17 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 
 	//**********************************ジオメトリシェーダー***********************************************************//
 	MakeShader(ShaderParticle, strlen(ShaderParticle), "GS_Point", "gs_5_0", (void**)&pGeometryShader_P, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//**********************************頂点シェーダー***************************************************************//
 	MakeShader(ShaderParticle, strlen(ShaderParticle), "VS", "vs_5_0", (void**)&pVertexShader_P, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout_P, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_P);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//**********************************ピクセルシェーダー***********************************************************//
 	MakeShader(ShaderParticle, strlen(ShaderParticle), "PS", "ps_5_0", (void**)&pPixelShader_P, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//メッシュ頂点インプットレイアウトを定義
 	D3D11_INPUT_ELEMENT_DESC layout_MESH[] =
@@ -471,14 +341,12 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 
 	//**********************************ハルシェーダー***************************************************************//
 	MakeShader(ShaderMesh_D, strlen(ShaderMesh_D), "HSMesh", "hs_5_0", (void**)&pHullShader_MESH_D, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 	//**********************************ハルシェーダー***************************************************************//
 
 	//**********************************ドメインシェーダー***********************************************************//
 	MakeShader(ShaderMesh_D, strlen(ShaderMesh_D), "DSMesh", "ds_5_0", (void**)&pDomainShader_MESH_D, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 	//**********************************ドメインシェーダー***********************************************************//
 
 	//**********************************頂点シェーダー***************************************************************//
@@ -486,27 +354,23 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	MakeShader(ShaderMesh_D, strlen(ShaderMesh_D), "VSMesh", "vs_5_0", (void**)&pVertexShader_MESH_D, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout_MESH, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_MESH_D);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//ディスプレイトメントマッピング無
 	MakeShader(ShaderMesh, strlen(ShaderMesh), "VSMesh", "vs_5_0", (void**)&pVertexShader_MESH, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout_MESH, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_MESH);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 	//**********************************頂点シェーダー***************************************************************//
 
 	//**********************************ピクセルシェーダー***********************************************************//
 	//ディスプレイトメントマッピング有
 	MakeShader(ShaderMesh_D, strlen(ShaderMesh_D), "PSMesh", "ps_5_0", (void**)&pPixelShader_MESH_D, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//ディスプレイトメントマッピング無
 	MakeShader(ShaderMesh, strlen(ShaderMesh), "PSMesh", "ps_5_0", (void**)&pPixelShader_MESH, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 	//**********************************ピクセルシェーダー***********************************************************//
 
 	//3D頂点インプットレイアウトを定義, NORMALにはPOSITIONのfloat型4バイト×3を記述
@@ -523,25 +387,21 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	//**********************************ハルシェーダー***************************************************************//
 	//ディスプレイトメントマッピング, ライト有 作成
 	MakeShader(ShaderDisp, strlen(ShaderDisp), "HSDispL", "hs_5_0", (void**)&pHullShader_DISPL, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//ディスプレイトメントマッピング 作成
 	MakeShader(ShaderDisp, strlen(ShaderDisp), "HSDisp", "hs_5_0", (void**)&pHullShader_DISP, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 	//**********************************ハルシェーダー***************************************************************//
 
 	//**********************************ドメインシェーダー***********************************************************//
 	//ディスプレイトメントマッピング, ライト有 作成
 	MakeShader(ShaderDisp, strlen(ShaderDisp), "DSDispL", "ds_5_0", (void**)&pDomainShader_DISPL, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//ディスプレイトメントマッピング 作成
 	MakeShader(ShaderDisp, strlen(ShaderDisp), "DSDisp", "ds_5_0", (void**)&pDomainShader_DISP, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 	//**********************************ドメインシェーダー***********************************************************//
 
 	//**********************************頂点シェーダー***************************************************************//
@@ -549,63 +409,53 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	MakeShader(ShaderDisp, strlen(ShaderDisp), "VSDispL", "vs_5_0", (void**)&pVertexShader_DISPL, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_DISPL);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//ディスプレイトメントマッピング 作成
 	MakeShader(ShaderDisp, strlen(ShaderDisp), "VSDisp", "vs_5_0", (void**)&pVertexShader_DISP, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_DISP);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//テクスチャー,ライト有 作成
 	MakeShader(Shader3D, strlen(Shader3D), "VSTextureColorL", "vs_5_0", (void**)&pVertexShader_TCL, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_TCL);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//テクスチャー,ライト無 作成
 	MakeShader(Shader3D, strlen(Shader3D), "VSTextureColor", "vs_5_0", (void**)&pVertexShader_TC, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_TC);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//基本色 作成
 	MakeShader(Shader3D, strlen(Shader3D), "VSBaseColor", "vs_5_0", (void**)&pVertexShader_BC, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_BC);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 	//**********************************頂点シェーダー***************************************************************//
 
 	//**********************************ピクセルシェーダー***********************************************************//
 	//ディスプレイトメントマッピング, ライト有 作成
 	MakeShader(ShaderDisp, strlen(ShaderDisp), "PSDispL", "ps_5_0", (void**)&pPixelShader_DISPL, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//ディスプレイトメントマッピング 作成
 	MakeShader(ShaderDisp, strlen(ShaderDisp), "PSDisp", "ps_5_0", (void**)&pPixelShader_DISP, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//テクスチャー,ライト有 作成
 	MakeShader(Shader3D, strlen(Shader3D), "PSTextureColorL", "ps_5_0", (void**)&pPixelShader_TCL, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//テクスチャー,ライト無 作成
 	MakeShader(Shader3D, strlen(Shader3D), "PSTextureColor", "ps_5_0", (void**)&pPixelShader_TC, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//基本色 作成
 	MakeShader(Shader3D, strlen(Shader3D), "PSBaseColor", "ps_5_0", (void**)&pPixelShader_BC, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 	//**********************************ピクセルシェーダー***********************************************************//
 
 	//2D頂点インプットレイアウト定義
@@ -623,27 +473,23 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	MakeShader(Shader2D, strlen(Shader2D), "VSBaseColor", "vs_5_0", (void**)&pVertexShader_2D, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout2D, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_2D);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//テクスチャー,ライト無 作成
 	MakeShader(Shader2D, strlen(Shader2D), "VSTextureColor", "vs_5_0", (void**)&pVertexShader_2DTC, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout2D, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_2DTC);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 	//**********************************頂点シェーダー2D*************************************************************//
 
 	//**********************************ピクセルシェーダー2D*********************************************************//
 	//基本色 作成
 	MakeShader(Shader2D, strlen(Shader2D), "PSBaseColor", "ps_5_0", (void**)&pPixelShader_2D, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 
 	//テクスチャー,ライト無 作成
 	MakeShader(Shader2D, strlen(Shader2D), "PSTextureColor", "ps_5_0", (void**)&pPixelShader_2DTC, &pCompiledShader);
-	pCompiledShader->Release();
-	pCompiledShader = NULL;
+	RELEASE(pCompiledShader)
 	//**********************************ピクセルシェーダー2D*********************************************************//
 
 	//コンスタントバッファー作成
@@ -816,120 +662,7 @@ void Dx11Process::Fog(float r, float g, float b, float amount, float density, bo
 
 void Dx11Process::TextureBinaryDecode(char *Bpass, int i){
 
-	//暗号化時コード↓
-	/*
-	FILE *fp;
-	FILE *fp2;
-	char *binary;
-	char *binary_change;
-	int size;
-	char fname[64];
-	char fname_out[64];
-	int i1;
-	int len;
-	int enemy_no = 0;
-	int boss_no = 0;
-	int bk = 0;
-
-	while (1){
-	scanf_s("%s", fname, 64);
-	len = strlen(fname);
-	if (len == 0 || len > 64)break;
-	i1 = 0;
-	do{
-	strncpy(&fname_out[i1], &fname[i1], 1);
-	i1++;
-	} while (fname[i1] != '.');
-	strncpy(&fname_out[i1++], ".", 1);
-	strncpy(&fname_out[i1++], "d", 1);
-	strncpy(&fname_out[i1++], "a", 1);
-	strncpy(&fname_out[i1], "\0", 1);
-
-	i1 = 0;
-	if (strncmp(fname, "enemy.", 6) == 0)enemy_no = 1;
-	if (strncmp(fname, "boss.", 5) == 0)boss_no = 1;
-
-	do{
-	if (enemy_no >= 1){
-	sprintf(fname, "enemy%d.png", enemy_no);
-	sprintf(fname_out, "enemy%d.da", enemy_no);
-	}
-	if (boss_no >= 1){
-	sprintf(fname, "boss%d.png", boss_no);
-	sprintf(fname_out, "boss%d.da", boss_no);
-	}
-	fp = NULL;
-	fp2 = NULL;
-	binary = NULL;
-	binary_change = NULL;
-	size = 0;
-
-	fp = fopen(fname, "rb");
-	if (fp == NULL){
-	bk = 1; break;
-	}
-
-	while (!feof(fp)){
-	size++; fgetc(fp);
-	}
-	size++;//終端文字含めた個数
-
-	//ポインタを先頭に戻す
-	fseek(fp, 0, SEEK_SET);
-
-	binary = (char*)malloc(sizeof(char) * size);
-	binary_change = (char*)malloc(sizeof(char) * size);
-
-	for (int i = 0; i < size; i++){
-	binary[i] = fgetc(fp);//終端文字まで読み込み
-	}
-
-	for (int i = 0; i < 100; i++){
-	strncpy(&binary_change[i], &binary[99 - i], 1);
-	}
-	for (int i = 100; i < size; i++){
-	strncpy(&binary_change[i], &binary[i], 1);
-	}
-
-	fp2 = fopen(fname_out, "wb");
-
-	fwrite(binary_change, size, 1, fp2);
-
-	free(binary);
-	free(binary_change);
-	fclose(fp);
-	fclose(fp2);
-	if (enemy_no >= 1)enemy_no++;
-	if (boss_no >= 1)boss_no++;
-	} while (enemy_no >= 1 || boss_no >= 1);
-	enemy_no = boss_no = 0;
-	if (bk == 1)break;
-	}
-	*/
-
-	//復号コード↓
-	FILE *fp;
-	fp = fopen(Bpass, "rb");
-
-	while (!feof(fp)){
-		binary_size[i]++; fgetc(fp);
-	}
-	binary_size[i]++;//終端文字含めた個数
-
-	//ポインタを先頭に戻す
-	fseek(fp, 0, SEEK_SET);
-
-	binary_ch[i] = (char*)malloc(sizeof(char) * binary_size[i]);
-
-	for (int j = 99; j >= 0; j--){
-		binary_ch[i][j] = fgetc(fp);
-	}
-
-	for (int j = 100; j < binary_size[i]; j++){
-		binary_ch[i][j] = fgetc(fp);
-	}
-
-	fclose(fp);
+	Bdecode(Bpass, &binary_ch[i], &binary_size[i]);
 }
 
 void Dx11Process::TextureBinaryDecodeAll(){
@@ -943,6 +676,8 @@ void Dx11Process::TextureBinaryDecodeAll(){
 	TextureBinaryDecode("./dat/texture/map/ground2.da", 5);
 	TextureBinaryDecode("./dat/texture/map/ceiling2.da", 6);
 	TextureBinaryDecode("./dat/texture/map/wall2-1.da", 8);
+	TextureBinaryDecode("./dat/texture/map/leaf.da", 9);
+	TextureBinaryDecode("./dat/texture/map/wood.da", 10);
 	//マップ2
 	TextureBinaryDecode("./dat/texture/map/ceiling3_wall3.da", 11);
 	TextureBinaryDecode("./dat/texture/map/ground3.da", 12);
@@ -1039,122 +774,65 @@ float Dx11Process::GetFarPlane(){
 Dx11Process::~Dx11Process(){
 
 	for (int i = 0; i < 100; i++){
-		if (pTexture[i] == NULL)continue;
-		pTexture[i]->Release();
-		pTexture[i] = NULL;
-		pTexCPUAcc[i]->Release();
-		pTexCPUAcc[i] = NULL;
+		RELEASE(pTexture[i]);
+		RELEASE(pTexCPUAcc[i]);
 	}
 
-	if (pRasterizeState != NULL){
-		pRasterizeState->Release();
-		pRasterizeState = NULL;
-	}
-	pBlendState->Release();
-	pBlendState = NULL;
-	if (pSampleLinear != NULL){
-		pSampleLinear->Release();
-		pSampleLinear = NULL;
-	}
-	pConstantBuffer->Release();
-	pConstantBuffer = NULL;
+	RELEASE(pRasterizeState);
+	RELEASE(pBlendState);
+	RELEASE(pSampleLinear);
+	RELEASE(pConstantBuffer);
+	RELEASE(pGeometryShader_PSO);
+	RELEASE(pGeometryShader_P);
 
-	pGeometryShader_PSO->Release();
-	pGeometryShader_PSO = NULL;
-	pGeometryShader_P->Release();
-	pGeometryShader_P = NULL;
+	RELEASE(pHullShader_MESH_D);
+	RELEASE(pHullShader_DISPL);
+	RELEASE(pHullShader_DISP);
 
-	pHullShader_MESH_D->Release();
-	pHullShader_MESH_D = NULL;
-	pHullShader_DISPL->Release();
-	pHullShader_DISPL = NULL;
-	pHullShader_DISP->Release();
-	pHullShader_DISP = NULL;
+	RELEASE(pDomainShader_MESH_D);
+	RELEASE(pDomainShader_DISPL);
+	RELEASE(pDomainShader_DISP);
 
-	pDomainShader_MESH_D->Release();
-	pDomainShader_MESH_D = NULL;
-	pDomainShader_DISPL->Release();
-	pDomainShader_DISPL = NULL;
-	pDomainShader_DISP->Release();
-	pDomainShader_DISP = NULL;
+	RELEASE(pPixelShader_P);
+	RELEASE(pPixelShader_MESH_D);
+	RELEASE(pPixelShader_MESH);
+	RELEASE(pPixelShader_DISPL);
+	RELEASE(pPixelShader_DISP);
+	RELEASE(pPixelShader_TCL);
+	RELEASE(pPixelShader_TC);
+	RELEASE(pPixelShader_BC);
+	RELEASE(pPixelShader_2D);
+	RELEASE(pPixelShader_2DTC);
 
-	pPixelShader_P->Release();
-	pPixelShader_P = NULL;
-	pPixelShader_MESH_D->Release();
-	pPixelShader_MESH_D = NULL;
-	pPixelShader_MESH->Release();
-	pPixelShader_MESH = NULL;
-	pPixelShader_DISPL->Release();
-	pPixelShader_DISPL = NULL;
-	pPixelShader_DISP->Release();
-	pPixelShader_DISP = NULL;
-	pPixelShader_TCL->Release();
-	pPixelShader_TCL = NULL;
-	pPixelShader_TC->Release();
-	pPixelShader_TC = NULL;
-	pPixelShader_BC->Release();
-	pPixelShader_BC = NULL;
-	pPixelShader_2D->Release();
-	pPixelShader_2D = NULL;
-	pPixelShader_2DTC->Release();
-	pPixelShader_2DTC = NULL;
+	RELEASE(pVertexShader_PSO);
+	RELEASE(pVertexShader_P);
+	RELEASE(pVertexShader_MESH_D);
+	RELEASE(pVertexShader_MESH);
+	RELEASE(pVertexShader_DISPL);
+	RELEASE(pVertexShader_DISP);
+	RELEASE(pVertexShader_TCL);
+	RELEASE(pVertexShader_TC);
+	RELEASE(pVertexShader_BC);
+	RELEASE(pVertexShader_2D);
+	RELEASE(pVertexShader_2DTC);
 
-	pVertexShader_PSO->Release();
-	pVertexShader_PSO = NULL;
-	pVertexShader_P->Release();
-	pVertexShader_P = NULL;
-	pVertexShader_MESH_D->Release();
-	pVertexShader_MESH_D = NULL;
-	pVertexShader_MESH->Release();
-	pVertexShader_MESH = NULL;
-	pVertexShader_DISPL->Release();
-	pVertexShader_DISPL = NULL;
-	pVertexShader_DISP->Release();
-	pVertexShader_DISP = NULL;
-	pVertexShader_TCL->Release();
-	pVertexShader_TCL = NULL;
-	pVertexShader_TC->Release();
-	pVertexShader_TC = NULL;
-	pVertexShader_BC->Release();
-	pVertexShader_BC = NULL;
-	pVertexShader_2D->Release();
-	pVertexShader_2D = NULL;
-	pVertexShader_2DTC->Release();
-	pVertexShader_2DTC = NULL;
+	RELEASE(pVertexLayout_P);
+	RELEASE(pVertexLayout_MESH_D);
+	RELEASE(pVertexLayout_MESH);
+	RELEASE(pVertexLayout_DISPL);
+	RELEASE(pVertexLayout_DISP);
+	RELEASE(pVertexLayout_TCL);
+	RELEASE(pVertexLayout_TC);
+	RELEASE(pVertexLayout_BC);
+	RELEASE(pVertexLayout_2D);
+	RELEASE(pVertexLayout_2DTC);
 
-	pVertexLayout_P->Release();
-	pVertexLayout_P = NULL;
-	pVertexLayout_MESH_D->Release();
-	pVertexLayout_MESH_D = NULL;
-	pVertexLayout_MESH->Release();
-	pVertexLayout_MESH = NULL;
-	pVertexLayout_DISPL->Release();
-	pVertexLayout_DISPL = NULL;
-	pVertexLayout_DISP->Release();
-	pVertexLayout_DISP = NULL;
-	pVertexLayout_TCL->Release();
-	pVertexLayout_TCL = NULL;
-	pVertexLayout_TC->Release();
-	pVertexLayout_TC = NULL;
-	pVertexLayout_BC->Release();
-	pVertexLayout_BC = NULL;
-	pVertexLayout_2D->Release();
-	pVertexLayout_2D = NULL;
-	pVertexLayout_2DTC->Release();
-	pVertexLayout_2DTC = NULL;
-
-	pDSV->Release();
-	pDSV = NULL;
-	pDS->Release();
-	pDS = NULL;
-	pRTV->Release();
-	pRTV = NULL;
-	pSwapChain->Release();
-	pSwapChain = NULL;
-	pDeviceContext->Release();
-	pDeviceContext = NULL;
-	pDevice->Release();
-	pDevice = NULL;
+	RELEASE(pDSV);
+	RELEASE(pDS);
+	RELEASE(pRTV);
+	RELEASE(pSwapChain);
+	RELEASE(pDeviceContext);
+	RELEASE(pDevice);
 }
 
 //移動量一定化

@@ -29,6 +29,8 @@ protected:
 
 	DsProcess();
 
+	char *BinaryDecode(char *bpass);
+
 public:
 	virtual ~DsProcess();
 };

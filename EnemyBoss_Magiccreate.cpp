@@ -35,7 +35,7 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 		p_data.Rpoint = 10;
 		pos_offset = 30.0f;
 		size_x = 90.0f;
-		size_y = 90.0f;
+		size_y = 90.0f;//z位置補正で使用
 		break;
 	case 1:
 		e = 51;
@@ -54,7 +54,7 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 		p_data.Recover_LV = 0;
 		p_data.Rpoint = 10;
 		pos_offset = 30.0f;
-		size_x = 50.0f;
+		size_x = 60.0f;
 		size_y = 60.0f;
 		break;
 	case 2:
@@ -74,7 +74,7 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 		p_data.Recover_LV = 0;
 		p_data.Rpoint = 10;
 		pos_offset = 30.0f;
-		size_x = 50.0f;
+		size_x = 60.0f;
 		size_y = 60.0f;
 		break;
 	case 3:
@@ -93,9 +93,9 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 		p_data.Hpoint = 700;
 		p_data.Recover_LV = 0;
 		p_data.Rpoint = 10;
-		pos_offset = 30.0f;
-		size_x = 110.0f;
-		size_y = 110.0f;
+		pos_offset = 40.0f;
+		size_x = 120.0f;
+		size_y = 120.0f;
 		mag_size = 0.15f;
 		break;
 	case 4:
@@ -115,7 +115,7 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 		p_data.Recover_LV = 0;
 		p_data.Rpoint = 10;
 		pos_offset = 100.0f;
-		size_x = 200.0f;
+		size_x = 250.0f;
 		size_y = 135.0f;
 		mag_size = 0.25f;
 		break;
@@ -126,13 +126,144 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 
 	PosOffset(o_no);
 
-	en.GetTexture(e);
-	en.GetVBarrayCPUNotAccess(1);
-	en.Light(TRUE);
+	en_boss = new MeshData();
+	char str[50];
+	switch (e){
+	case 50:
+		en_boss->GetVBarray("./dat/mesh/boss1.obj", FALSE);
+		en_boss_att = new MeshData[13];
+		for (int i = 0; i < 13; i++){
+			sprintf_s(str, sizeof(str), "./dat/mesh/boss1att/boss1bone_0000%02d.obj", i + 1);
+			en_boss_att[i].GetVBarray(str, FALSE);
+		}
+		break;
+	case 51:
+		en_boss->GetVBarray("./dat/mesh/boss2.obj", FALSE);
+		en_boss_att = new MeshData[19];
+		for (int i = 0; i < 19; i++){
+			sprintf_s(str, sizeof(str), "./dat/mesh/boss2att/boss2bone_0000%02d.obj", i + 1);
+			en_boss_att[i].GetVBarray(str, FALSE);
+		}
+		break;
+	case 52:
+		en_boss->GetVBarray("./dat/mesh/boss3.obj", FALSE);
+		break;
+	case 53:
+		en_boss->GetVBarray("./dat/mesh/boss4.obj", FALSE);
+		en_boss_att = new MeshData[11];
+		for (int i = 0; i < 11; i++){
+			sprintf_s(str, sizeof(str), "./dat/mesh/boss4att/boss4bone_0000%02d.obj", i + 1);
+			en_boss_att[i].GetVBarray(str, FALSE);
+		}
+		break;
+	case 59:
+		en_boss->GetVBarray("./dat/mesh/lastboss.obj", FALSE);
+		en_boss_att = new MeshData[15];
+		for (int i = 0; i < 15; i++){
+			sprintf_s(str, sizeof(str), "./dat/mesh/lastbossatt/lastbossbone_0000%02d.obj", i + 1);
+			en_boss_att[i].GetVBarray(str, FALSE);
+		}
+		break;
+	}
+
 	mag_boss = new ParticleData();
 	mag_boss->CreateParticle(61, mag_size, 5.0f);
+}
 
-	Enemycreate(size_x, size_y);
+//@Override
+void EnemyBoss::AttackAction(){
+	float m;
+
+	if (effect_f == FALSE){
+		switch (e_no){
+		case 0:
+			m = tfloat.Add(0.15f);
+			if ((en_boss_att_cnt += m) < 56.0f){//カウントcnt Max18まで
+				int cnt = (int)(en_boss_att_cnt / 3.0f);
+				if (cnt < 13)en_boss_att_Ind = cnt;
+				else en_boss_att_Ind = 24 - cnt;
+			}
+			else{
+				en_boss_att_cnt = 0.0f;
+				en_boss_att_Ind = -1;
+				effect_f = TRUE;
+			}
+			break;
+		case 1:
+			m = tfloat.Add(0.17f);
+			if ((en_boss_att_cnt += m) < 65.0f){//カウントcnt Max21まで
+				int cnt = (int)(en_boss_att_cnt / 3.0f);
+				if (cnt < 19)en_boss_att_Ind = cnt;
+				else en_boss_att_Ind = 21 - cnt;
+			}
+			else{
+				en_boss_att_cnt = 0.0f;
+				en_boss_att_Ind = -1;
+				effect_f = TRUE;
+			}
+			break;
+		case 3:
+			m = tfloat.Add(0.08f);
+			if ((en_boss_att_cnt += m) < 65.0f){//カウントcnt Max21まで
+				int cnt = (int)(en_boss_att_cnt / 3.0f);
+				if (cnt < 11)en_boss_att_Ind = cnt;
+				else en_boss_att_Ind = 20 - cnt;
+			}
+			else{
+				en_boss_att_cnt = 0.0f;
+				en_boss_att_Ind = -1;
+				effect_f = TRUE;
+			}
+			break;
+		case 4:
+			m = tfloat.Add(0.08f);
+			if ((en_boss_att_cnt += m) < 44.0f){//カウントcnt Max14まで
+				int cnt = (int)(en_boss_att_cnt / 3.0f);
+				en_boss_att_Ind = cnt;
+			}
+			else{
+				en_boss_att_cnt = 0.0f;
+				en_boss_att_Ind = -1;
+				effect_f = TRUE;
+			}
+			break;
+		default:
+			m = tfloat.Add(0.15f);
+			if (e_pos[o_no].theta >= 338.0f || e_pos[o_no].theta <= 22.0f){
+				if (zoom == TRUE && (mov_y += m) > 30.0f)zoom = FALSE;
+				if (zoom == FALSE && (mov_y -= m) < 0.0f){
+					zoom = TRUE;
+					mov_y = 0.0f;
+					effect_f = TRUE;
+				}
+			}
+			if (e_pos[o_no].theta >= 68.0f && e_pos[o_no].theta <= 112.0f){
+				if (zoom == TRUE && (mov_x -= m) < -30.0f)zoom = FALSE;
+				if (zoom == FALSE && (mov_x += m) > 0.0f){
+					zoom = TRUE;
+					mov_y = 0.0f;
+					effect_f = TRUE;
+				}
+			}
+			if (e_pos[o_no].theta >= 158.0f && e_pos[o_no].theta <= 202.0f){
+				if (zoom == TRUE && (mov_y -= m) < -30.0f)zoom = FALSE;
+				if (zoom == FALSE && (mov_y += m) > 0.0f){
+					zoom = TRUE;
+					mov_y = 0.0f;
+					effect_f = TRUE;
+				}
+			}
+			if (e_pos[o_no].theta >= 248.0f && e_pos[o_no].theta <= 292.0f){
+				if (zoom == TRUE && (mov_x += m) > 30.0f)zoom = FALSE;
+				if (zoom == FALSE && (mov_x -= m) < 0.0f){
+					zoom = TRUE;
+					mov_y = 0.0f;
+					effect_f = TRUE;
+				}
+			}
+			break;
+		}
+	}
 }
 
 //@Override
@@ -195,6 +326,12 @@ bool EnemyBoss::Magiccreate(float x, float y, float z){
 		return FALSE;
 	}
 	return TRUE;
+}
+
+//@Override
+void EnemyBoss::ObjDraw(float x, float y, float z, float r, float g, float b, float theta){
+	if (en_boss_att_Ind != -1)en_boss_att[en_boss_att_Ind].D3primitive(x, y, z + size_y * 0.5f, cr, cg, cb, theta, size_x * 0.5f, 0.1f);
+	else en_boss->D3primitive(x, y, z + size_y * 0.5f, cr, cg, cb, theta, size_x * 0.5f, 0.1f);
 }
 
 //@Override
@@ -273,4 +410,10 @@ EnemyBoss::~EnemyBoss(){
 
 	delete mag_boss;
 	mag_boss = NULL;
+	delete en_boss;
+	en_boss = NULL;
+	if (en_boss_att != NULL){
+		delete[] en_boss_att;
+		en_boss_att = NULL;
+	}
 }

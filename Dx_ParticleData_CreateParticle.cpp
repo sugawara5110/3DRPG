@@ -23,18 +23,10 @@ ParticleData::ParticleData(){
 }
 
 ParticleData::~ParticleData(){
-	if (pConstantBuffer != NULL){
-		pConstantBuffer->Release();
-		pConstantBuffer = NULL;
-	}
-	if (pMyVB != NULL){
-		pMyVB->Release();
-		pMyVB = NULL;
-	}
-	if (pMyVB_SO != NULL){
-		pMyVB_SO->Release();
-		pMyVB_SO = NULL;
-	}
+
+	RELEASE(pConstantBuffer);
+	RELEASE(pMyVB);
+	RELEASE(pMyVB_SO);
 	if (P_pos != NULL){
 		free(P_pos);
 		P_pos = NULL;
@@ -58,13 +50,13 @@ void ParticleData::MatrixMap(float x, float y, float z, float theta, float size,
 	D3D11_MAPPED_SUBRESOURCE pData;
 	CONSTANT_BUFFER_P cb;
 	dx->pDeviceContext->Map(pConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &pData);
-	dx->MatrixRotationZ(&rot, theta);
-	dx->MatrixTranslation(&mov, x, y, z);
-	dx->MatrixMultiply(&dx->World, &rot, &mov);
-	dx->MatrixMultiply(&cb.WV, &dx->World, &dx->View);
+	MatrixRotationZ(&rot, theta);
+	MatrixTranslation(&mov, x, y, z);
+	MatrixMultiply(&dx->World, &rot, &mov);
+	MatrixMultiply(&cb.WV, &dx->World, &dx->View);
 	cb.Proj = dx->Proj;
-	dx->MatrixTranspose(&cb.WV);
-	dx->MatrixTranspose(&cb.Proj);
+	MatrixTranspose(&cb.WV);
+	MatrixTranspose(&cb.Proj);
 	cb.size.x = size;
 	if (init)cb.size.y = 1.0f; else cb.size.y = 0.0f;
 	cb.size.z = speed;

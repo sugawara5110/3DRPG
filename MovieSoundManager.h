@@ -25,8 +25,6 @@ private:
 		int wid, hei; //格納時画像サイズ 
 		int **m_pix; //受け渡し用ピクセルデータ
 
-		char *MovieBinaryDecode(char *bpass);
-
 	public:
 		Movie();
 		Movie(int no);
@@ -35,9 +33,6 @@ private:
 	};
 
 	class Sound_ :public DsProcess{
-
-	protected:
-		char *SoundBinaryDecode(char *bpass);
 
 	public:
 		Sound_();

@@ -182,7 +182,7 @@ Map::Map(Position::H_Pos *h_p){
 	if (woodcount > 0){
 		mWood.GetVBarray("./dat/mesh/tree.obj", FALSE);
 	}
-
+	
 	//•Ç(”Â)
 	if (squarecount >= 1){
 		poWall1.GetTexture(4);
@@ -279,7 +279,7 @@ void Map::Mapdraw_Wood(){
 				float yy = cay1 - y;
 				float zz = (float)posz * 100.0f - z;
 				if (sqrt(xx * xx + yy * yy + zz * zz) > 600.0f)continue;
-				mWood.D3primitive(x, y, z, 0.0f, 10.0f, 0);
+				mWood.D3primitive(x, y, z, 0, 0, 0, 0, 10.0f, 0.3f);
 			}
 		}
 	}

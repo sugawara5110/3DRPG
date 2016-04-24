@@ -14,13 +14,12 @@
 #include <d3dCompiler.h>
 #include "WICTextureLoader.h"
 #include "Enum.h"
+#include "Function.h"
 #include <string.h>
 #include <tchar.h>
 #include <time.h>
-#include <stdio.h>
-#include <math.h>
-#include <stdlib.h >
 
+#define RELEASE(p) if(p){ p->Release(); p=NULL;}
 #define LIGHT_PCS 150
 #define LIGHT_PCS_init 7
 #pragma comment(lib,"winmm.lib")
@@ -34,49 +33,6 @@ class PolygonData;
 class PolygonData2D;
 class ParticleData;
 //***********************//
-
-struct MATRIX{
-	float _11, _12, _13, _14;
-	float _21, _22, _23, _24;
-	float _31, _32, _33, _34;
-	float _41, _42, _43, _44;
-};
-
-struct VECTOR4{
-	float x;
-	float y;
-	float z;
-	float w;
-
-	void as(float x1, float y1, float z1, float w1){
-		x = x1;
-		y = y1;
-		z = z1;
-		w = w1;
-	}
-};
-
-struct VECTOR3{
-	float x;
-	float y;
-	float z;
-
-	void as(float x1, float y1, float z1){
-		x = x1;
-		y = y1;
-		z = z1;
-	}
-};
-
-struct VECTOR2{
-	float x;
-	float y;
-
-	void as(float x1, float y1){
-		x = x1;
-		y = y1;
-	}
-};
 
 class Dx11Process{
 
@@ -228,23 +184,7 @@ private:
 	HRESULT MakeShaderGeometrySO(LPSTR szFileName, size_t size, LPSTR szFuncName, LPSTR szProfileName, void** ppShader, ID3DBlob** ppBlob, D3D11_SO_DECLARATION_ENTRY *Decl, UINT Declsize);
 	void ChangeBlendState(BOOL at, BOOL a);
 	void MatrixMap(ID3D11Buffer *pCBuffer, float x, float y, float z, float r, float g, float b, float theta, float size, float disp);
-	//行列初期化
-	void MatrixIdentity(MATRIX *mat);
-	//拡大縮小
-	void MatrixScaling(MATRIX *mat, float sizex, float sizey, float sizez);
-	//z軸回転
-	void MatrixRotationZ(MATRIX *mat, float theta);
-	//平行移動
-	void MatrixTranslation(MATRIX *mat, float movx, float movy, float movz);
-	//行列掛け算
-	void MatrixMultiply(MATRIX *mat, MATRIX *mat1, MATRIX *mat2);
-	//転置
-	void MatrixTranspose(MATRIX *mat);
-	//透視変換 1:視点位置ベクトル 2:注視点位置ベクトル 3:カメラ上方向ベクトル
-	void MatrixLookAtLH(MATRIX *mat, float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3);
-	//射影変換  カメラの画角, アスペクト比, nearプレーン, farプレーン
-	void MatrixPerspectiveFovLH(MATRIX *mat, float theta, float aspect, float Near, float Far);
-
+	
 public:
 	static void InstanceCreate();
 	static Dx11Process *GetInstance();
@@ -299,17 +239,15 @@ private:
 		CHAR MaterialName[110];
 		VECTOR4 Kd;//ディフューズ
 		CHAR TextureName[110];//テクスチャーファイル名
-		ID3D11ShaderResourceView* pTexture;
+		int tex_no;
 		DWORD FaceCnt;//そのマテリアルであるポリゴン数
 		MY_MATERIAL()
 		{
 			ZeroMemory(this, sizeof(MY_MATERIAL));
+			tex_no = -1;
 		}
 		~MY_MATERIAL()
-		{
-			if (pTexture != NULL)pTexture->Release();
-			pTexture = NULL;
-		}
+		{}
 	};
 	MY_MATERIAL* pMaterial;
 
@@ -327,7 +265,7 @@ public:
 	~MeshData();
 	HRESULT GetVBarray(LPSTR FileName, bool disp);
 	//木./dat/mesh/tree.obj
-	void D3primitive(float x, float y, float z, float theta, float size, float disp);
+	void D3primitive(float x, float y, float z, float r, float g, float b, float theta, float size, float disp);
 };
 
 //*********************************PolygonDataクラス*************************************//

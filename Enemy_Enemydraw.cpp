@@ -57,39 +57,7 @@ Act_fin_flg Enemy::Enemydraw(Battle *battle, int *E_select_obj, Action action, M
 		break;
 
 	case ATTACK:
-		m = tfloat.Add(0.15f);
-		if (effect_f == FALSE && (e_pos[o_no].theta >= 338.0f || e_pos[o_no].theta <= 22.0f)){
-			if (zoom == TRUE && (mov_y += m) > 30.0f)zoom = FALSE;
-			if (zoom == FALSE && (mov_y -= m) < 0.0f){
-				zoom = TRUE;
-				mov_y = 0.0f;
-				effect_f = TRUE;
-			}
-		}
-		if (effect_f == FALSE && e_pos[o_no].theta >= 68.0f && e_pos[o_no].theta <= 112.0f){
-			if (zoom == TRUE && (mov_x -= m) < -30.0f)zoom = FALSE;
-			if (zoom == FALSE && (mov_x += m) > 0.0f){
-				zoom = TRUE;
-				mov_y = 0.0f;
-				effect_f = TRUE;
-			}
-		}
-		if (effect_f == FALSE && e_pos[o_no].theta >= 158.0f && e_pos[o_no].theta <= 202.0f){
-			if (zoom == TRUE && (mov_y -= m) < -30.0f)zoom = FALSE;
-			if (zoom == FALSE && (mov_y += m) > 0.0f){
-				zoom = TRUE;
-				mov_y = 0.0f;
-				effect_f = TRUE;
-			}
-		}
-		if (effect_f == FALSE && e_pos[o_no].theta >= 248.0f && e_pos[o_no].theta <= 292.0f){
-			if (zoom == TRUE && (mov_x += m) > 30.0f)zoom = FALSE;
-			if (zoom == FALSE && (mov_x -= m) < 0.0f){
-				zoom = TRUE;
-				mov_y = 0.0f;
-				effect_f = TRUE;
-			}
-		}
+		AttackAction();
 		if (effect_f == TRUE){
 			effect.tex_no = 0;
 			if (Effectdraw(battle, E_select_obj) == FALSE){
@@ -170,7 +138,7 @@ Act_fin_flg Enemy::Enemydraw(Battle *battle, int *E_select_obj, Action action, M
 		break;
 	}
 	dx->P_ShadowBright(0.3f);
-	en.D3primitive(e_pos[o_no].x + mov_x, e_pos[o_no].y + mov_y, e_pos[o_no].z + mov_z, cr, cg, cb, e_pos[o_no].theta, TRUE, FALSE, 0);
+	ObjDraw(e_pos[o_no].x + mov_x, e_pos[o_no].y + mov_y, e_pos[o_no].z + mov_z, cr, cg, cb, e_pos[o_no].theta);
 
 	return NOT_FIN;
 }

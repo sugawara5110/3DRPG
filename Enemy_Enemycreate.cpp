@@ -24,6 +24,11 @@ Enemy::Enemy(int t_no, int no){
 	tx = ty = 0.0f;
 	tt = 0;
 	cr = cg = cb = 0.0f;
+	en = NULL;
+	en_boss = NULL;
+	en_boss_att = NULL;
+	en_boss_att_cnt = 0.0f;
+	en_boss_att_Ind = -1;
 
 	effect.GetTexture(81);
 	effect.tex_no = 1;
@@ -38,33 +43,35 @@ Enemy::Enemy(int t_no, int no){
 void Enemy::Enemycreate(float x, float y){
 
 	//“G¶‘O
-	en.SetVertex(0, 0,
+	en->SetVertex(0, 0,
 		(float)-(x / 2), (float)0.0f, y,
 		0.0f, 1.0f, 0.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 		0.0f, 0.0f);
 
 	//“G¶‰œ
-	en.SetVertex(1, 1,
+	en->SetVertex(1, 1,
 		(float)-(x / 2), (float)0.0f, 0.0f,
 		0.0f, 1.0f, 0.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 		0.0f, 1.0f);
 
 	//“G‰E‰œ
-	en.SetVertex(2, 2,
+	en->SetVertex(2, 2,
 		(float)(x / 2), (float)0.0f, 0.0f,
 		0.0f, 1.0f, 0.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 1.0f);
 
 	//“G‰E‘O
-	en.SetVertex(3, 3,
+	en->SetVertex(3, 3,
 		(float)(x / 2), (float)0.0f, y,
 		0.0f, 1.0f, 0.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 0.0f);
 }
+
+void Enemy::AttackAction(){}
 
 void Enemy::DamageAction(){}
 
@@ -75,6 +82,8 @@ void Enemy::RecoverAction(){}
 bool Enemy::LostAction(float x, float y, float z){ return TRUE; }
 
 bool Enemy::Magiccreate(float x, float y, float z){ return TRUE; }
+
+void Enemy::ObjDraw(float x, float y, float z, float r, float g, float b, float theta){}
 
 bool Enemy::Effectdraw(Battle *battle, int *E_select_obj){
 
@@ -149,28 +158,28 @@ bool Enemy::Effectdraw(Battle *battle, int *E_select_obj){
 	switch ((int)h_pos->theta){
 	case 360:
 	case 0:
-		ey = 5.0f;
+		ey = 15.0f;
 		hx[0] = -6.5f; hy[0] = -10.0f;
 		hx[1] = -3.0f; hy[1] = -10.0f;
 		hx[2] = 0.5f; hy[2] = -10.0f;
 		hx[3] = 3.5f; hy[3] = -10.0f;
 		break;
 	case 90:
-		ex = -5.0f;
+		ex = -15.0f;
 		hx[0] = 10.0f; hy[0] = -6.5f;
 		hx[1] = 10.0f; hy[1] = -3.0f;
 		hx[2] = 10.0f; hy[2] = 0.5f;
 		hx[3] = 10.0f; hy[3] = 3.5f;
 		break;
 	case 180:
-		ey = -5.0f;
+		ey = -15.0f;
 		hx[0] = 6.5f; hy[0] = 10.0f;
 		hx[1] = 3.0f; hy[1] = 10.0f;
 		hx[2] = -0.5f; hy[2] = 10.0f;
 		hx[3] = -3.5f; hy[3] = 10.0f;
 		break;
 	case 270:
-		ex = 5.0f;
+		ex = 15.0f;
 		hx[0] = -10.0f; hy[0] = 6.5f;
 		hx[1] = -10.0f; hy[1] = 3.0f;
 		hx[2] = -10.0f; hy[2] = -0.5f;

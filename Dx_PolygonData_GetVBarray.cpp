@@ -29,23 +29,15 @@ PolygonData::PolygonData(){
 PolygonData::~PolygonData(){
 
 	if (pMyVB != NULL){
-		pMyVB->Release();
-		pMyVB = NULL;
-		pMyVBI->Release();
-		pMyVBI = NULL;
+		RELEASE(pMyVB);
+		RELEASE(pMyVBI);
 		free(d3varray);
 		d3varray = NULL;
 		free(d3varrayI);
 		d3varrayI = NULL;
 	}
-	if (pTexview != NULL){
-		pTexview->Release();
-		pTexview = NULL;
-	}
-	if (pTex != NULL){
-		pTex->Release();
-		pTex = NULL;
-	}
+	RELEASE(pTexview);
+	RELEASE(pTex);
 }
 
 void PolygonData::SetVertex(int I1, int I2, int i,

@@ -44,11 +44,11 @@ MovieSoundManager::Movie::Movie(int no){
 
 	switch (no){
 	case 0:
-		fname = MovieBinaryDecode("./dat/movie/torch.da");//松明
+		fname = BinaryDecode("./dat/movie/torch.da");//松明
 		break;
 
 	case 1:
-		fname = MovieBinaryDecode("./dat/movie/f_wall.da");//炎壁
+		fname = BinaryDecode("./dat/movie/f_wall.da");//炎壁
 		break;
 	}
 	LPSTR lstr = fname;
@@ -108,58 +108,6 @@ MovieSoundManager::Movie::Movie(int no){
 	pMediaPosition->get_Duration(&time2);
 
 	remove(fname);//ファイル削除、すぐに削除されないが使用中だとアクセスできないみたい
-}
-
-char *MovieSoundManager::Movie::MovieBinaryDecode(char *bpass){
-
-	FILE *fp;
-	FILE *fp2;
-	static char decfname[64];
-	int size = 0;
-	char *binary = NULL;
-
-	int i1 = 0;
-	do{
-		strncpy(&decfname[i1], &bpass[i1], 1);
-		i1++;
-	} while (bpass[i1] != '.');
-	strncpy(&decfname[i1++], ".", 1);
-	strncpy(&decfname[i1++], "m", 1);
-	strncpy(&decfname[i1++], "p", 1);
-	strncpy(&decfname[i1++], "g", 1);
-	strncpy(&decfname[i1], "\0", 1);
-
-	fp = fopen(bpass, "rb");
-
-	while (!feof(fp)){
-		size++; fgetc(fp);
-	}
-	size++;//終端文字も含んだ個数
-
-	//ポインタを先頭に戻す
-	fseek(fp, 0, SEEK_SET);
-
-	binary = (char*)malloc(sizeof(char) * size);
-
-	for (int i = 99; i >= 0; i--){
-		binary[i] = fgetc(fp);
-	}
-	for (int i = 100; i < size; i++){
-		binary[i] = fgetc(fp);
-	}
-
-	fclose(fp);
-	fp2 = fopen(decfname, "wb");
-
-	for (int i = 0; i < size + 1; i++){
-		fputc(binary[i], fp2);
-	}
-
-	fclose(fp2);
-	free(binary);
-	binary = NULL;
-
-	return decfname;
 }
 
 int **MovieSoundManager::Movie::GetFrame(int width, int height){

@@ -164,10 +164,7 @@ int DxText::CreateText(PolygonData2D *p2, TCHAR *c, int texNo, float fontsize){
 	dx->pDevice->CreateTexture2D(&desc, NULL, &pTex);//テクスチャ生成
 
 	//書き換え前解放
-	if (p2[texNo].pTexview != NULL){
-		p2[texNo].pTexview->Release();
-		p2[texNo].pTexview = NULL;
-	}
+	RELEASE(p2[texNo].pTexview);
 	//シェーダリソースビュー作成
 	D3D11_SHADER_RESOURCE_VIEW_DESC srdesc;//シェーダリソースビュー情報
 	srdesc.Format = desc.Format;
@@ -225,8 +222,7 @@ int DxText::CreateText(PolygonData2D *p2, TCHAR *c, int texNo, float fontsize){
 	ReleaseDC(NULL, hdc);
 
 	//テクスチャ,ビットマップ配列解放
-	pTex->Release();
-	pTex = NULL;
+	RELEASE(pTex);
 
 	return count;
 }

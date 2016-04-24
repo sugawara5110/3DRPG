@@ -387,9 +387,10 @@ EnemySide::EnemySide(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 
 	PosOffset(o_no);
 
-	en.GetTexture(e);
-	en.GetVBarrayCPUNotAccess(1);
-	en.Light(TRUE);
+	en = new PolygonData();
+	en->GetTexture(e);
+	en->GetVBarrayCPUNotAccess(1);
+	en->Light(TRUE);
 	mag = new PolygonData();
 	mag->GetTexture(60);
 	mag->GetVBarray(SQUARE, 1);
@@ -398,6 +399,45 @@ EnemySide::EnemySide(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 }
 
 //@Override
+
+void EnemySide::AttackAction(){
+	float m = tfloat.Add(0.15f);
+	if (effect_f == FALSE){
+		if (e_pos[o_no].theta >= 338.0f || e_pos[o_no].theta <= 22.0f){
+			if (zoom == TRUE && (mov_y += m) > 30.0f)zoom = FALSE;
+			if (zoom == FALSE && (mov_y -= m) < 0.0f){
+				zoom = TRUE;
+				mov_y = 0.0f;
+				effect_f = TRUE;
+			}
+		}
+		if (e_pos[o_no].theta >= 68.0f && e_pos[o_no].theta <= 112.0f){
+			if (zoom == TRUE && (mov_x -= m) < -30.0f)zoom = FALSE;
+			if (zoom == FALSE && (mov_x += m) > 0.0f){
+				zoom = TRUE;
+				mov_y = 0.0f;
+				effect_f = TRUE;
+			}
+		}
+		if (e_pos[o_no].theta >= 158.0f && e_pos[o_no].theta <= 202.0f){
+			if (zoom == TRUE && (mov_y -= m) < -30.0f)zoom = FALSE;
+			if (zoom == FALSE && (mov_y += m) > 0.0f){
+				zoom = TRUE;
+				mov_y = 0.0f;
+				effect_f = TRUE;
+			}
+		}
+		if (e_pos[o_no].theta >= 248.0f && e_pos[o_no].theta <= 292.0f){
+			if (zoom == TRUE && (mov_x += m) > 30.0f)zoom = FALSE;
+			if (zoom == FALSE && (mov_x -= m) < 0.0f){
+				zoom = TRUE;
+				mov_y = 0.0f;
+				effect_f = TRUE;
+			}
+		}
+	}
+}
+
 void EnemySide::DamageAction(){
 
 	float m = tfloat.Add(0.05f);
@@ -487,6 +527,11 @@ bool EnemySide::Magiccreate(float x, float y, float z){
 }
 
 //@Override
+void EnemySide::ObjDraw(float x, float y, float z, float r, float g, float b, float theta){
+	en->D3primitive(x, y, z, r, g, b, theta, TRUE, FALSE, 0);
+}
+
+//@Override
 bool EnemySide::M_run_flg(){
 
 	int rnd = rand() % M_run_flg_rnd;
@@ -524,4 +569,6 @@ void EnemySide::M_select(int *r, int *r1){
 EnemySide::~EnemySide(){
 	delete mag;
 	mag = NULL;
+	delete en;
+	en = NULL;
 }

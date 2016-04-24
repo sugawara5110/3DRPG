@@ -115,13 +115,15 @@ char *Shader3D =
 
 //ライト計算
 "    for (int i = 0; i < g_ShadowLow_Lpcs.y; i++){\n"
-//ライトオフは飛ばす
-"        if (g_Lightst[i].w == 1.0f){\n"
+//頂点から光源までの距離を計算
+"        float distance = length(g_LightPos[i].xyz - input.wPos.xyz);\n"
+
+//ライトオフ, レンジ×3より外は飛ばす
+"        if (g_Lightst[i].w == 1.0f && distance < g_Lightst[i].x * 3){\n"
+
 //ライト方向正規化
 "            float3 L = normalize(abs(g_LightPos[i].xyz - input.wPos.xyz));\n"
 
-//頂点から光源までの距離を計算
-"            float distance = length(g_LightPos[i].xyz - input.wPos.xyz);\n"
 //デフォルト減衰率
 "            float attenuation = 2.0f;\n"
 //レンジ外減衰率増減適用

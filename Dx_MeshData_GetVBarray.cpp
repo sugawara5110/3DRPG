@@ -23,17 +23,12 @@ MeshData::MeshData(){
 
 MeshData::~MeshData(){
 
-	if (pConstantBuffer_MESH != NULL){
-		pConstantBuffer_MESH->Release();
-		pConstantBuffer_MESH = NULL;
-	}
+	RELEASE(pConstantBuffer_MESH);
+
 	if (pMyVB != NULL){
-		pMyVB->Release();
-		pMyVB = NULL;
+		RELEASE(pMyVB);
 		for (DWORD i = 0; i < MaterialCount; i++){
-			if (pMyVBI[i] == NULL)continue;
-			pMyVBI[i]->Release();
-			pMyVBI[i] = NULL;
+			RELEASE(pMyVBI[i]);
 		}
 		delete pMyVBI;
 		pMyVBI = NULL;
@@ -111,14 +106,8 @@ HRESULT MeshData::LoadMaterialFromFile(LPSTR FileName, MY_MATERIAL** ppMaterial)
 		if (strcmp(key, "map_Kd") == 0)
 		{
 			fscanf_s(fp, "%s", &pMaterial[iMCount].TextureName, sizeof(pMaterial[iMCount].TextureName));
-			//ワイド文字に変換
-			wchar_t wname[110];
-			mbstowcs(wname, pMaterial[iMCount].TextureName, 110);
-			//テクスチャーを作成
-			if (FAILED(DirectX::CreateWICTextureFromFile(dx->pDevice, wname, NULL, &pMaterial[iMCount].pTexture)))
-			{
-				return E_FAIL;
-			}
+			//Dx11クラス内から使用するテクスチャーナンバー取得(atoi 数値文字列をint型変換)
+			pMaterial[iMCount].tex_no = atoi(pMaterial[iMCount].TextureName);
 		}
 	}
 	fclose(fp);
@@ -260,7 +249,7 @@ HRESULT MeshData::GetVBarray(LPSTR FileName, bool disp){
 			}
 			if (strcmp(key, "f") == 0 && boFlag == true)
 			{
-				if (pMaterial[i].pTexture != NULL)//テクスチャーありサーフェイス
+				if (pMaterial[i].tex_no != -1)//テクスチャーありサーフェイス
 				{
 					fscanf_s(fp, "%d/%d/%d %d/%d/%d %d/%d/%d", &v1, &vt1, &vn1, &v2, &vt2, &vn2, &v3, &vt3, &vn3);
 				}
@@ -351,7 +340,7 @@ HRESULT MeshData::GetVBarray(LPSTR FileName, bool disp){
 	return S_OK;
 }
 
-void MeshData::D3primitive(float x, float y, float z, float theta, float size, float disp){
+void MeshData::D3primitive(float x, float y, float z, float r, float g, float b, float theta, float size, float disp){
 
 	//使用するシェーダーのセット
 	dx->pDeviceContext->VSSetShader(pVertexShader, NULL, 0);
@@ -360,7 +349,7 @@ void MeshData::D3primitive(float x, float y, float z, float theta, float size, f
 	if (pDomainShader != NULL)dx->pDeviceContext->DSSetShader(pDomainShader, NULL, 0);
 
 	//シェーダーのコンスタントバッファーに各種データを渡す
-	dx->MatrixMap(pConstantBuffer, x, y, z, 0.0f, 0.0f, 0.0f, 0.0f, size, disp);
+	dx->MatrixMap(pConstantBuffer, x, y, z, r, g, b, theta, size, disp);
 
 	//このコンスタントバッファーをどのシェーダーで使うか
 	dx->pDeviceContext->VSSetConstantBuffers(0, 1, &pConstantBuffer);
@@ -421,10 +410,10 @@ void MeshData::D3primitive(float x, float y, float z, float theta, float size, f
 		if (pMaterial[i].TextureName[0] != NULL)
 		{
 			dx->pDeviceContext->PSSetSamplers(0, 1, &dx->pSampleLinear);
-			dx->pDeviceContext->PSSetShaderResources(0, 1, &pMaterial[i].pTexture);
+			dx->pDeviceContext->PSSetShaderResources(0, 1, &dx->pTexture[pMaterial[i].tex_no]);
 			if (pDomainShader != NULL){
 				dx->pDeviceContext->DSSetSamplers(0, 1, &dx->pSampleLinear);
-				dx->pDeviceContext->DSSetShaderResources(0, 1, &pMaterial[i].pTexture);
+				dx->pDeviceContext->DSSetShaderResources(0, 1, &dx->pTexture[pMaterial[i].tex_no]);
 			}
 		}
 		else
