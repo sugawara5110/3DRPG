@@ -69,7 +69,7 @@ void PolygonData::Light(bool f){
 	lighteffect = f;
 }
 
-HRESULT PolygonData::GetVBarray(PrimitiveType type, int pieces){//’¸“_ƒoƒbƒtƒ@,”z—ñŠm•Û
+void PolygonData::GetVBarray(PrimitiveType type, int pieces){//’¸“_ƒoƒbƒtƒ@,”z—ñŠm•Û
 
 	if (type == SQUARE){
 		topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -121,7 +121,6 @@ HRESULT PolygonData::GetVBarray(PrimitiveType type, int pieces){//’¸“_ƒoƒbƒtƒ@,”
 	dx->pDevice->CreateBuffer(&bdI, &IndexData, &pMyVBI);
 
 	CPUAccess = TRUE;
-	return S_OK;
 }
 
 void PolygonData::GetVBarrayCPUNotAccess(int pieces){
@@ -241,7 +240,7 @@ void PolygonData::GetShaderPointer(){
 	}
 }
 
-void PolygonData::D3primitive(float x, float y, float z, float r, float g, float b, float theta, bool a, bool lock, float disp){
+void PolygonData::Draw(float x, float y, float z, float r, float g, float b, float theta, bool a, bool lock, float disp){
 
 	GetShaderPointer();
 
@@ -304,7 +303,7 @@ void PolygonData::D3primitive(float x, float y, float z, float r, float g, float
 	}
 
 	//ƒVƒF[ƒ_[‚ÌƒRƒ“ƒXƒ^ƒ“ƒgƒoƒbƒtƒ@[‚ÉŠeíƒf[ƒ^‚ğ“n‚·
-	dx->MatrixMap(pConstantBuffer, x, y, z, r, g, b, theta, 1.0f, disp);
+	dx->MatrixMap(pConstantBuffer, x, y, z, r, g, b, theta, 0, 0, 1.0f, disp);
 
 	//‚±‚ÌƒRƒ“ƒXƒ^ƒ“ƒgƒoƒbƒtƒ@[‚ğ‚Ç‚ÌƒVƒF[ƒ_[‚Åg‚¤‚©
 	if (CPUAccess == TRUE){

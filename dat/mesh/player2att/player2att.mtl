@@ -1,0 +1,90 @@
+# Blender MTL File: 'player2.blend'
+# Material Count: 8
+
+newmtl player2:Eyebrow006:eyebrow006
+Ns 500.000000
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd eyebrow006.png
+map_Kd 102
+
+newmtl player2:Low-Poly:Eye_brown
+Ns 1000.000000
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd brown_eye.png
+map_Kd 100
+
+newmtl player2:Skin
+Ns 960.784314
+Ka 0.000000 0.000000 0.000000
+Kd 0.843000 0.639000 0.517000
+Ks 0.300000 0.300000 0.300000
+Ni 1.000000
+d 1.000000
+illum 2
+//map_Kd young_lightskinned_female_diffuse.png
+map_Kd 107
+
+newmtl player2:eyelashes03:bodyMaterial
+Ns 500.000000
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd eyelashes03.png
+map_Kd 103
+
+newmtl player2:fhair01:female01Material
+Ns 500.000000
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.200000 0.200000 0.200000
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd diffuse_black.png
+map_Kd 101
+
+newmtl player2:shoes02:SportShoes
+Ns 800.000000
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.050980 0.047060 0.047060
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd shoes02_default.png
+map_Kd 104
+
+newmtl player2:short01:short01blacksatin
+Ns 600.000000
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd short01_black_diffuse.png
+map_Kd 105
+
+newmtl player2:tshirt02:tshirt02Material
+Ns 194.117647
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.031370 0.031370 0.031370
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd tshirt02_texture.png
+map_Kd 106

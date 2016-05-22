@@ -10,6 +10,7 @@
 #include "MovieSoundManager.h"
 #include "Position.h"
 #include "DxText.h"
+#include "Hero.h"
 #include <stdlib.h>
 
 #define POS_CE  (posz * mxy.y * mxy.x + posy * mxy.x + posx)
@@ -47,10 +48,10 @@ private:
 	LightPos *light;
 	int lightcount;
 
-	float cax1;
-	float cax2;
-	float cay1;
-	float cay2;
+	float cax1;//現在位置
+	float cax2;//現在位置
+	float cay1;//注視点
+	float cay2;//注視点
 	float src_theta;//現在の向いてる方向
 
 	int posx;
@@ -92,18 +93,21 @@ private:
 	};
 	OBJPosRandomValue *wood, *wall1;
 	
-	MeshData mWood;
+	MeshData mWood, mountain;
 	PolygonData poWallA, poWallB, poWallC, poWallD, poWallE, poWall1, poF_Wall,
 		poGroundF, poCeilingF, poGroundM, poCeilingM, poGroundE, poCeilingE,
 		poBackground, poRain, poRecover, poRecoverLine, poMo, poBoss, poElevator, poEXIT;
 	Position::E_Pos e_pos[4];
 	Position::H_Pos h_pos;
+	Hero *he;//移動用
+	int walkI;//移動用
 
 	void Debug();//デバック用
 	Map();
 	void Mapfilter_p(int k, int j, int i, int idx1, int idx2, int *cnt);
 	void Mapfilter(Position::H_Pos *h_p);
 	void Mapdraw_Wood();
+	void Mapdraw_Mountain();
 	void Mapcreate_Wall1();
 	void Mapdraw_Wall1();
 	void Mapcreate_Wall(PolygonData *pd, int no1, int no2, float height, float adjust, float adjust2);
@@ -124,6 +128,7 @@ private:
 	Encount Move(MapState *mapstate, Directionkey direction);
 	void MapText(TCHAR str[30]);
 	bool ViewCulling(float obj_x, float obj_y, float obj_z);
+	void HeroDraw(Directionkey direction);
 
 public:
 	static int GetMapNo();
@@ -131,7 +136,7 @@ public:
 	static void SetBossKilled(int i, int f);
 	static int *GetBossKilled();
 	static int GetBossKilled(int map_no);
-	Map(Position::H_Pos *h_p);
+	Map(Position::H_Pos *h_p, Hero *hero);
 	Encount Mapdraw(MapState *mapstate, Directionkey direction, Encount encount, bool menu, bool title, bool ending);
 	Position::E_Pos *Getposition(int p);
 	Position::H_Pos *Getposition();

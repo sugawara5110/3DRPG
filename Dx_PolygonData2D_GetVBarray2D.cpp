@@ -6,6 +6,15 @@
 
 #include "Dx11Process.h"
 
+void PolygonData2D::Pos2DCompute(VECTOR3 *p){
+	MATRIX VP, VP_VP;
+	//入力3D座標から変換行列取得
+	MatrixMultiply(&VP, &Dx11Process::GetInstance()->View, &Dx11Process::GetInstance()->Proj);
+	MatrixMultiply(&VP_VP, &VP, &Dx11Process::GetInstance()->Vp);
+	//変換後の座標取得
+	VectorMatrixMultiply(p, &VP_VP);
+}
+
 PolygonData2D::PolygonData2D(){
 
 	dx = Dx11Process::GetInstance();
@@ -28,7 +37,7 @@ PolygonData2D::~PolygonData2D(){
 	}
 }
 
-HRESULT PolygonData2D::GetVBarray2D(int pieces){
+void PolygonData2D::GetVBarray2D(int pieces){
 
 	ver = pieces * 4;//pieces==四角形の個数
 
@@ -45,8 +54,6 @@ HRESULT PolygonData2D::GetVBarray2D(int pieces){
 	D3D11_SUBRESOURCE_DATA InitData;
 	InitData.pSysMem = d3varray;
 	Dx11Process::GetInstance()->pDevice->CreateBuffer(&bd, &InitData, &pMyVB);
-
-	return S_OK;
 }
 
 void PolygonData2D::GetShaderPointer(){
@@ -63,7 +70,7 @@ void PolygonData2D::GetShaderPointer(){
 	}
 }
 
-void PolygonData2D::D2primitive(bool a, bool lock){//2D描画
+void PolygonData2D::Draw(bool a, bool lock){//2D描画
 
 	GetShaderPointer();
 
@@ -103,3 +110,4 @@ void PolygonData2D::D2primitive(bool a, bool lock){//2D描画
 	//プリミティブをレンダリング
 	dx->pDeviceContext->Draw(ver, 0);
 }
+

@@ -42,6 +42,32 @@ DsProcess::DsProcess(){
 		(LPVOID *)&pBasicAudio);
 }
 
+void DsProcess::BSTR_Convert(char *fname, BSTR *bstr){
+	LPSTR lstr = fname;
+	//BSTRに必要なバッファサイズを求める(directshow用)
+	int bstrlen = (int)MultiByteToWideChar(
+		CP_ACP,		 // コードページ ANSI コードページ
+		0,			// 文字の種類を指定するフラグ
+		lstr,	   // マップ元文字列のアドレス
+		strlen(lstr), // マップ元文字列のバイト数
+		NULL,		 // マップ先ワイド文字列を入れるバッファのアドレス
+		0			// バッファのサイズ
+		);
+
+	//バッファを確保する
+	*bstr = SysAllocStringLen(NULL, bstrlen);
+
+	//BSTRに複製
+	MultiByteToWideChar(
+		CP_ACP,
+		0,
+		lstr,
+		strlen(lstr),
+		*bstr,      //RenderFileの引数に使う
+		bstrlen
+		);
+}
+
 char *DsProcess::BinaryDecode(char *bpass){
 
 	static char decfname[64];

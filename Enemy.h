@@ -23,10 +23,11 @@ protected:
 	Position::H_Pos *h_pos;
 	Position::E_Pos *e_pos;
 	PolygonData *en, *mag, effect;
-	MeshData *en_boss;         //ボス用
-	MeshData *en_boss_att;     //ボス用アタックアニメーション用
+	MeshData *en_boss_att;       //ボス用アタックアニメーション用
+	char **en_boss_att_pass;     //パス
 	float en_boss_att_cnt;      //↑のアニメーションカウント
 	int en_boss_att_Ind;       //↑描画時のオブジェクトインデックス
+	int ObjCntMax;             //アニメーションオブジェクト個数
 	ParticleData *mag_boss;  //ボス用
 	float mag_size;           //ボス用
 

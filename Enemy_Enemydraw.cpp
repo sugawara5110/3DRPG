@@ -70,24 +70,11 @@ Act_fin_flg Enemy::Enemydraw(Battle *battle, int *E_select_obj, Action action, M
 
 	case MAGIC:
 		float mx, my;
-		switch (o_no){
-		case 0:
-			mx = 400;
-			my = 200;
-			break;
-		case 1:
-			mx = 200;
-			my = 200;
-			break;
-		case 2:
-			mx = 400;
-			my = 170;
-			break;
-		case 3:
-			mx = 600;
-			my = 200;
-			break;
-		}
+		VECTOR3 p3;
+		p3.as(e_pos[o_no].x, e_pos[o_no].y, e_pos[o_no].z);
+		PolygonData2D::Pos2DCompute(&p3);
+		mx = p3.x - 50.0f;//ˆÊ’u•â³
+		my = p3.y - 160.0f;//ˆÊ’u•â³
 		switch (E_Magrun){
 		case FLAME:
 			text->Drawtext(L"ƒtƒŒƒCƒ€‚k‚u", mx, my, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
@@ -110,7 +97,7 @@ Act_fin_flg Enemy::Enemydraw(Battle *battle, int *E_select_obj, Action action, M
 		}
 
 		if (effect_f == FALSE && Magiccreate(e_pos[o_no].x, e_pos[o_no].y, e_pos[o_no].z) == FALSE){
-			if (E_Magrun == NOSEL){
+			if (E_Magrun == NOSEL){//MP‘«‚è‚È‚¢ê‡”²‚¯‚é
 				act_f = normal_action;
 				return AT_FIN;
 			}
@@ -127,14 +114,14 @@ Act_fin_flg Enemy::Enemydraw(Battle *battle, int *E_select_obj, Action action, M
 		DamageAction();
 		break;
 
-	case RECOVER:
-		RecoverAction();
-		break;
-
 	case LOST:
 		if (LostAction(e_pos[o_no].x, e_pos[o_no].y, e_pos[o_no].z) == TRUE){
 			return LOST_FIN;
 		}
+		break;
+
+	case RECOVER:
+		RecoverAction();
 		break;
 	}
 	dx->P_ShadowBright(0.3f);
@@ -144,7 +131,6 @@ Act_fin_flg Enemy::Enemydraw(Battle *battle, int *E_select_obj, Action action, M
 }
 
 Action Enemy::Normal_act_get(){
-
 	return normal_action;
 }
 

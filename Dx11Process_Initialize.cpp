@@ -14,9 +14,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#define WINDOW_WIDTH 800 //ウィンドウ幅
-#define WINDOW_HEIGHT 600 //ウィンドウ高さ
-
 Dx11Process *Dx11Process::dx = NULL;
 
 void Dx11Process::InstanceCreate(){
@@ -43,13 +40,12 @@ Dx11Process::Dx11Process(const Dx11Process &obj) {}      // コピーコンストラクタ
 void Dx11Process::operator=(const Dx11Process& obj) {} // 代入演算子禁止
 
 //hlslファイルを読み込みシェーダーを作成する
-HRESULT Dx11Process::MakeShader(LPSTR szFileName, size_t size, LPSTR szFuncName, LPSTR szProfileName, void** ppShader, ID3DBlob** ppBlob){
+void Dx11Process::MakeShader(LPSTR szFileName, size_t size, LPSTR szFuncName, LPSTR szProfileName, void** ppShader, ID3DBlob** ppBlob){
 	ID3DBlob *pErrors = NULL;
 	if (FAILED(D3DCompile(szFileName, size, NULL, NULL, NULL, szFuncName, szProfileName, D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION, 0, ppBlob, &pErrors)))
 	{
 		char*p = (char*)pErrors->GetBufferPointer();
-		MessageBoxA(0, p, 0, MB_OK);
-		return E_FAIL;
+		throw p;
 	}
 	char szProfile[3] = { 0 };
 	memcpy(szProfile, szProfileName, 2);
@@ -77,17 +73,15 @@ HRESULT Dx11Process::MakeShader(LPSTR szFileName, size_t size, LPSTR szFuncName,
 	{
 		pDevice->CreateComputeShader((*ppBlob)->GetBufferPointer(), (*ppBlob)->GetBufferSize(), NULL, (ID3D11ComputeShader**)ppShader);
 	}
-	RELEASE(pErrors)
-	return S_OK;
+	RELEASE(pErrors);
 }
 
-HRESULT Dx11Process::MakeShaderGeometrySO(LPSTR szFileName, size_t size, LPSTR szFuncName, LPSTR szProfileName, void** ppShader, ID3DBlob** ppBlob, D3D11_SO_DECLARATION_ENTRY *Decl, UINT Declsize){
-	ID3DBlob *pErrors = NULL;
+void Dx11Process::MakeShaderGeometrySO(LPSTR szFileName, size_t size, LPSTR szFuncName, LPSTR szProfileName, void** ppShader, ID3DBlob** ppBlob, D3D11_SO_DECLARATION_ENTRY *Decl, UINT Declsize){
+	ID3DBlob *pErrors = NULL; 
 	if (FAILED(D3DCompile(szFileName, size, NULL, NULL, NULL, szFuncName, szProfileName, D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION, 0, ppBlob, &pErrors)))
 	{
 		char*p = (char*)pErrors->GetBufferPointer();
-		MessageBoxA(0, p, 0, MB_OK);
-		return E_FAIL;
+		throw p;
 	}
 	char szProfile[3] = { 0 };
 	memcpy(szProfile, szProfileName, 2);
@@ -103,7 +97,6 @@ HRESULT Dx11Process::MakeShaderGeometrySO(LPSTR szFileName, size_t size, LPSTR s
 		0,                        //機能レベルが「11.0」より低い場合
 		NULL,
 		(ID3D11GeometryShader**)ppShader);//作成されたジオメトリ・シェーダを受け取る変数
-	return S_OK;
 }
 
 void Dx11Process::ChangeBlendState(BOOL at, BOOL a){
@@ -117,10 +110,10 @@ void Dx11Process::ChangeBlendState(BOOL at, BOOL a){
 	pDeviceContext->OMSetBlendState(pBlendState, NULL, mask);
 }
 
-void Dx11Process::MatrixMap(ID3D11Buffer *pCBuffer, float x, float y, float z, float r, float g, float b, float theta, float size, float disp){
+void Dx11Process::MatrixMap(ID3D11Buffer *pCBuffer, float x, float y, float z, float r, float g, float b, float thetaZ, float thetaY, float thetaX, float size, float disp){
 
 	MATRIX mov;
-	MATRIX rot;
+	MATRIX rotZ, rotY, rotX, rotZY, rotZYX;
 	MATRIX scale;
 	MATRIX scro;
 	MATRIX WV;
@@ -133,9 +126,13 @@ void Dx11Process::MatrixMap(ID3D11Buffer *pCBuffer, float x, float y, float z, f
 	//拡大縮小
 	MatrixScaling(&scale, size, size, size);
 	//表示位置
-	MatrixRotationZ(&rot, theta);
+	MatrixRotationZ(&rotZ, thetaZ);
+	MatrixRotationY(&rotY, thetaY);
+	MatrixRotationX(&rotX, thetaX);
+	MatrixMultiply(&rotZY, &rotZ, &rotY);
+	MatrixMultiply(&rotZYX, &rotZY, &rotX);
 	MatrixTranslation(&mov, x, y, z);
-	MatrixMultiply(&scro, &rot, &scale);
+	MatrixMultiply(&scro, &rotZYX, &scale);
 	MatrixMultiply(&World, &scro, &mov);
 
 	//ワールド、カメラ、射影行列、等
@@ -161,8 +158,8 @@ void Dx11Process::MatrixMap(ID3D11Buffer *pCBuffer, float x, float y, float z, f
 	pDeviceContext->Unmap(pCBuffer, 0);
 }
 
-HRESULT Dx11Process::Initialize(HWND hWnd){
-
+void Dx11Process::Initialize(HWND hWnd){
+	
 	pDevice = NULL;
 	pDeviceContext = NULL;
 	pSwapChain = NULL;
@@ -230,15 +227,18 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	D3D_FEATURE_LEVEL pFeatureLevels = D3D_FEATURE_LEVEL_11_0;
 	D3D_FEATURE_LEVEL* pFeatureLevel = NULL;
 
-	D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, &pFeatureLevels
-		, 1, D3D11_SDK_VERSION, &sd, &pSwapChain, &pDevice, pFeatureLevel, &pDeviceContext);
+	if (FAILED(D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, &pFeatureLevels
+		, 1, D3D11_SDK_VERSION, &sd, &pSwapChain, &pDevice, pFeatureLevel, &pDeviceContext)))throw "D3D11CreateDeviceAndSwapChainエラー";
 
 	//バックバッファーのレンダーターゲットビュー(RTV)を作成
 	ID3D11Texture2D *pBack;
-	pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBack);
+	if (FAILED(pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBack)))throw "pSwapChain->GetBufferエラー";
 
-	pDevice->CreateRenderTargetView(pBack, NULL, &pRTV);
-	RELEASE(pBack)
+	if (FAILED(pDevice->CreateRenderTargetView(pBack, NULL, &pRTV))){
+		RELEASE(pBack);
+		throw "CreateRenderTargetViewエラー";
+	}
+	RELEASE(pBack);
 
 	//デプスステンシルビュー(DSV)を作成
 	D3D11_TEXTURE2D_DESC descDepth;
@@ -253,9 +253,12 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	descDepth.CPUAccessFlags = 0;
 	descDepth.MiscFlags = 0;
-	pDevice->CreateTexture2D(&descDepth, NULL, &pDS);
+	if (FAILED(pDevice->CreateTexture2D(&descDepth, NULL, &pDS)))throw "pDSエラー";
 
-	pDevice->CreateDepthStencilView(pDS, NULL, &pDSV);
+	if (FAILED(pDevice->CreateDepthStencilView(pDS, NULL, &pDSV)))throw "pDSVエラー";
+
+	//レンダーターゲットビューとデプスステンシルビューをセット
+	pDeviceContext->OMSetRenderTargets(1, &pRTV, pDSV);
 
 	//各マトリックス初期化
 	MatrixIdentity(&View);
@@ -279,12 +282,14 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	NearPlane = 1.0f;
 	//farプレーン
 	FarPlane = 10000.0f;
-	// 射影マトリックスを作成
+	//射影マトリックス作成
 	MatrixPerspectiveFovLH(&Proj,
 		ViewY_theta,
 		aspect,
 		NearPlane,
 		FarPlane);
+	//ビューポート行列作成(3D座標→2D座標変換に使用)
+	MatrixViewPort(&Vp);
 
 	//ストリーム出力データ定義(パーティクル用)
 	D3D11_SO_DECLARATION_ENTRY Decl[] =
@@ -298,11 +303,11 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	UINT Declsize = sizeof(Decl) / sizeof(Decl[0]);
 	//**********************************ジオメトリシェーダー***********************************************************//
 	MakeShaderGeometrySO(ShaderParticle, strlen(ShaderParticle), "GS_Point_SO", "gs_5_0", (void**)&pGeometryShader_PSO, &pCompiledShader, Decl, Declsize);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//**********************************頂点シェーダー***************************************************************//
 	MakeShader(ShaderParticle, strlen(ShaderParticle), "VS_SO", "vs_5_0", (void**)&pVertexShader_PSO, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//パーティクル頂点インプットレイアウトを定義
 	D3D11_INPUT_ELEMENT_DESC layout_P[] =
@@ -317,17 +322,17 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 
 	//**********************************ジオメトリシェーダー***********************************************************//
 	MakeShader(ShaderParticle, strlen(ShaderParticle), "GS_Point", "gs_5_0", (void**)&pGeometryShader_P, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//**********************************頂点シェーダー***************************************************************//
 	MakeShader(ShaderParticle, strlen(ShaderParticle), "VS", "vs_5_0", (void**)&pVertexShader_P, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout_P, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_P);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//**********************************ピクセルシェーダー***********************************************************//
 	MakeShader(ShaderParticle, strlen(ShaderParticle), "PS", "ps_5_0", (void**)&pPixelShader_P, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//メッシュ頂点インプットレイアウトを定義
 	D3D11_INPUT_ELEMENT_DESC layout_MESH[] =
@@ -341,12 +346,12 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 
 	//**********************************ハルシェーダー***************************************************************//
 	MakeShader(ShaderMesh_D, strlen(ShaderMesh_D), "HSMesh", "hs_5_0", (void**)&pHullShader_MESH_D, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 	//**********************************ハルシェーダー***************************************************************//
 
 	//**********************************ドメインシェーダー***********************************************************//
 	MakeShader(ShaderMesh_D, strlen(ShaderMesh_D), "DSMesh", "ds_5_0", (void**)&pDomainShader_MESH_D, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 	//**********************************ドメインシェーダー***********************************************************//
 
 	//**********************************頂点シェーダー***************************************************************//
@@ -354,23 +359,23 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	MakeShader(ShaderMesh_D, strlen(ShaderMesh_D), "VSMesh", "vs_5_0", (void**)&pVertexShader_MESH_D, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout_MESH, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_MESH_D);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//ディスプレイトメントマッピング無
 	MakeShader(ShaderMesh, strlen(ShaderMesh), "VSMesh", "vs_5_0", (void**)&pVertexShader_MESH, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout_MESH, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_MESH);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 	//**********************************頂点シェーダー***************************************************************//
 
 	//**********************************ピクセルシェーダー***********************************************************//
 	//ディスプレイトメントマッピング有
 	MakeShader(ShaderMesh_D, strlen(ShaderMesh_D), "PSMesh", "ps_5_0", (void**)&pPixelShader_MESH_D, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//ディスプレイトメントマッピング無
 	MakeShader(ShaderMesh, strlen(ShaderMesh), "PSMesh", "ps_5_0", (void**)&pPixelShader_MESH, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 	//**********************************ピクセルシェーダー***********************************************************//
 
 	//3D頂点インプットレイアウトを定義, NORMALにはPOSITIONのfloat型4バイト×3を記述
@@ -387,21 +392,21 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	//**********************************ハルシェーダー***************************************************************//
 	//ディスプレイトメントマッピング, ライト有 作成
 	MakeShader(ShaderDisp, strlen(ShaderDisp), "HSDispL", "hs_5_0", (void**)&pHullShader_DISPL, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//ディスプレイトメントマッピング 作成
 	MakeShader(ShaderDisp, strlen(ShaderDisp), "HSDisp", "hs_5_0", (void**)&pHullShader_DISP, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 	//**********************************ハルシェーダー***************************************************************//
 
 	//**********************************ドメインシェーダー***********************************************************//
 	//ディスプレイトメントマッピング, ライト有 作成
 	MakeShader(ShaderDisp, strlen(ShaderDisp), "DSDispL", "ds_5_0", (void**)&pDomainShader_DISPL, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//ディスプレイトメントマッピング 作成
 	MakeShader(ShaderDisp, strlen(ShaderDisp), "DSDisp", "ds_5_0", (void**)&pDomainShader_DISP, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 	//**********************************ドメインシェーダー***********************************************************//
 
 	//**********************************頂点シェーダー***************************************************************//
@@ -409,53 +414,53 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	MakeShader(ShaderDisp, strlen(ShaderDisp), "VSDispL", "vs_5_0", (void**)&pVertexShader_DISPL, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_DISPL);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//ディスプレイトメントマッピング 作成
 	MakeShader(ShaderDisp, strlen(ShaderDisp), "VSDisp", "vs_5_0", (void**)&pVertexShader_DISP, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_DISP);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//テクスチャー,ライト有 作成
 	MakeShader(Shader3D, strlen(Shader3D), "VSTextureColorL", "vs_5_0", (void**)&pVertexShader_TCL, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_TCL);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//テクスチャー,ライト無 作成
 	MakeShader(Shader3D, strlen(Shader3D), "VSTextureColor", "vs_5_0", (void**)&pVertexShader_TC, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_TC);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//基本色 作成
 	MakeShader(Shader3D, strlen(Shader3D), "VSBaseColor", "vs_5_0", (void**)&pVertexShader_BC, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_BC);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 	//**********************************頂点シェーダー***************************************************************//
 
 	//**********************************ピクセルシェーダー***********************************************************//
 	//ディスプレイトメントマッピング, ライト有 作成
 	MakeShader(ShaderDisp, strlen(ShaderDisp), "PSDispL", "ps_5_0", (void**)&pPixelShader_DISPL, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//ディスプレイトメントマッピング 作成
 	MakeShader(ShaderDisp, strlen(ShaderDisp), "PSDisp", "ps_5_0", (void**)&pPixelShader_DISP, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//テクスチャー,ライト有 作成
 	MakeShader(Shader3D, strlen(Shader3D), "PSTextureColorL", "ps_5_0", (void**)&pPixelShader_TCL, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//テクスチャー,ライト無 作成
 	MakeShader(Shader3D, strlen(Shader3D), "PSTextureColor", "ps_5_0", (void**)&pPixelShader_TC, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//基本色 作成
 	MakeShader(Shader3D, strlen(Shader3D), "PSBaseColor", "ps_5_0", (void**)&pPixelShader_BC, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 	//**********************************ピクセルシェーダー***********************************************************//
 
 	//2D頂点インプットレイアウト定義
@@ -473,23 +478,23 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	MakeShader(Shader2D, strlen(Shader2D), "VSBaseColor", "vs_5_0", (void**)&pVertexShader_2D, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout2D, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_2D);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//テクスチャー,ライト無 作成
 	MakeShader(Shader2D, strlen(Shader2D), "VSTextureColor", "vs_5_0", (void**)&pVertexShader_2DTC, &pCompiledShader);
 	//頂点インプットレイアウトを作成
 	pDevice->CreateInputLayout(layout2D, numElements, pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), &pVertexLayout_2DTC);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 	//**********************************頂点シェーダー2D*************************************************************//
 
 	//**********************************ピクセルシェーダー2D*********************************************************//
 	//基本色 作成
 	MakeShader(Shader2D, strlen(Shader2D), "PSBaseColor", "ps_5_0", (void**)&pPixelShader_2D, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 
 	//テクスチャー,ライト無 作成
 	MakeShader(Shader2D, strlen(Shader2D), "PSTextureColor", "ps_5_0", (void**)&pPixelShader_2DTC, &pCompiledShader);
-	RELEASE(pCompiledShader)
+	RELEASE(pCompiledShader);
 	//**********************************ピクセルシェーダー2D*********************************************************//
 
 	//コンスタントバッファー作成
@@ -500,7 +505,7 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	cb.MiscFlags = 0;
 	cb.StructureByteStride = 0;
 	cb.Usage = D3D11_USAGE_DYNAMIC;
-	pDevice->CreateBuffer(&cb, NULL, &pConstantBuffer);
+	if (FAILED(pDevice->CreateBuffer(&cb, NULL, &pConstantBuffer)))throw "pConstantBufferエラー";
 
 	//アルファブレンド用ブレンドステート作成
 	//pngファイル内にアルファ情報がある。アルファにより透過するよう指定している
@@ -515,7 +520,7 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	bld.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 	bld.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 	bld.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-	pDevice->CreateBlendState(&bld, &pBlendState);
+	if (FAILED(pDevice->CreateBlendState(&bld, &pBlendState)))throw "pBlendStateエラー";
 	UINT mask = 0xffffffff;
 	pDeviceContext->OMSetBlendState(pBlendState, NULL, mask);
 
@@ -532,7 +537,7 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	RSDesc.ScissorEnable = FALSE;
 	RSDesc.MultisampleEnable = FALSE;
 	RSDesc.AntialiasedLineEnable = FALSE;
-	pDevice->CreateRasterizerState(&RSDesc, &pRasterizeState);
+	if (FAILED(pDevice->CreateRasterizerState(&RSDesc, &pRasterizeState)))throw "pRasterizeStateエラー";
 	pDeviceContext->RSSetState(pRasterizeState);
 
 	//サンプラー
@@ -550,13 +555,13 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	sadesc.BorderColor[3] = 0.0f;
 	sadesc.MinLOD = -3.402823466e+38F;
 	sadesc.MaxLOD = 3.402823466e+38F;
-	pDevice->CreateSamplerState(&sadesc, &pSampleLinear);
+	if (FAILED(pDevice->CreateSamplerState(&sadesc, &pSampleLinear)))throw "pSampleLinearエラー";
 
-	pTexture = (ID3D11ShaderResourceView**)malloc(sizeof(ID3D11ShaderResourceView*) * 100);
-	pTexCPUAcc = (ID3D11Texture2D**)malloc(sizeof(ID3D11Texture2D*) * 100);
-	binary_ch = (char**)malloc(sizeof(char*) * 100);
-	binary_size = (int*)malloc(sizeof(int) * 100);
-	for (int i = 0; i < 100; i++){
+	pTexture = (ID3D11ShaderResourceView**)malloc(sizeof(ID3D11ShaderResourceView*) * TEX_PCS);
+	pTexCPUAcc = (ID3D11Texture2D**)malloc(sizeof(ID3D11Texture2D*) * TEX_PCS);
+	binary_ch = (char**)malloc(sizeof(char*) * TEX_PCS);
+	binary_size = (int*)malloc(sizeof(int) * TEX_PCS);
+	for (int i = 0; i < TEX_PCS; i++){
 		pTexture[i] = NULL;
 		pTexCPUAcc[i] = NULL;
 		binary_ch[i] = NULL;
@@ -576,19 +581,14 @@ HRESULT Dx11Process::Initialize(HWND hWnd){
 	fog.Amount = 0.0f;
 	fog.Density = 0.0f;
 	fog.on_off = 0.0f;
-
-	return S_OK;
 }
 
-HRESULT Dx11Process::Sclear(){//スクリーンクリア
+void Dx11Process::Sclear(){//スクリーンクリア
 
-	//レンダーターゲットビューとデプスステンシルビューをセット
-	pDeviceContext->OMSetRenderTargets(1, &pRTV, pDSV);
 	//画面クリア
 	float ClearColor[4] = { 0, 0, 0, 1 };// クリア色作成　RGBAの順
 	pDeviceContext->ClearRenderTargetView(pRTV, ClearColor);//カラーバッファクリア
 	pDeviceContext->ClearDepthStencilView(pDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);//デプスステンシルバッファクリア
-	return S_OK;
 }
 
 void Dx11Process::Cameraset(float cax1, float cax2, float cay1, float cay2, float caz){//カメラセット
@@ -727,22 +727,59 @@ void Dx11Process::TextureBinaryDecodeAll(){
 	TextureBinaryDecode("./dat/texture/effect/flame.da", 82);
 	TextureBinaryDecode("./dat/texture/effect/healing.da", 83);
 	TextureBinaryDecode("./dat/texture/effect/recov.da", 84);
+	//プレイヤー1テクスチャ
+	TextureBinaryDecode("./dat/texture/player/p1/brown_eye.da", 90);
+	TextureBinaryDecode("./dat/texture/player/p1/classicshoes_texture_diffuse.da", 91);
+	TextureBinaryDecode("./dat/texture/player/p1/eyebrow001.da", 92);
+	TextureBinaryDecode("./dat/texture/player/p1/jacket01_diffuse.da", 93);
+	TextureBinaryDecode("./dat/texture/player/p1/jeans01_black_diffuse.da", 94);
+	TextureBinaryDecode("./dat/texture/player/p1/male01_diffuse_black.da", 95);
+	TextureBinaryDecode("./dat/texture/player/p1/young_lightskinned_male_diffuse.da", 96);
+	//プレイヤー2テクスチャ
+	TextureBinaryDecode("./dat/texture/player/p2/brown_eye.da", 100);
+	TextureBinaryDecode("./dat/texture/player/p2/diffuse_black.da", 101);
+	TextureBinaryDecode("./dat/texture/player/p2/eyebrow006.da", 102);
+	TextureBinaryDecode("./dat/texture/player/p2/eyelashes03.da", 103);
+	TextureBinaryDecode("./dat/texture/player/p2/shoes02_default.da", 104);
+	TextureBinaryDecode("./dat/texture/player/p2/short01_black_diffuse.da", 105);
+	TextureBinaryDecode("./dat/texture/player/p2/tshirt02_texture.da", 106);
+	TextureBinaryDecode("./dat/texture/player/p2/young_lightskinned_female_diffuse.da", 107);
+	//プレイヤー3テクスチャ
+	TextureBinaryDecode("./dat/texture/player/p3/brown_eye.da", 110);
+	TextureBinaryDecode("./dat/texture/player/p3/classicshoes_texture_diffuse.da", 111);
+	TextureBinaryDecode("./dat/texture/player/p3/jeans_basic_diffuse.da", 112);
+	TextureBinaryDecode("./dat/texture/player/p3/young_darkskinned_male_diffuse.da", 113);
+	//プレイヤー4テクスチャ
+	TextureBinaryDecode("./dat/texture/player/p4/afro.da", 120);
+	TextureBinaryDecode("./dat/texture/player/p4/brown_eye.da", 121);
+	TextureBinaryDecode("./dat/texture/player/p4/eyebrow007.da", 122);
+	TextureBinaryDecode("./dat/texture/player/p4/eyelashes03.da", 123);
+	TextureBinaryDecode("./dat/texture/player/p4/shoes02_default.da", 124);
+	TextureBinaryDecode("./dat/texture/player/p4/short01_black_diffuse.da", 125);
+	TextureBinaryDecode("./dat/texture/player/p4/tshirt_texture_blue.da", 126);
+	TextureBinaryDecode("./dat/texture/player/p4/young_darkskinned_female_diffuse.da", 127);
 }
 
 void Dx11Process::GetTexture(){
 	ID3D11Resource *t;
-
-	for (int i = 0; i < 100; i++){
+	char str[50];
+	for (int i = 0; i < TEX_PCS; i++){
 		if (binary_size[i] == 0)continue;
 		//CPUアクセス可テクスチャー作成(ピクセル取得用)
-		DirectX::CreateWICTextureFromMemoryEx(pDevice, (uint8_t*)binary_ch[i], binary_size[i], binary_size[i],
-			D3D11_USAGE_STAGING, 0, D3D11_CPU_ACCESS_READ, 0, TRUE, &t, NULL);
+		if (FAILED(DirectX::CreateWICTextureFromMemoryEx(pDevice, (uint8_t*)binary_ch[i], binary_size[i], binary_size[i],
+			D3D11_USAGE_STAGING, 0, D3D11_CPU_ACCESS_READ, 0, TRUE, &t, NULL))){
+			sprintf(str, "CPUアクセス可テクスチャ№%d読み込みエラー", i);
+			throw str;
+		}
 		pTexCPUAcc[i] = (ID3D11Texture2D*)t;
 		//CPUアクセス不可テクスチャー作成
-		DirectX::CreateWICTextureFromMemoryEx(pDevice, (uint8_t*)binary_ch[i], binary_size[i], binary_size[i],
-			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, TRUE, NULL, &pTexture[i]);
+		if (FAILED(DirectX::CreateWICTextureFromMemoryEx(pDevice, (uint8_t*)binary_ch[i], binary_size[i], binary_size[i],
+			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, TRUE, NULL, &pTexture[i]))){
+			sprintf(str, "CPUアクセス不可テクスチャ№%d読み込みエラー", i);
+			throw str;
+		}
 	}
-	for (int i = 0; i < 100; i++){
+	for (int i = 0; i < TEX_PCS; i++){
 		if (binary_ch[i] == NULL)continue;
 		free(binary_ch[i]);
 		binary_ch[i] = NULL;
@@ -773,7 +810,7 @@ float Dx11Process::GetFarPlane(){
 
 Dx11Process::~Dx11Process(){
 
-	for (int i = 0; i < 100; i++){
+	for (int i = 0; i < TEX_PCS; i++){
 		RELEASE(pTexture[i]);
 		RELEASE(pTexCPUAcc[i]);
 	}
@@ -848,4 +885,9 @@ float T_float::Add(float f){
 	float r = ((float)time * f) / 2.0f;
 	if (r <= 0.0f)return 0.01f;
 	return r;
+}
+
+//エラーメッセージ
+void ErrorMessage(char *E_mes){
+	MessageBoxA(0, E_mes, 0, MB_OK);
 }

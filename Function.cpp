@@ -20,6 +20,22 @@ void MatrixScaling(MATRIX *mat, float sizex, float sizey, float sizez){
 	mat->_41 = 0.0f; mat->_42 = 0.0f; mat->_43 = 0.0f; mat->_44 = 1.0f;
 }
 
+void MatrixRotationX(MATRIX *mat, float theta){
+	float the = theta * 3.14f / 180.0f;
+	mat->_11 = 1.0f; mat->_12 = 0.0f; mat->_13 = 0.0f; mat->_14 = 0.0f;
+	mat->_21 = 0.0f; mat->_22 = cos(the); mat->_23 = sin(the); mat->_24 = 0.0f;
+	mat->_31 = 0.0f; mat->_32 = -sin(the); mat->_33 = cos(the); mat->_34 = 0.0f;
+	mat->_41 = 0.0f; mat->_42 = 0.0f; mat->_43 = 0.0f; mat->_44 = 1.0f;
+}
+
+void MatrixRotationY(MATRIX *mat, float theta){
+	float the = theta * 3.14f / 180.0f;
+	mat->_11 = cos(the); mat->_12 = 0.0f; mat->_13 = -sin(the); mat->_14 = 0.0f;
+	mat->_21 = 0.0f; mat->_22 = 1.0f; mat->_23 = 0.0f; mat->_24 = 0.0f;
+	mat->_31 = sin(the); mat->_32 = 0.0f; mat->_33 = cos(the); mat->_34 = 0.0f;
+	mat->_41 = 0.0f; mat->_42 = 0.0f; mat->_43 = 0.0f; mat->_44 = 1.0f;
+}
+
 void MatrixRotationZ(MATRIX *mat, float theta){
 	float the = theta * 3.14f / 180.0f;
 	mat->_11 = cos(the); mat->_12 = sin(the); mat->_13 = 0.0f; mat->_14 = 0.0f;
@@ -33,6 +49,28 @@ void MatrixTranslation(MATRIX *mat, float movx, float movy, float movz){
 	mat->_21 = 0.0f; mat->_22 = 1.0f; mat->_23 = 0.0f; mat->_24 = 0.0f;
 	mat->_31 = 0.0f; mat->_32 = 0.0f; mat->_33 = 1.0f; mat->_34 = 0.0f;
 	mat->_41 = movx; mat->_42 = movy; mat->_43 = movz; mat->_44 = 1.0f;
+}
+
+void MatrixAddition(MATRIX *mat, MATRIX *mat1, MATRIX *mat2){
+	mat->_11 = mat1->_11 + mat2->_11;
+	mat->_12 = mat1->_12 + mat2->_12;
+	mat->_13 = mat1->_13 + mat2->_13;
+	mat->_14 = mat1->_14 + mat2->_14;
+
+	mat->_21 = mat1->_21 + mat2->_21;
+	mat->_22 = mat1->_22 + mat2->_22;
+	mat->_23 = mat1->_23 + mat2->_23;
+	mat->_24 = mat1->_24 + mat2->_24;
+
+	mat->_31 = mat1->_31 + mat2->_31;
+	mat->_32 = mat1->_32 + mat2->_32;
+	mat->_33 = mat1->_33 + mat2->_33;
+	mat->_34 = mat1->_34 + mat2->_34;
+
+	mat->_41 = mat1->_41 + mat2->_41;
+	mat->_42 = mat1->_42 + mat2->_42;
+	mat->_43 = mat1->_43 + mat2->_43;
+	mat->_44 = mat1->_44 + mat2->_44;
 }
 
 void MatrixMultiply(MATRIX *mat, MATRIX *mat1, MATRIX *mat2){
@@ -126,6 +164,28 @@ void MatrixPerspectiveFovLH(MATRIX *mat, float theta, float aspect, float Near, 
 	mat->_21 = 0.0f; mat->_22 = sy; mat->_23 = 0.0f; mat->_24 = 0.0f;
 	mat->_31 = 0.0f; mat->_32 = 0.0f; mat->_33 = sz; mat->_34 = 1.0f;
 	mat->_41 = 0.0f; mat->_42 = 0.0f; mat->_43 = -(sz * Near); mat->_44 = 0.0f;
+}
+
+void VectorMatrixMultiply(VECTOR3 *v, MATRIX *mat){
+	float x = v->x;
+	float y = v->y;
+	float z = v->z;
+	float w;
+
+	v->x = x * mat->_11 + y * mat->_21 + z * mat->_31 + mat->_41;
+	v->y = x * mat->_12 + y * mat->_22 + z * mat->_32 + mat->_42;
+	v->z = x * mat->_13 + y * mat->_23 + z * mat->_33 + mat->_43;
+	w = x * mat->_14 + y * mat->_24 + z * mat->_34 + mat->_44;
+	v->x /= w;
+	v->y /= w;
+	v->z /= w;
+}
+
+void MatrixViewPort(MATRIX *mat){
+	mat->_11 = WINDOW_WIDTH / 2; mat->_12 = 0.0f; mat->_13 = 0.0f; mat->_14 = 0.0f;
+	mat->_21 = 0.0f; mat->_22 = -WINDOW_HEIGHT / 2; mat->_23 = 0.0f; mat->_24 = 0.0f;
+	mat->_31 = 0.0f; mat->_32 = 0.0f; mat->_33 = 1.0f; mat->_34 = 0.0f;
+	mat->_41 = WINDOW_WIDTH / 2; mat->_42 = WINDOW_HEIGHT / 2; mat->_43 = 0.0f; mat->_44 = 1.0f;
 }
 
 void Bdecode(char *bpass, char **binary, int *size){

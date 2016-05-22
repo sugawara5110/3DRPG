@@ -11,6 +11,39 @@
 #include "Hero.h"
 #include "Battle.h"
 
+void Hero::OBJWalkDraw(float x, float y, float z, float r, float g, float b, float theta, int walkI){
+	if (walkI == -1){
+		//静止
+		map_walk[0].Draw(x, y, z, r, g, b, theta, 0, 0, 2.0f, 0.1f);
+	}
+	else{
+		float ax, ay, wi;
+		ax = ay = wi = 0.0f;
+		wi = (float)walkI / 18.0f * 30.0f;
+		switch ((int)theta){
+		case 360:
+		case 0:
+			ay = wi;
+			ax = 0.0f;
+			break;
+		case 90:
+			ax = -wi;
+			ay = 0.0f;
+			break;
+		case 180:
+			ay = -wi;
+			ax = 0.0f;
+			break;
+		case 270:
+			ax = wi;
+			ay = 0.0f;
+			break;
+		}
+		//移動
+		map_walk[walkI + 1].Draw(x + ax, y + ay, z, r, g, b, theta, 0, 0, 2.0f, 0.1f);
+	}
+}
+
 Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_pos, Position::E_Pos *e_pos, float me, bool command_run, Action action, MagicSelect H_Magrun){
 
 	static bool clr_f = TRUE;
@@ -21,14 +54,16 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 	if (o_no == 2)x = 370.0f;
 	if (o_no == 3)x = 540.0f;
 
-	//NORMAL以外のアクション中にNORMAL以外のアクション発生時の初期化
-	if (action != NORMAL){
+	//NORMAL,LOST以外のアクション中にNORMAL,LOST以外のアクション発生時の初期化
+	if (action != NORMAL&& action != LOST){
 		mov_y = 0.0f;
 		mov_x = 0.0f;
+		mov_z = 0.0f;
 		up = TRUE;
 		count = 0;
 	}
 
+	float cntMax = 0;
 	switch (action){
 	case ATTACK:
 		act_f = ATTACK;
@@ -40,8 +75,11 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 		if (act_f == ATTACK || act_f == MAGIC)break;
 		act_f = DAMAGE;
 		break;
+	case LOST:
+		act_f = LOST;
+		break;
 	case RECOVER:
-		act_f = NORMAL;
+		act_f = RECOVER;
 		break;
 	}
 
@@ -49,11 +87,17 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 	switch (act_f){
 	case ATTACK:
 		m = tfloat.Add(0.15f);
-		if (effect_f == FALSE && up == TRUE && (mov_y -= m) < -30.0f)up = FALSE;
-		if (effect_f == FALSE && up == FALSE && (mov_y += m) > 0.0f){
-			up = TRUE;
-			mov_y = 0.0f;
-			effect_f = TRUE;
+		cntMax = (float)(ObjCntMax * 3 - 1);
+		if (effect_f == FALSE){
+			if ((p_att_cnt += m) < cntMax){//カウントcnt o_no=0:Max27, o_no=1:Max32, o_no=2:Max26, o_no=3:Max15
+				int cnt = (int)(p_att_cnt / 3.0f);
+				p_att_Ind = cnt;
+			}
+			else{
+				p_att_cnt = 0.0f;
+				p_att_Ind = 0;
+				effect_f = TRUE;
+			}
 		}
 		if (effect_f == TRUE){
 			effect.tex_no = 0;
@@ -68,25 +112,12 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 		m = tfloat.Add(0.15f);
 		float mx, my;
 		MovieSoundManager::Magic_sound(TRUE);
-		mag.D3primitive(h_pos->cx1, h_pos->cy1, (float)h_pos->pz * 100.0f + 25.0f, 0, 0, 0, count += m, TRUE, FALSE, 0);
-		switch (o_no){
-		case 0:
-			mx = 0.0f;
-			my = 400.0f;
-			break;
-		case 1:
-			mx = 170.0f;
-			my = 400.0f;
-			break;
-		case 2:
-			mx = 350.0f;
-			my = 400.0f;
-			break;
-		case 3:
-			mx = 520.0f;
-			my = 400.0f;
-			break;
-		}
+		mag.Draw(h_pos->BtPos_x[o_no], h_pos->BtPos_y[o_no], (float)h_pos->pz * 100.0f, 0, 0, 0, count += m, TRUE, FALSE, 0);
+		VECTOR3 p3;
+		p3.as(h_pos->BtPos_x[o_no], h_pos->BtPos_y[o_no], (float)h_pos->pz * 100.0f);
+		PolygonData2D::Pos2DCompute(&p3);
+		mx = p3.x - 130.0f;//位置補正
+		my = p3.y - 180.0f;//位置補正
 		switch (H_Magrun){
 		case FLAME:
 			text->Drawtext(L"フレイムＬＶ", mx, my, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
@@ -107,10 +138,7 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 			text->Drawtext(L"MPが足りない", mx, my, 30.0f, { 1.0f, 0.5f, 0.5f, 1.0f });
 			break;
 		}
-		if (effect_f == FALSE && up == TRUE && (mov_y -= m) < -30.0f)up = FALSE;
-		if (effect_f == FALSE && up == FALSE && (mov_y += m) > 0.0f){
-			up = TRUE;
-			mov_y = 0.0f;
+		if (effect_f == FALSE && (count += m) > 200.0f){
 			count = 0;
 			if (H_Magrun == NOSEL){
 				act_f = NORMAL;
@@ -129,30 +157,67 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 	case DAMAGE:
 		m = tfloat.Add(0.05f);
 		if ((count += m) < 10){
-			int rnd = rand() % 20;
-			rnd -= 10;
+			int rnd = rand() % 4;
+			rnd -= 2;
 			mov_x = (float)rnd;
-			rnd = rand() % 20;
-			rnd -= 10;
+			rnd = rand() % 4;
+			rnd -= 2;
 			mov_y = (float)rnd;
+			rnd = rand() % 4;
+			rnd -= 2;
+			mov_z = (float)rnd;
 		}
 		else {
 			count = 0.0f;
 			act_f = NORMAL;
-			mov_x = mov_y = 0.0f;
+			mov_x = mov_y = mov_z = 0.0f;
+		}
+		break;
+	case LOST:
+		m = tfloat.Add(1.0f);
+		if ((LA += m) >= 90.0f){
+			LA = 90.0f;//ひたすら加算を防止
+		}
+		break;
+	case RECOVER:
+		m = tfloat.Add(1.0f);
+		if ((LA -= m) <= 0.0f){
+			LA = 0.0f;
+			act_f = NORMAL;//終わり次第ノーマルに戻す
 		}
 		break;
 	}
 
+	switch ((int)h_pos->theta){
+	case 360:
+	case 0:
+		LA_x = LA;
+		LA_y = 0.0f;
+		break;
+	case 90:
+		LA_y = LA;
+		LA_x = 0.0f;
+		break;
+	case 180:
+		LA_x = -LA;
+		LA_y = 0.0f;
+		break;
+	case 270:
+		LA_y = -LA;
+		LA_x = 0.0f;
+		break;
+	}
+	p_att[p_att_Ind].Draw(h_pos->BtPos_x[o_no] + mov_x, h_pos->BtPos_y[o_no] + mov_y, (float)h_pos->pz * 100.0f + mov_z + LA / 9.0f, 0, 0, 0, h_pos->theta, LA_y, LA_x, 2.0f, 0.1f);
+
 	Statecreate(command_run);
-	text->Drawtext(L"囚人Ｎｏ", x + mov_x, 470.0f + mov_y, 15.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
-	text->DrawValue(o_no, x + 60.0f + mov_x, 470.0f + mov_y, 15.0f, 1, { 1.0f, 1.0f, 1.0f, 1.0f });
-	text->Drawtext(L"ＨＰ", x + mov_x - 5.0f, 490.0f + mov_y, 15.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
-	text->DrawValue(p_data.HP, x + mov_x + 25.0f, 490.0f + mov_y, 15.0f, 5, { 1.0f, 1.0f, 1.0f, 1.0f });
-	text->Drawtext(L"ＭＰ", x + mov_x - 5.0f, 510.0f + mov_y, 15.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
-	text->DrawValue(p_data.MP, x + mov_x + 25.0f, 510.0f + mov_y, 15.0f, 5, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"囚人Ｎｏ", x, 470.0f, 15.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->DrawValue(o_no, x + 60.0f, 470.0f, 15.0f, 1, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"ＨＰ", x - 5.0f, 490.0f, 15.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->DrawValue(p_data.HP, x + 25.0f, 490.0f, 15.0f, 5, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->Drawtext(L"ＭＰ", x - 5.0f, 510.0f, 15.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+	text->DrawValue(p_data.MP, x + 25.0f, 510.0f, 15.0f, 5, { 1.0f, 1.0f, 1.0f, 1.0f });
 	if (p_data.HP <= 0){
-		text->Drawtext(L"戦闘不能", x + mov_x, 525.0f + mov_y, 25.0f, { 1.0f, 0.0f, 0.0f, 1.0f });
+		text->Drawtext(L"戦闘不能", x, 525.0f, 25.0f, { 1.0f, 0.0f, 0.0f, 1.0f });
 		return NOT_FIN;
 	}
 	if (me >= 1.0f){
@@ -163,14 +228,21 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 		else{
 			if ((r += m) >= 1.0f)clr_f = TRUE;
 		}
-		text->Drawtext(L"臨戦態勢", x + mov_x, 525.0f + mov_y, 25.0f, { 1.0f, 1.0f, 1.0f, r });
+		text->Drawtext(L"臨戦態勢", x, 525.0f, 25.0f, { 1.0f, 1.0f, 1.0f, r });
 		return NOT_FIN;
 	}
 	Metercreate(me);
 
+	//LOST状態
+	if (act_f == LOST && LA == 90)return LOST_FIN;
+	//LOST以外
 	return NOT_FIN;
 }
 
 void Hero::Act_f_init(){
 	act_f = NORMAL;
+}
+
+Action Hero::Normal_act_get(){
+	return NORMAL;
 }

@@ -126,46 +126,56 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 
 	PosOffset(o_no);
 
-	en_boss = new MeshData();
-	char str[50];
-	switch (e){
-	case 50:
-		en_boss->GetVBarray("./dat/mesh/boss1.obj", FALSE);
-		en_boss_att = new MeshData[13];
-		for (int i = 0; i < 13; i++){
-			sprintf_s(str, sizeof(str), "./dat/mesh/boss1att/boss1bone_0000%02d.obj", i + 1);
-			en_boss_att[i].GetVBarray(str, FALSE);
-		}
+	switch (t_no){
+	case 0:
+		ObjCntMax = 14;
 		break;
-	case 51:
-		en_boss->GetVBarray("./dat/mesh/boss2.obj", FALSE);
-		en_boss_att = new MeshData[19];
-		for (int i = 0; i < 19; i++){
-			sprintf_s(str, sizeof(str), "./dat/mesh/boss2att/boss2bone_0000%02d.obj", i + 1);
-			en_boss_att[i].GetVBarray(str, FALSE);
-		}
+	case 1:
+		ObjCntMax = 20;
 		break;
-	case 52:
-		en_boss->GetVBarray("./dat/mesh/boss3.obj", FALSE);
+	case 2:
+		en_boss_att = new MeshData[1];
+		en_boss_att[0].GetVBarray("./dat/mesh/boss3.obj", FALSE);
 		break;
-	case 53:
-		en_boss->GetVBarray("./dat/mesh/boss4.obj", FALSE);
-		en_boss_att = new MeshData[11];
-		for (int i = 0; i < 11; i++){
-			sprintf_s(str, sizeof(str), "./dat/mesh/boss4att/boss4bone_0000%02d.obj", i + 1);
-			en_boss_att[i].GetVBarray(str, FALSE);
-		}
+	case 3:
+		ObjCntMax = 12;
 		break;
-	case 59:
-		en_boss->GetVBarray("./dat/mesh/lastboss.obj", FALSE);
-		en_boss_att = new MeshData[15];
-		for (int i = 0; i < 15; i++){
-			sprintf_s(str, sizeof(str), "./dat/mesh/lastbossatt/lastbossbone_0000%02d.obj", i + 1);
-			en_boss_att[i].GetVBarray(str, FALSE);
-		}
+	case 4:
+		ObjCntMax = 16;
 		break;
 	}
+	if (t_no != 2){
+		en_boss_att = new MeshData[ObjCntMax];
+		en_boss_att_pass = (char**)malloc(sizeof(char*) * ObjCntMax);
+		for (int i = 0; i < ObjCntMax; i++){
+			en_boss_att_pass[i] = (char*)malloc(sizeof(char) * 50);
+			switch (t_no){
+			case 0:
+				sprintf_s(en_boss_att_pass[i], sizeof(char) * 50, "./dat/mesh/boss1att/boss1_0000%02d.obj", i);
+				break;
+			case 1:
+				sprintf_s(en_boss_att_pass[i], sizeof(char) * 50, "./dat/mesh/boss2att/boss2_0000%02d.obj", i);
+				break;
+			case 3:
+				sprintf_s(en_boss_att_pass[i], sizeof(char) * 50, "./dat/mesh/boss4att/boss4_0000%02d.obj", i);
+				break;
+			case 4:
+				sprintf_s(en_boss_att_pass[i], sizeof(char) * 50, "./dat/mesh/lastbossatt/lastboss_0000%02d.obj", i);
+				break;
+			}
+		}
+		MeshData::GetVBarrayThreadArray(en_boss_att, en_boss_att_pass, ObjCntMax);
 
+		//ƒpƒX‚Í‚à‚¤Žg‚í‚È‚¢‚Ì‚Å‚±‚±‚Å‰ð•ú
+		if (en_boss_att_pass != NULL){
+			for (int i = 0; i < ObjCntMax; i++){
+				free(en_boss_att_pass[i]);
+				en_boss_att_pass[i] = NULL;
+			}
+			free(en_boss_att_pass);
+			en_boss_att_pass = NULL;
+		}
+	}
 	mag_boss = new ParticleData();
 	mag_boss->CreateParticle(61, mag_size, 5.0f);
 }
@@ -173,7 +183,6 @@ EnemyBoss::EnemyBoss(int t_no, int no, Position::H_Pos *h_po, Position::E_Pos *e
 //@Override
 void EnemyBoss::AttackAction(){
 	float m;
-
 	if (effect_f == FALSE){
 		switch (e_no){
 		case 0:
@@ -227,7 +236,8 @@ void EnemyBoss::AttackAction(){
 				effect_f = TRUE;
 			}
 			break;
-		default:
+		}
+		if (e_no == 2){
 			m = tfloat.Add(0.15f);
 			if (e_pos[o_no].theta >= 338.0f || e_pos[o_no].theta <= 22.0f){
 				if (zoom == TRUE && (mov_y += m) > 30.0f)zoom = FALSE;
@@ -261,7 +271,6 @@ void EnemyBoss::AttackAction(){
 					effect_f = TRUE;
 				}
 			}
-			break;
 		}
 	}
 }
@@ -330,8 +339,8 @@ bool EnemyBoss::Magiccreate(float x, float y, float z){
 
 //@Override
 void EnemyBoss::ObjDraw(float x, float y, float z, float r, float g, float b, float theta){
-	if (en_boss_att_Ind != -1)en_boss_att[en_boss_att_Ind].D3primitive(x, y, z + size_y * 0.5f, cr, cg, cb, theta, size_x * 0.5f, 0.1f);
-	else en_boss->D3primitive(x, y, z + size_y * 0.5f, cr, cg, cb, theta, size_x * 0.5f, 0.1f);
+	if (en_boss_att_Ind != -1)en_boss_att[en_boss_att_Ind + 1].Draw(x, y, z + size_y * 0.5f, cr, cg, cb, theta, 0, 0, size_x * 0.5f, 0.1f);
+	else en_boss_att[0].Draw(x, y, z + size_y * 0.5f, cr, cg, cb, theta, 0, 0, size_x * 0.5f, 0.1f);
 }
 
 //@Override
@@ -407,13 +416,6 @@ void EnemyBoss::M_select(int *r, int *r1){
 }
 
 EnemyBoss::~EnemyBoss(){
-
-	delete mag_boss;
-	mag_boss = NULL;
-	delete en_boss;
-	en_boss = NULL;
-	if (en_boss_att != NULL){
-		delete[] en_boss_att;
-		en_boss_att = NULL;
-	}
+	S_DELETE(mag_boss);
+	ARR_DELETE(en_boss_att);
 }

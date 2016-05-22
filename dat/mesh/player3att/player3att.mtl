@@ -1,0 +1,46 @@
+# Blender MTL File: 'player3.blend'
+# Material Count: 4
+
+newmtl player3:Low-Poly:Eye_brown
+Ns 1000.000000
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd brown_eye.png
+map_Kd 110
+
+newmtl player3:Skin
+Ns 900.000000
+Ka 0.000000 0.000000 0.000000
+Kd 0.500000 0.500000 0.500000
+Ks 0.149000 0.102000 0.102000
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd young_darkskinned_male_diffuse.png
+map_Kd 113
+
+newmtl player3:classic_shoes_lres:BrownClassicShoesMaterial
+Ns 398.039216
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.278400 0.278400 0.278400
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd classicshoes_texture_diffuse.png
+map_Kd 111
+
+newmtl player3:jeans01:jeans01Material
+Ns 194.117647
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.027450 0.027450 0.027450
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd jeans_basic_diffuse.png
+map_Kd 112

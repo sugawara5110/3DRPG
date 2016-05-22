@@ -28,7 +28,7 @@ protected:
 	IBasicAudio *pBasicAudio;      //インターフェース,オーディオ ストリームのボリュームとバランスを制御
 
 	DsProcess();
-
+	void BSTR_Convert(char *fname, BSTR *bstr);
 	char *BinaryDecode(char *bpass);
 
 public:

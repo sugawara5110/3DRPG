@@ -15,13 +15,18 @@
 #include "WICTextureLoader.h"
 #include "Enum.h"
 #include "Function.h"
+#include <stdio.h>
 #include <string.h>
 #include <tchar.h>
 #include <time.h>
+#include <Process.h>
 
-#define RELEASE(p) if(p){ p->Release(); p=NULL;}
+#define RELEASE(p)    if(p){p->Release();  p=NULL;}
+#define S_DELETE(p)   if(p){delete p;      p=NULL;}
+#define ARR_DELETE(p) if(p){delete[] p;    p=NULL;}
 #define LIGHT_PCS 150
 #define LIGHT_PCS_init 7
+#define TEX_PCS 130
 #pragma comment(lib,"winmm.lib")
 #pragma comment(lib,"d3d11.lib")
 #pragma comment(lib,"d3dCompiler.lib")
@@ -108,9 +113,10 @@ private:
 	int                          *binary_size;//バイナリサイズ
 
 	//マトリックス
-	MATRIX	            Proj;    //カメラの画角
-	MATRIX	            View;	//カメラの配置
-	MATRIX	            World; //モデルの配置
+	MATRIX	            Proj;    
+	MATRIX	            View;	
+	MATRIX	            World; 
+	MATRIX             Vp;    //ビューポート行列(3D座標→2D座標変換時使用)
 
 	//現在位置
 	float cx, cy, cz;
@@ -180,17 +186,17 @@ private:
 	void operator=(const Dx11Process& obj);// 代入演算子禁止
 	~Dx11Process();
 	void TextureBinaryDecode(char *Bpass, int i);//暗号化済み画像バイナリデコード
-	HRESULT MakeShader(LPSTR szFileName, size_t size, LPSTR szFuncName, LPSTR szProfileName, void** ppShader, ID3DBlob** ppBlob);
-	HRESULT MakeShaderGeometrySO(LPSTR szFileName, size_t size, LPSTR szFuncName, LPSTR szProfileName, void** ppShader, ID3DBlob** ppBlob, D3D11_SO_DECLARATION_ENTRY *Decl, UINT Declsize);
+	void MakeShader(LPSTR szFileName, size_t size, LPSTR szFuncName, LPSTR szProfileName, void** ppShader, ID3DBlob** ppBlob);
+	void MakeShaderGeometrySO(LPSTR szFileName, size_t size, LPSTR szFuncName, LPSTR szProfileName, void** ppShader, ID3DBlob** ppBlob, D3D11_SO_DECLARATION_ENTRY *Decl, UINT Declsize);
 	void ChangeBlendState(BOOL at, BOOL a);
-	void MatrixMap(ID3D11Buffer *pCBuffer, float x, float y, float z, float r, float g, float b, float theta, float size, float disp);
+	void MatrixMap(ID3D11Buffer *pCBuffer, float x, float y, float z, float r, float g, float b, float thetaZ, float thetaY, float thetaX, float size, float disp);
 	
 public:
 	static void InstanceCreate();
 	static Dx11Process *GetInstance();
 	static void DeleteInstance();
-	HRESULT Initialize(HWND hWnd);
-	HRESULT Sclear();
+	void Initialize(HWND hWnd);
+	void Sclear();
 	void Cameraset(float cax1, float cax2, float cay1, float cay2, float caz);
 	void ResetPointLight();
 	void P_ShadowBright(float val);
@@ -257,16 +263,59 @@ private:
 		VECTOR4 tex_f;   //テクスチャ有り無し
 	};
 	
-	HRESULT LoadMaterialFromFile(LPSTR FileName, MY_MATERIAL** ppMaterial);
+	void LoadMaterialFromFile(LPSTR FileName, MY_MATERIAL** ppMaterial);
 	void GetShaderPointer(bool disp);
 
 public:
+	static HANDLE *MeshObj_H;
+	static MeshData *MeshObj;
+	static char **MeshPass;
+
+	static void GetVBarrayThreadArray(MeshData *meshObj, char **Mpass, int pcs);
+
 	MeshData();
 	~MeshData();
-	HRESULT GetVBarray(LPSTR FileName, bool disp);
+	void GetVBarray(LPSTR FileName, bool disp);
 	//木./dat/mesh/tree.obj
-	void D3primitive(float x, float y, float z, float r, float g, float b, float theta, float size, float disp);
+	void Draw(float x, float y, float z, float r, float g, float b, float thetaZ, float thetaY, float thetaX, float size, float disp);
 };
+//GetVBarrayThreadArray内で使用
+unsigned __stdcall GetVB0(void *);
+unsigned __stdcall GetVB1(void *);
+unsigned __stdcall GetVB2(void *);
+unsigned __stdcall GetVB3(void *);
+unsigned __stdcall GetVB4(void *);
+unsigned __stdcall GetVB5(void *);
+unsigned __stdcall GetVB6(void *);
+unsigned __stdcall GetVB7(void *);
+unsigned __stdcall GetVB8(void *);
+unsigned __stdcall GetVB9(void *);
+unsigned __stdcall GetVB10(void *);
+unsigned __stdcall GetVB11(void *);
+unsigned __stdcall GetVB12(void *);
+unsigned __stdcall GetVB13(void *);
+unsigned __stdcall GetVB14(void *);
+unsigned __stdcall GetVB15(void *);
+unsigned __stdcall GetVB16(void *);
+unsigned __stdcall GetVB17(void *);
+unsigned __stdcall GetVB18(void *);
+unsigned __stdcall GetVB19(void *);
+unsigned __stdcall GetVB20(void *);
+unsigned __stdcall GetVB21(void *);
+unsigned __stdcall GetVB22(void *);
+unsigned __stdcall GetVB23(void *);
+unsigned __stdcall GetVB24(void *);
+unsigned __stdcall GetVB25(void *);
+unsigned __stdcall GetVB26(void *);
+unsigned __stdcall GetVB27(void *);
+unsigned __stdcall GetVB28(void *);
+unsigned __stdcall GetVB29(void *);
+unsigned __stdcall GetVB30(void *);
+unsigned __stdcall GetVB31(void *);
+unsigned __stdcall GetVB32(void *);
+unsigned __stdcall GetVB33(void *);
+unsigned __stdcall GetVB34(void *);
+unsigned __stdcall GetVB35(void *);
 
 //*********************************PolygonDataクラス*************************************//
 
@@ -285,7 +334,7 @@ private:
 	int                           ver, verI; //頂点個数  
 	D3D11_PRIMITIVE_TOPOLOGY  topology;
 
-	int                          load_tex_no[4];//0～100 静止画テクスチャ用
+	int                          load_tex_no[4];//0～120 静止画テクスチャ用
 	ID3D11Texture2D           *pTex;     //directshowからの書き込み用
 	ID3D11ShaderResourceView *pTexview;//動画テクスチャ用view
 	D3D11_BUFFER_DESC          bd;      //バッファリソース内容
@@ -324,12 +373,12 @@ public:
 		float r, float g, float b, float a,
 		float u, float v);
 	void Light(bool f);
-	HRESULT GetVBarray(PrimitiveType type, int pieces);
+	void GetVBarray(PrimitiveType type, int pieces);
 	void GetVBarrayCPUNotAccess(int pieces);
 	void TextureInit(int width, int height);
 	void GetTexture(int no);
 	void SetTextureMPixel(int **m_pix, BYTE r, BYTE g, BYTE b, int a);
-	void D3primitive(float x, float y, float z, float r, float g, float b, float theta, bool a, bool lock, float disp);
+	void Draw(float x, float y, float z, float r, float g, float b, float theta, bool a, bool lock, float disp);
 };
 
 //*********************************PolygonData2Dクラス*************************************//
@@ -360,10 +409,12 @@ public:
 	MY_VERTEX2                 *d3varray;  //頂点配列
 	bool                         lockV;
 
+	static void Pos2DCompute(VECTOR3 *p);//3D座標→2D座標変換
+
 	PolygonData2D();
 	~PolygonData2D();
-	HRESULT GetVBarray2D(int pieces);
-	void D2primitive(bool a, bool lock);
+	void GetVBarray2D(int pieces);
+	void Draw(bool a, bool lock);
 };
 
 //**************移動量一定化*************//
@@ -421,5 +472,8 @@ public:
 	void CreateParticle(int texture_no, float size, float density);//テクスチャを元にパーティクルデータ生成, 全体サイズ倍率, 密度
 	void Draw(float x, float y, float z, float theta, float size, bool init, float speed);//sizeパーティクル1個のサイズ
 };
+
+//エラーメッセージ
+void ErrorMessage(char *E_mes);
 
 #endif

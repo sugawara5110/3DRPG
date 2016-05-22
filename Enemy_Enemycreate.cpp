@@ -25,10 +25,11 @@ Enemy::Enemy(int t_no, int no){
 	tt = 0;
 	cr = cg = cb = 0.0f;
 	en = NULL;
-	en_boss = NULL;
 	en_boss_att = NULL;
 	en_boss_att_cnt = 0.0f;
 	en_boss_att_Ind = -1;
+	en_boss_att_pass = NULL;
+	ObjCntMax = 0;
 
 	effect.GetTexture(81);
 	effect.tex_no = 1;
@@ -112,9 +113,7 @@ bool Enemy::Effectdraw(Battle *battle, int *E_select_obj){
 		break;
 	}
 
-	if (effect.tex_no == 0 || effect.tex_no == 1)ver = 3;
-	else ver = 25;
-
+	ver = 25;
 	//¶‘O
 	effect.SetVertex(0, 0,
 		(float)-ver, (float)0.0f, ver * 2,
@@ -153,37 +152,19 @@ bool Enemy::Effectdraw(Battle *battle, int *E_select_obj){
 
 	float ex = 0.0f;
 	float ey = 0.0f;
-	float hx[4];
-	float hy[4];
 	switch ((int)h_pos->theta){
 	case 360:
 	case 0:
 		ey = 15.0f;
-		hx[0] = -6.5f; hy[0] = -10.0f;
-		hx[1] = -3.0f; hy[1] = -10.0f;
-		hx[2] = 0.5f; hy[2] = -10.0f;
-		hx[3] = 3.5f; hy[3] = -10.0f;
 		break;
 	case 90:
 		ex = -15.0f;
-		hx[0] = 10.0f; hy[0] = -6.5f;
-		hx[1] = 10.0f; hy[1] = -3.0f;
-		hx[2] = 10.0f; hy[2] = 0.5f;
-		hx[3] = 10.0f; hy[3] = 3.5f;
 		break;
 	case 180:
 		ey = -15.0f;
-		hx[0] = 6.5f; hy[0] = 10.0f;
-		hx[1] = 3.0f; hy[1] = 10.0f;
-		hx[2] = -0.5f; hy[2] = 10.0f;
-		hx[3] = -3.5f; hy[3] = 10.0f;
 		break;
 	case 270:
 		ex = 15.0f;
-		hx[0] = -10.0f; hy[0] = 6.5f;
-		hx[1] = -10.0f; hy[1] = 3.0f;
-		hx[2] = -10.0f; hy[2] = -0.5f;
-		hx[3] = -10.0f; hy[3] = -3.5f;
 		break;
 	}
 
@@ -193,14 +174,14 @@ bool Enemy::Effectdraw(Battle *battle, int *E_select_obj){
 		if (effect.tex_no == 2){ r = 0.2f, g = 0.7f, b = 0.3f; }
 		if (effect.tex_no == 3){ r = 0.2f, g = 0.3f, b = 0.7f; }
 		if (*E_select_obj != 4){
-			effect.D3primitive(e_pos[*E_select_obj].x + ex, e_pos[*E_select_obj].y + ey, e_pos[*E_select_obj].z, 0, 0, 0, e_pos[*E_select_obj].theta, TRUE, TRUE, 0);
+			effect.Draw(e_pos[*E_select_obj].x + ex, e_pos[*E_select_obj].y + ey, e_pos[*E_select_obj].z, 0, 0, 0, e_pos[*E_select_obj].theta, TRUE, TRUE, 0);
 			dx->PointLightPosSet(3, e_pos[*E_select_obj].x + ex, e_pos[*E_select_obj].y + ey, e_pos[*E_select_obj].z, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
 		}
 		else {
 			for (int i = 0; i < 4; i++){
 				if (battle->GetE_RCV(i) == FALSE)continue;
-				effect.D3primitive(e_pos[i].x + ex, e_pos[i].y + ey, e_pos[i].z, 0, 0, 0, e_pos[i].theta, TRUE, TRUE, 0);
-				dx->PointLightPosSet(i + 3, e_pos[*E_select_obj].x + ex, e_pos[*E_select_obj].y + ey, e_pos[*E_select_obj].z, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
+				effect.Draw(e_pos[i].x + ex, e_pos[i].y + ey, e_pos[i].z, 0, 0, 0, e_pos[i].theta, TRUE, TRUE, 0);
+				dx->PointLightPosSet(i + 3, e_pos[i].x + ex, e_pos[i].y + ey, e_pos[i].z, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
 			}
 		}
 	}
@@ -210,30 +191,16 @@ bool Enemy::Effectdraw(Battle *battle, int *E_select_obj){
 		float r, g, b;
 		if (effect.tex_no == 0){ r = 1.0f, g = 1.0f, b = 1.0f; }
 		if (effect.tex_no == 1){ r = 0.7f, g = 0.3f, b = 0.2f; }
-		switch (*E_select_obj){
-		case 0:
-			effect.D3primitive(h_pos->cx1 + hx[0], h_pos->cy1 + hy[0], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
-			dx->PointLightPosSet(3, h_pos->cx1 + hx[0], h_pos->cy1 + hy[0], (float)h_pos->pz * 100.0f + 30.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
-			break;
-		case 1:
-			effect.D3primitive(h_pos->cx1 + hx[1], h_pos->cy1 + hy[1], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
-			dx->PointLightPosSet(3, h_pos->cx1 + hx[1], h_pos->cy1 + hy[1], (float)h_pos->pz * 100.0f + 30.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
-			break;
-		case 2:
-			effect.D3primitive(h_pos->cx1 + hx[2], h_pos->cy1 + hy[2], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
-			dx->PointLightPosSet(3, h_pos->cx1 + hx[2], h_pos->cy1 + hy[2], (float)h_pos->pz * 100.0f + 30.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
-			break;
-		case 3:
-			effect.D3primitive(h_pos->cx1 + hx[3], h_pos->cy1 + hy[3], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
-			dx->PointLightPosSet(3, h_pos->cx1 + hx[3], h_pos->cy1 + hy[3], (float)h_pos->pz * 100.0f + 30.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
-			break;
-		case 4:
+		if (*E_select_obj != 4){
+			effect.Draw(h_pos->BtPos_x[*E_select_obj], h_pos->BtPos_y[*E_select_obj], (float)h_pos->pz * 100.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
+			dx->PointLightPosSet(3, h_pos->BtPos_x[*E_select_obj], h_pos->BtPos_y[*E_select_obj], (float)h_pos->pz * 100.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
+		}
+		else{
 			for (int i = 0; i < 4; i++){
 				if (battle->GetH_DM(i) == FALSE)continue;
-				effect.D3primitive(h_pos->cx1 + hx[i], h_pos->cy1 + hy[i], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
-				dx->PointLightPosSet(i + 3, h_pos->cx1 + hx[i], h_pos->cy1 + hy[i], (float)h_pos->pz * 100.0f + 30.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
+				effect.Draw(h_pos->BtPos_x[i], h_pos->BtPos_y[i], (float)h_pos->pz * 100.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
+				dx->PointLightPosSet(i + 3, h_pos->BtPos_x[i], h_pos->BtPos_y[i], (float)h_pos->pz * 100.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
 			}
-			break;
 		}
 	}
 	return TRUE;

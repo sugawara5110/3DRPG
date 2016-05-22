@@ -26,6 +26,10 @@ public:
 		int py;
 		int pz;
 		float theta;
+		float BtPos_x[4];
+		float BtPos_x1[4];
+		float BtPos_y[4];
+		float BtPos_y1[4];
 	}H_Pos;
 };
 

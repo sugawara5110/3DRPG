@@ -9,12 +9,7 @@
 
 Hero::Hero(){}
 
-Hero::Hero(P_Data *p_dat, int no){
-
-	o_no = no;
-	effect_f = FALSE;
-	tx = ty = 0.0f;
-	tt = 0;
+void Hero::P_DataInput(P_Data *p_dat){
 	p_data.Attack = p_dat->Attack;
 	p_data.Magic = p_dat->Magic;
 	p_data.Agility = p_dat->Agility;
@@ -30,6 +25,68 @@ Hero::Hero(P_Data *p_dat, int no){
 	p_data.Fpoint = p_dat->Fpoint;
 	p_data.Hpoint = p_dat->Hpoint;
 	p_data.Rpoint = p_dat->Rpoint;
+}
+
+Hero::Hero(int no){
+
+	o_no = no;
+	effect_f = FALSE;
+	tx = ty = 0.0f;
+	tt = 0;
+
+	map_walk = NULL;
+	map_walk_pass = NULL;
+	p_att = NULL;
+	p_att_pass = NULL;
+	p_att_cnt = 0;
+	p_att_Ind = 0;
+
+	switch (o_no){
+	case 0:
+		map_walk = new MeshData[19];
+		map_walk_pass = (char**)malloc(sizeof(char*) * 19);
+		for (int i = 0; i < 19; i++){
+			map_walk_pass[i] = (char*)malloc(sizeof(char) * 50);
+			sprintf_s(map_walk_pass[i], sizeof(char) * 50, "./dat/mesh/player_walk/player_walk_0000%02d.obj", i);
+		}
+		MeshData::GetVBarrayThreadArray(map_walk, map_walk_pass, 19);
+		if (map_walk_pass != NULL){
+			for (int i = 0; i < 19; i++){
+				free(map_walk_pass[i]);
+				map_walk_pass[i] = NULL;
+			}
+			free(map_walk_pass);
+			map_walk_pass = NULL;
+		}
+		ObjCntMax = 28;
+		break;
+	case 1:
+		ObjCntMax = 33;
+		break;
+	case 2:
+		ObjCntMax = 27;
+		break;
+	case 3:
+		ObjCntMax = 16;
+		break;
+	}
+	p_att = new MeshData[ObjCntMax];
+	p_att_pass = (char**)malloc(sizeof(char*) * ObjCntMax);
+	for (int i = 0; i < ObjCntMax; i++){
+		p_att_pass[i] = (char*)malloc(sizeof(char) * 50);
+		sprintf_s(p_att_pass[i], sizeof(char) * 50, "./dat/mesh/player%datt/player%datt_0000%02d.obj", o_no + 1, o_no + 1, i + 1);
+	}
+	MeshData::GetVBarrayThreadArray(p_att, p_att_pass, ObjCntMax);
+
+	//パスはもう使わないのでここで解放
+	if (p_att_pass != NULL){
+		for (int i = 0; i < ObjCntMax; i++){
+			free(p_att_pass[i]);
+			p_att_pass[i] = NULL;
+		}
+		free(p_att_pass);
+		p_att_pass = NULL;
+	}
 
 	state.GetVBarray2D(1);
 	meter.GetVBarray2D(1);
@@ -49,9 +106,11 @@ Hero::Hero(P_Data *p_dat, int no){
 
 	mov_y = 0.0f;
 	mov_x = 0.0f;
+	mov_z = 0.0f;
 	act_f = NORMAL;
 	up = TRUE;
 	count = 0.0f;
+	LA = LA_x = LA_y = 0.0f;
 }
 
 void Hero::Statecreate(bool command_run){
@@ -78,27 +137,27 @@ void Hero::Statecreate(bool command_run){
 	if (o_no == 3)x = 530.0f;
 
 	//ステータスウインドウ
-	state.d3varray[0].x = x + mov_x;
-	state.d3varray[0].y = 450.0f + mov_y;
+	state.d3varray[0].x = x;
+	state.d3varray[0].y = 450.0f;
 	state.d3varray[0].z = 0.2f;
 	state.d3varray[0].color = clr;
 
-	state.d3varray[1].x = 120.0f + x + mov_x;
-	state.d3varray[1].y = 450.0f + mov_y;
+	state.d3varray[1].x = 120.0f + x;
+	state.d3varray[1].y = 450.0f;
 	state.d3varray[1].z = 0.2f;
 	state.d3varray[1].color = clr;
 
-	state.d3varray[2].x = x + mov_x;
-	state.d3varray[2].y = 550.0f + mov_y;
+	state.d3varray[2].x = x;
+	state.d3varray[2].y = 550.0f;
 	state.d3varray[2].z = 0.2f;
 	state.d3varray[2].color = clr;
 
-	state.d3varray[3].x = 120.0f + x + mov_x;
-	state.d3varray[3].y = 550.0f + mov_y;
+	state.d3varray[3].x = 120.0f + x;
+	state.d3varray[3].y = 550.0f;
 	state.d3varray[3].z = 0.2f;
 	state.d3varray[3].color = clr;
 
-	state.D2primitive(TRUE, TRUE);
+	state.Draw(TRUE, TRUE);
 }
 
 void Hero::Metercreate(float me){
@@ -112,52 +171,52 @@ void Hero::Metercreate(float me){
 	VECTOR4 clr = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	//メーター1
-	meter.d3varray[0].x = 1.0f + x + mov_x;
-	meter.d3varray[0].y = 539.0f + mov_y;
+	meter.d3varray[0].x = 1.0f + x;
+	meter.d3varray[0].y = 539.0f;
 	meter.d3varray[0].z = 0.1f;
 	meter.d3varray[0].color = clr;
 
-	meter.d3varray[1].x = 119.0f + x + mov_x;
-	meter.d3varray[1].y = 539.0f + mov_y;
+	meter.d3varray[1].x = 119.0f + x;
+	meter.d3varray[1].y = 539.0f;
 	meter.d3varray[1].z = 0.1f;
 	meter.d3varray[1].color = clr;
 
-	meter.d3varray[2].x = 1.0f + x + mov_x;
-	meter.d3varray[2].y = 549.0f + mov_y;
+	meter.d3varray[2].x = 1.0f + x;
+	meter.d3varray[2].y = 549.0f;
 	meter.d3varray[2].z = 0.1f;
 	meter.d3varray[2].color = clr;
 
-	meter.d3varray[3].x = 119.0f + x + mov_x;
-	meter.d3varray[3].y = 549.0f + mov_y;
+	meter.d3varray[3].x = 119.0f + x;
+	meter.d3varray[3].y = 549.0f;
 	meter.d3varray[3].z = 0.1f;
 	meter.d3varray[3].color = clr;
 
-	meter.D2primitive(TRUE, TRUE);
+	meter.Draw(TRUE, TRUE);
 
 	clr.as(1.0f, 0.5f, 0.0f, 1.0f);
 
 	//メーター2
-	meter.d3varray[0].x = 3.0f + x + mov_x;
-	meter.d3varray[0].y = 541.0f + mov_y;
+	meter.d3varray[0].x = 3.0f + x;
+	meter.d3varray[0].y = 541.0f;
 	meter.d3varray[0].z = 0.0f;
 	meter.d3varray[0].color = clr;
 
-	meter.d3varray[1].x = 3.0f + 114.0f * me + x + mov_x;
-	meter.d3varray[1].y = 541.0f + mov_y;
+	meter.d3varray[1].x = 3.0f + 114.0f * me + x;
+	meter.d3varray[1].y = 541.0f;
 	meter.d3varray[1].z = 0.0f;
 	meter.d3varray[1].color = clr;
 
-	meter.d3varray[2].x = 3.0f + x + mov_x;
-	meter.d3varray[2].y = 547.0f + mov_y;
+	meter.d3varray[2].x = 3.0f + x;
+	meter.d3varray[2].y = 547.0f;
 	meter.d3varray[2].z = 0.0f;
 	meter.d3varray[2].color = clr;
 
-	meter.d3varray[3].x = 3.0f + 114.0f * me + x + mov_x;
-	meter.d3varray[3].y = 547.0f + mov_y;
+	meter.d3varray[3].x = 3.0f + 114.0f * me + x;
+	meter.d3varray[3].y = 547.0f;
 	meter.d3varray[3].z = 0.0f;
 	meter.d3varray[3].color = clr;
 
-	meter.D2primitive(TRUE, TRUE);
+	meter.Draw(TRUE, TRUE);
 }
 
 void Hero::Magiccreate(){
@@ -218,9 +277,7 @@ bool Hero::Effectdraw(Battle *battle, int *select_obj, Position::H_Pos *h_pos, P
 		break;
 	}
 
-	if (effect.tex_no == 0 || effect.tex_no == 1)ver = 25;
-	else ver = 3;
-
+	ver = 25;
 	//左前
 	effect.SetVertex(0, 0,
 		(float)-ver, (float)0.0f, ver * 2,
@@ -259,37 +316,19 @@ bool Hero::Effectdraw(Battle *battle, int *select_obj, Position::H_Pos *h_pos, P
 
 	float ex = 0.0f;
 	float ey = 0.0f;
-	float hx[4];
-	float hy[4];
 	switch ((int)h_pos->theta){
 	case 360:
 	case 0:
 		ey = 15.0f;
-		hx[0] = -6.5f; hy[0] = -10.0f;
-		hx[1] = -3.0f; hy[1] = -10.0f;
-		hx[2] = 0.5f; hy[2] = -10.0f;
-		hx[3] = 3.5f; hy[3] = -10.0f;
 		break;
 	case 90:
 		ex = -15.0f;
-		hx[0] = 10.0f; hy[0] = -6.5f;
-		hx[1] = 10.0f; hy[1] = -3.0f;
-		hx[2] = 10.0f; hy[2] = 0.5f;
-		hx[3] = 10.0f; hy[3] = 3.5f;
 		break;
 	case 180:
 		ey = -15.0f;
-		hx[0] = 6.5f; hy[0] = 10.0f;
-		hx[1] = 3.0f; hy[1] = 10.0f;
-		hx[2] = -0.5f; hy[2] = 10.0f;
-		hx[3] = -3.5f; hy[3] = 10.0f;
 		break;
 	case 270:
 		ex = 15.0f;
-		hx[0] = -10.0f; hy[0] = 6.5f;
-		hx[1] = -10.0f; hy[1] = 3.0f;
-		hx[2] = -10.0f; hy[2] = -0.5f;
-		hx[3] = -10.0f; hy[3] = -3.5f;
 		break;
 	}
 
@@ -300,13 +339,13 @@ bool Hero::Effectdraw(Battle *battle, int *select_obj, Position::H_Pos *h_pos, P
 		if (effect.tex_no == 0){ r = 1.0f, g = 1.0f, b = 1.0f; }
 		if (effect.tex_no == 1){ r = 0.7f, g = 0.3f, b = 0.2f; }
 		if (*select_obj != 4){
-			effect.D3primitive(e_pos[*select_obj].x + ex, e_pos[*select_obj].y + ey, e_pos[*select_obj].z, 0, 0, 0, e_pos[*select_obj].theta, TRUE, TRUE, 0);
+			effect.Draw(e_pos[*select_obj].x + ex, e_pos[*select_obj].y + ey, e_pos[*select_obj].z, 0, 0, 0, e_pos[*select_obj].theta, TRUE, TRUE, 0);
 			dx->PointLightPosSet(3, e_pos[*select_obj].x + ex, e_pos[*select_obj].y + ey, e_pos[*select_obj].z, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
 		}
 		else {
 			for (int i = 0; i < 4; i++){
 				if (battle->GetE_DM(i) == FALSE)continue;
-				effect.D3primitive(e_pos[i].x + ex, e_pos[i].y + ey, e_pos[*select_obj].z, 0, 0, 0, e_pos[i].theta, TRUE, TRUE, 0);
+				effect.Draw(e_pos[i].x + ex, e_pos[i].y + ey, e_pos[i].z, 0, 0, 0, e_pos[i].theta, TRUE, TRUE, 0);
 				dx->PointLightPosSet(i + 3, e_pos[i].x + ex, e_pos[i].y + ey, e_pos[i].z, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
 			}
 		}
@@ -316,36 +355,23 @@ bool Hero::Effectdraw(Battle *battle, int *select_obj, Position::H_Pos *h_pos, P
 		float r, g, b;
 		if (effect.tex_no == 2){ r = 0.2f, g = 0.7f, b = 0.3f; }
 		if (effect.tex_no == 3){ r = 0.2f, g = 0.3f, b = 0.7f; }
-		switch (*select_obj){
-		case 0:
-			effect.D3primitive(h_pos->cx1 + hx[0], h_pos->cy1 + hy[0], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
-			dx->PointLightPosSet(3, h_pos->cx1 + hx[0], h_pos->cy1 + hy[0], (float)h_pos->pz * 100.0f + 30.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
-			break;
-		case 1:
-			effect.D3primitive(h_pos->cx1 + hx[1], h_pos->cy1 + hy[1], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
-			dx->PointLightPosSet(3, h_pos->cx1 + hx[1], h_pos->cy1 + hy[1], (float)h_pos->pz * 100.0f + 30.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
-			break;
-		case 2:
-			effect.D3primitive(h_pos->cx1 + hx[2], h_pos->cy1 + hy[2], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
-			dx->PointLightPosSet(3, h_pos->cx1 + hx[2], h_pos->cy1 + hy[2], (float)h_pos->pz * 100.0f + 30.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
-			break;
-		case 3:
-			effect.D3primitive(h_pos->cx1 + hx[3], h_pos->cy1 + hy[3], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
-			dx->PointLightPosSet(3, h_pos->cx1 + hx[3], h_pos->cy1 + hy[3], (float)h_pos->pz * 100.0f + 30.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
-			break;
-		case 4:
+		if (*select_obj != 4){
+			effect.Draw(h_pos->BtPos_x[*select_obj], h_pos->BtPos_y[*select_obj], (float)h_pos->pz * 100.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
+			dx->PointLightPosSet(3, h_pos->BtPos_x[*select_obj], h_pos->BtPos_y[*select_obj], (float)h_pos->pz * 100.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
+		}
+		else{
 			for (int i = 0; i < 4; i++){
 				if (battle->GetH_RCV(i) == FALSE)continue;
-				effect.D3primitive(h_pos->cx1 + hx[i], h_pos->cy1 + hy[i], (float)h_pos->pz * 100.0f + 30.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
-				dx->PointLightPosSet(i + 3, h_pos->cx1 + hx[i], h_pos->cy1 + hy[i], (float)h_pos->pz * 100.0f + 30.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
+				effect.Draw(h_pos->BtPos_x[i], h_pos->BtPos_y[i], (float)h_pos->pz * 100.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
+				dx->PointLightPosSet(i + 3, h_pos->BtPos_x[i], h_pos->BtPos_y[i], (float)h_pos->pz * 100.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
 			}
-			break;
 		}
 	}
 	return TRUE;
 }
 
 Hero::~Hero(){
-
+	ARR_DELETE(map_walk);
+	ARR_DELETE(p_att);
 }
 

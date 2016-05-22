@@ -10,7 +10,7 @@
 #include <math.h>
 #include <time.h>
 
-int Map::map_no_s = 0;
+int Map::map_no_s;
 MapStPos Map::MPos = POS_ST;
 int Map::boss_killed[5];
 
@@ -43,11 +43,13 @@ int Map::GetBossKilled(int map_no){
 
 Map::Map(){}
 
-Map::Map(Position::H_Pos *h_p){
+Map::Map(Position::H_Pos *h_p,Hero *hero){
 
 	map_no = map_no_s;
 	dx = Dx11Process::GetInstance();
 	text = DxText::GetInstance();
+	he = hero;
+	walkI = -1;
 	moving = FALSE;
 	direction_move = NOTPRESS;
 	m_theta = 0;
@@ -79,6 +81,8 @@ Map::Map(Position::H_Pos *h_p){
 		Mapcreate_Ceiling(&poCeilingM, 30, 35, 100.0f, 1.0f);
 		break;
 	case 1:
+		//山
+		mountain.GetVBarray("./dat/mesh/mountain.obj", FALSE);
 		//地面入り口
 		poGroundF.GetTexture(1);
 		poGroundF.GetVBarrayCPUNotAccess(6);
@@ -97,7 +101,7 @@ Map::Map(Position::H_Pos *h_p){
 		//空メイン
 		poBackground.GetTexture(6);
 		poBackground.GetVBarray(SQUARE, 5);
-		Mapcreate_Background(0.0f, 4000.0f);
+		Mapcreate_Background(-3500.0f, 7500.0f);
 		//雨
 		poRain.GetVBarray(LINE_L, 200);
 		//地面出口
@@ -279,10 +283,15 @@ void Map::Mapdraw_Wood(){
 				float yy = cay1 - y;
 				float zz = (float)posz * 100.0f - z;
 				if (sqrt(xx * xx + yy * yy + zz * zz) > 600.0f)continue;
-				mWood.D3primitive(x, y, z, 0, 0, 0, 0, 10.0f, 0.3f);
+				mWood.Draw(x, y, z, 0, 0, 0, 0, 0, 0, 10.0f, 0.3f);
 			}
 		}
 	}
+}
+
+void Map::Mapdraw_Mountain(){
+	mountain.Draw(-1500.0f, 2000.0f, 0, 0, 0, 0, 0, 0, 0, 500.0f, 0.3f);
+	mountain.Draw(5500.0f, 2000.0f, 0, 0, 0, 0, 0, 0, 0, 500.0f, 0.3f);
 }
 
 void Map::Mapcreate_Wall1(){
@@ -325,7 +334,7 @@ void Map::Mapdraw_Wall1(){
 				float x = (float)i * 100.0f + 50.0f + wall1[p].x;
 				float y = (float)j * 100.0f + 50.0f + wall1[p++].y;
 				float z = (float)k3 * 100.0f;
-				poWall1.D3primitive(x, y, z, 0, 0, 0, src_theta, TRUE, FALSE, 0);
+				poWall1.Draw(x, y, z, 0, 0, 0, src_theta, TRUE, FALSE, 0);
 			}
 		}
 	}
@@ -795,7 +804,7 @@ void Map::Mapdraw_Rain(){
 			0.0f, 0.0f);
 		k += 2;
 	}
-	poRain.D3primitive(cax1 - 250.0f, cay1 - 250.0f, 0.0f, 0, 0, 0, 0, FALSE, TRUE, 0);
+	poRain.Draw(cax1 - 250.0f, cay1 - 250.0f, 0.0f, 0, 0, 0, 0, FALSE, TRUE, 0);
 }
 
 void Map::Mapcreate_Recover(){
@@ -871,8 +880,8 @@ void Map::Mapdraw_Recover(){
 			}
 		}
 	}
-	poRecover.D3primitive(0, 0, 4.0f, 0, 0, 0, 0, TRUE, FALSE, 0);
-	poRecoverLine.D3primitive(0, 0, 0, 0, 0, 0, 0, FALSE, TRUE, 0);
+	poRecover.Draw(0, 0, 4.0f, 0, 0, 0, 0, TRUE, FALSE, 0);
+	poRecoverLine.Draw(0, 0, 0, 0, 0, 0, 0, FALSE, TRUE, 0);
 }
 
 void Map::Mapcreate_Ds(){
@@ -922,7 +931,7 @@ void Map::Mapdraw_Ds(){
 				if (mxy.m[k3 * mxy.y * mxy.x + j * mxy.x + i - 1] == 48){
 					//視野外スキップ
 					if (ViewCulling((float)i * 100.0f - 10.0f, (float)j * 100.0f + 50.0f, (float)k3 * 100.0f) == TRUE){
-						poMo.D3primitive((float)i * 100.0f - 10.0f, (float)j * 100.0f + 50.0f, (float)k3 * 100.0f, 0, 0, 0, src_theta, TRUE, FALSE, 0);
+						poMo.Draw((float)i * 100.0f - 10.0f, (float)j * 100.0f + 50.0f, (float)k3 * 100.0f, 0, 0, 0, src_theta, TRUE, FALSE, 0);
 						light[licnt].x = i * 100.0f - 10.0f;
 						light[licnt].y = j * 100.0f + 50.0f;
 						light[licnt].z = k3 * 100.0f + 75.0f;
@@ -941,7 +950,7 @@ void Map::Mapdraw_Ds(){
 				if (mxy.m[k3 * mxy.y * mxy.x + j * mxy.x + i + 1] == 48){
 					//視野外スキップ
 					if (ViewCulling((float)i * 100.0f + 110.0f, (float)j * 100.0f + 50.0f, (float)k3 * 100.0f) == TRUE){
-						poMo.D3primitive((float)i * 100.0f + 110.0f, (float)j * 100.0f + 50.0f, (float)k3 * 100.0f, 0, 0, 0, src_theta, TRUE, FALSE, 0);
+						poMo.Draw((float)i * 100.0f + 110.0f, (float)j * 100.0f + 50.0f, (float)k3 * 100.0f, 0, 0, 0, src_theta, TRUE, FALSE, 0);
 						light[licnt].x = i * 100.0f + 110.0f;
 						light[licnt].y = j * 100.0f + 50.0f;
 						light[licnt].z = k3 * 100.0f + 75.0f;
@@ -960,7 +969,7 @@ void Map::Mapdraw_Ds(){
 				if (mxy.m[k3 * mxy.y * mxy.x + (j - 1) * mxy.x + i] == 48){
 					//視野外スキップ
 					if (ViewCulling((float)i * 100.0f + 50.0f, (float)j * 100.0f - 10.0f, (float)k3 * 100.0f) == TRUE){
-						poMo.D3primitive((float)i * 100.0f + 50.0f, (float)j * 100.0f - 10.0f, (float)k3 * 100.0f, 0, 0, 0, src_theta, TRUE, FALSE, 0);
+						poMo.Draw((float)i * 100.0f + 50.0f, (float)j * 100.0f - 10.0f, (float)k3 * 100.0f, 0, 0, 0, src_theta, TRUE, FALSE, 0);
 						light[licnt].x = i * 100.0f + 50.0f;
 						light[licnt].y = j * 100.0f - 10.0f;
 						light[licnt].z = k3 * 100.0f + 75.0f;
@@ -979,7 +988,7 @@ void Map::Mapdraw_Ds(){
 				if (mxy.m[k3 * mxy.y * mxy.x + (j + 1) * mxy.x + i] == 48){
 					//視野外スキップ
 					if (ViewCulling((float)i * 100.0f + 50.0f, (float)j * 100.0f + 110.0f, (float)k3 * 100.0f) == TRUE){
-						poMo.D3primitive((float)i * 100.0f + 50.0f, (float)j * 100.0f + 110.0f, (float)k3 * 100.0f, 0, 0, 0, src_theta, TRUE, FALSE, 0);
+						poMo.Draw((float)i * 100.0f + 50.0f, (float)j * 100.0f + 110.0f, (float)k3 * 100.0f, 0, 0, 0, src_theta, TRUE, FALSE, 0);
 						light[licnt].x = i * 100.0f + 50.0f;
 						light[licnt].y = j * 100.0f + 110.0f;
 						light[licnt].z = k3 * 100.0f + 75.0f;
@@ -1125,14 +1134,8 @@ void Map::Mapcreate_EXIT(float x, float y, float z, float xsize){
 
 Map::~Map(){
 	dx->PointLightPosSet(2, 450.0f, 0.0f, 50.0f, 1.0f, 1.0f, 1.0f, 1.0f, 250.0f, 300.0f, 2.0f, FALSE);//出口ライト消す
-	if (wood != NULL){
-		delete[] wood;
-		wood = NULL;
-	}
-	if (wall1 != NULL){
-		delete[] wall1;
-		wall1 = NULL;
-	}
+	ARR_DELETE(wood);
+	ARR_DELETE(wall1);
 	free(light);
 	light = NULL;
 	free(mxy.m);
@@ -1143,27 +1146,29 @@ bool Map::ViewCulling(float obj_x, float obj_y, float obj_z){
 	//対象オブジェクトまでの方角計算
 	int theta;
 	float radian;
-	float dist_x = obj_x - cax1;
-	float dist_y = cay1 - obj_y;
+	float cx = cax1 + cax1 - cax2;//視点
+	float cy = cay1 + cay1 - cay2;//視点
+	float dist_x = obj_x - cx;
+	float dist_y = cy - obj_y;
 
 	//オブジェクトと現在位置のxyが等しい場合(2フロア以上の場合発生する)
 	if (dist_x == 0 && dist_y == 0)return FALSE;
 
 	if (dist_x == 0){
-		if (cay1 > obj_y)theta = 0;
-		if (cay1 < obj_y)theta = 180;
+		if (cy > obj_y)theta = 0;
+		if (cy < obj_y)theta = 180;
 	}
 	if (dist_y == 0){
-		if (cax1 < obj_x)theta = 90;
-		if (cax1 > obj_x)theta = 270;
+		if (cx < obj_x)theta = 90;
+		if (cx > obj_x)theta = 270;
 	}
-	if (cax1 != obj_x && cay1 != obj_y){
+	if (cx != obj_x && cy != obj_y){
 		radian = atan(dist_x / dist_y);
 		theta = (int)(180.0 * radian / 3.14159265359);
-		if (cax1 < obj_x && cay1 < obj_y)theta += 180;
-		if (cax1 > obj_x){
-			if (cay1 < obj_y)theta += 180;
-			if (cay1 > obj_y)theta += 360;
+		if (cx < obj_x && cy < obj_y)theta += 180;
+		if (cx > obj_x){
+			if (cy < obj_y)theta += 180;
+			if (cy > obj_y)theta += 360;
 		}
 	}
 

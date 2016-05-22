@@ -14,7 +14,7 @@
 
 Battle::Battle(){}
 
-Battle::Battle(Position::E_Pos *e_po, Position::H_Pos *h_po, Encount encount, int no, int e_nu){
+Battle::Battle(Hero *he, Position::E_Pos *e_po, Position::H_Pos *h_po, Encount encount, int no, int e_nu){
 
 	dx = Dx11Process::GetInstance();
 	text = DxText::GetInstance();
@@ -40,9 +40,9 @@ Battle::Battle(Position::E_Pos *e_po, Position::H_Pos *h_po, Encount encount, in
 	}
 
 	MovieSoundManager::ObjCreate_battle(en_bgm);
+	MovieSoundManager::Enemy_sound(FALSE);
+	MovieSoundManager::Enemy_sound(TRUE);
 	if (encount == SIDE){
-		//通常の敵のサウンド
-		MovieSoundManager::Enemy_sound(FALSE);
 		//通常の敵の生成
 		enemyside = new EnemySide[e_num];
 
@@ -57,8 +57,6 @@ Battle::Battle(Position::E_Pos *e_po, Position::H_Pos *h_po, Encount encount, in
 		enemy = enemyside;
 	}
 	if (encount == BOSS){
-		//ボスのサウンド
-		MovieSoundManager::Enemy_sound(FALSE);
 		//ボス生成
 		enemyboss = new EnemyBoss[e_num];
 
@@ -88,6 +86,7 @@ Battle::Battle(Position::E_Pos *e_po, Position::H_Pos *h_po, Encount encount, in
 		e_draw[i].action = RECOVER;
 		e_draw[i].RCVdrawY = 0;
 		e_draw[i].RCVdata = -1;
+		e_draw[i].Recov_f = FALSE;
 		e_draw[i].DMdrawY = 0;
 		e_draw[i].DMdata = -1;
 		e_draw[i].command_run = FALSE;
@@ -95,30 +94,28 @@ Battle::Battle(Position::E_Pos *e_po, Position::H_Pos *h_po, Encount encount, in
 		if (e_pos[i].element == FALSE){
 			e_draw[i].LOST_fin = TRUE; enemy[i].Dieflg(TRUE);
 		}
+		E_drawPos(i);
 	}
-	e_draw[0].draw_x = 350;
-	if (e_num > 1)e_draw[1].draw_x = 150;
-	if (e_num > 2)e_draw[2].draw_x = 370;
-	if (e_num > 3)e_draw[3].draw_x = 650;
 
 	for (int i = 0; i < 4; i++){
 		h_draw[i].AGmeter = 0.0f;
 		h_draw[i].action = NORMAL;
 		h_draw[i].RCVdrawY = 0;
 		h_draw[i].RCVdata = -1;
+		h_draw[i].Recov_f = FALSE;
 		h_draw[i].DMdrawY = 0;
 		h_draw[i].DMdata = -1;
 		h_draw[i].command_run = FALSE;
+		h_draw[i].LOST_fin = FALSE;
+		if (he[i].Dieflg() == TRUE)h_draw[i].LOST_fin = TRUE;
+		//↓コマンド入力パラメタ
 		h_draw[i].manu = MAIN_M;
 		h_draw[i].M_select = 0;
 		h_draw[i].A_select = 0;
 		h_draw[i].MA_select = 0;
 		h_draw[i].R_select = 0;
+		H_drawPos(i);
 	}
-	h_draw[0].draw_x = 20;
-	h_draw[1].draw_x = 190;
-	h_draw[2].draw_x = 370;
-	h_draw[3].draw_x = 540;
 
 	//ロード時間による遅延分のリセット
 	T_float::GetTime();
@@ -192,7 +189,7 @@ void Battle::Cursor_h(int no){
 	h_select.d3varray[3].y = 560.0f;
 	h_select.d3varray[3].z = 0.0f;
 	h_select.d3varray[3].color = clr;
-	h_select.D2primitive(TRUE, TRUE);
+	h_select.Draw(TRUE, TRUE);
 
 	//回復対象カーソル右
 	h_select.d3varray[0].x = x + 125.0f;
@@ -214,7 +211,7 @@ void Battle::Cursor_h(int no){
 	h_select.d3varray[3].y = 560.0f;
 	h_select.d3varray[3].z = 0.0f;
 	h_select.d3varray[3].color = clr;
-	h_select.D2primitive(TRUE, TRUE);
+	h_select.Draw(TRUE, TRUE);
 
 	//回復対象カーソル上
 	h_select.d3varray[0].x = x - 5.0f;
@@ -236,7 +233,7 @@ void Battle::Cursor_h(int no){
 	h_select.d3varray[3].y = 445.0f;
 	h_select.d3varray[3].z = 0.0f;
 	h_select.d3varray[3].color = clr;
-	h_select.D2primitive(TRUE, TRUE);
+	h_select.Draw(TRUE, TRUE);
 
 	//回復対象カーソル下
 	h_select.d3varray[0].x = x - 5.0f;
@@ -258,7 +255,7 @@ void Battle::Cursor_h(int no){
 	h_select.d3varray[3].y = 560.0f;
 	h_select.d3varray[3].z = 0.0f;
 	h_select.d3varray[3].color = clr;
-	h_select.D2primitive(TRUE, TRUE);
+	h_select.Draw(TRUE, TRUE);
 }
 
 void Battle::Cursor_e(int select){
@@ -307,7 +304,7 @@ void Battle::Cursor_e(int select){
 
 	m = tfloat.Add(0.2f);
 	if ((theta += m) > 360.0f)theta = 0.0f;
-	E_select.D3primitive(e_pos[select].x, e_pos[select].y, e_pos[select].z, 0, 0, 0, theta, FALSE, FALSE, 0);
+	E_select.Draw(e_pos[select].x, e_pos[select].y, e_pos[select].z, 0, 0, 0, theta, FALSE, FALSE, 0);
 }
 
 void Battle::SelectPermissionMove(Hero *hero){
@@ -353,10 +350,7 @@ void Battle::SelectPermissionMove(Hero *hero){
 Battle::~Battle(){
 
 	MovieSoundManager::ObjDelete_battle();
-	delete[] enemy;
-	enemy = NULL;
-	delete[] e_draw;
-	e_draw = NULL;
-	delete[] h_draw;
-	h_draw = NULL;
+	ARR_DELETE(enemy);
+	ARR_DELETE(e_draw);
+	ARR_DELETE(h_draw);
 }

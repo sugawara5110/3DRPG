@@ -480,6 +480,8 @@ bool EnemySide::LostAction(float x, float y, float z){
 
 	float m = tfloat.Add(0.2f);
 	if ((mov_z -= m) < -100.0f){
+		//«LOST’†‚Í‚Ð‚½‚·‚çLOSTƒtƒ‰ƒO‚ª“ü‚Á‚Ä‚­‚é‚Ì‚Å0‚æ‚è‰º‚ª‚ç‚È‚¢‚æ‚¤‚É‚·‚éB
+		//act_f‚à‚»‚Ì‚Ü‚Ü
 		mov_z = 0.0f; return TRUE;
 	}
 	return FALSE;
@@ -517,7 +519,7 @@ bool EnemySide::Magiccreate(float x, float y, float z){
 		1.0f, 1.0f);
 
 	MovieSoundManager::Magic_sound(TRUE);
-	mag->D3primitive(x + mov_x, y + mov_y, z + 1.0f + mov_z, 0, 0, 0, count, TRUE, FALSE, 0);
+	mag->Draw(x + mov_x, y + mov_y, z + 1.0f + mov_z, 0, 0, 0, count, TRUE, FALSE, 0);
 	float m = tfloat.Add(0.15f);
 	if ((count += m) > 100){
 		count = 0.0f;
@@ -528,7 +530,7 @@ bool EnemySide::Magiccreate(float x, float y, float z){
 
 //@Override
 void EnemySide::ObjDraw(float x, float y, float z, float r, float g, float b, float theta){
-	en->D3primitive(x, y, z, r, g, b, theta, TRUE, FALSE, 0);
+	en->Draw(x, y, z, r, g, b, theta, TRUE, FALSE, 0);
 }
 
 //@Override
@@ -567,8 +569,6 @@ void EnemySide::M_select(int *r, int *r1){
 }
 
 EnemySide::~EnemySide(){
-	delete mag;
-	mag = NULL;
-	delete en;
-	en = NULL;
+	S_DELETE(mag);
+	S_DELETE(en);
 }

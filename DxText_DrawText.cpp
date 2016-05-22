@@ -328,7 +328,7 @@ void DxText::Drawtext(TCHAR *c, float x, float y, float fontsize, VECTOR4 cl){//
 	text[texNo].d3varray[3].color = cl;
 	text[texNo].d3varray[3].tex.as(1.0f, 1.0f);
 
-	text[texNo].D2primitive(TRUE, TRUE);
+	text[texNo].Draw(TRUE, TRUE);
 }
 
 void DxText::DrawValue(int val, float x, float y, float fontsize, int pcs, VECTOR4 cl){
@@ -369,7 +369,7 @@ void DxText::DrawValue(int val, float x, float y, float fontsize, int pcs, VECTO
 		value[s].d3varray[3].color = cl;
 		value[s].d3varray[3].tex.as(1.0f, 1.0f);
 
-		value[s].D2primitive(TRUE, TRUE);
+		value[s].Draw(TRUE, TRUE);
 		val = val - (int)pow(10.0, i) * s;
 		xx += fontsize;
 	}

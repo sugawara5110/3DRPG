@@ -121,7 +121,7 @@ void Map::Mapfilter(Position::H_Pos *h_p){
 		cax1 = 1150.0f;
 		cax2 = 1150.0f;
 		cay1 = 3350.0f;
-		cay2 = 3300.0f;
+		cay2 = 3280.0f;
 		posx = 11;
 		posy = 33;
 		posz = 0;
@@ -131,7 +131,7 @@ void Map::Mapfilter(Position::H_Pos *h_p){
 		cax1 = 450.0f;
 		cax2 = 450.0f;
 		cay1 = 250.0f;
-		cay2 = 300.0f;
+		cay2 = 320.0f;
 		posx = 4;
 		posy = 2;
 		posz = 0;
@@ -198,7 +198,7 @@ void Map::Mapfilter(Position::H_Pos *h_p){
 		cax1 = 1150.0f;
 		cax2 = 1150.0f;
 		cay1 = 3250.0f;
-		cay2 = 3200.0f;
+		cay2 = 3180.0f;
 		posx = 11;
 		posy = 32;
 		posz = 0;
@@ -208,7 +208,7 @@ void Map::Mapfilter(Position::H_Pos *h_p){
 		cax1 = 950.0f;
 		cax2 = 950.0f;
 		cay1 = 750.0f;
-		cay2 = 800.0f;
+		cay2 = 820.0f;
 		posx = 9;
 		posy = 7;
 		posz = 0;
@@ -216,7 +216,7 @@ void Map::Mapfilter(Position::H_Pos *h_p){
 	}
 	if (h_p == NULL && MPos == POS_EN2){
 		cax1 = 3750.0f;
-		cax2 = 3700.0f;
+		cax2 = 3680.0f;
 		cay1 = 2950.0f;
 		cay2 = 2950.0f;
 		posx = 37;
@@ -271,7 +271,7 @@ void Map::Mapfilter(Position::H_Pos *h_p){
 				"K0K000000000000000000000000000",
 				"K0K000000000000000000000000000",
 				"K7K000000000000000000000000000",
-				"K0K000000000000000000000000000" 
+				"K0K000000000000000000000000000"
 			},
 			{
 				"000000000000000000000000000000",
@@ -329,7 +329,7 @@ void Map::Mapfilter(Position::H_Pos *h_p){
 		cax1 = 150.0f;
 		cax2 = 150.0f;
 		cay1 = 3750.0f;
-		cay2 = 3700.0f;
+		cay2 = 3680.0f;
 		posx = 1;
 		posy = 37;
 		posz = 0;
@@ -339,7 +339,7 @@ void Map::Mapfilter(Position::H_Pos *h_p){
 		cax1 = 150.0f;
 		cax2 = 150.0f;
 		cay1 = 750.0f;
-		cay2 = 800.0f;
+		cay2 = 820.0f;
 		posx = 1;
 		posy = 7;
 		posz = 0;
@@ -440,7 +440,7 @@ void Map::Mapfilter(Position::H_Pos *h_p){
 		cax1 = 250.0f;
 		cax2 = 250.0f;
 		cay1 = 2750.0f;
-		cay2 = 2700.0f;
+		cay2 = 2680.0f;
 		posx = 2;
 		posy = 27;
 		posz = 0;
@@ -727,7 +727,7 @@ void Map::Mapfilter(Position::H_Pos *h_p){
 		cax1 = 1150.0f;
 		cax2 = 1150.0f;
 		cay1 = 2750.0f;
-		cay2 = 2700.0f;
+		cay2 = 2680.0f;
 		posx = 11;
 		posy = 27;
 		posz = 0;

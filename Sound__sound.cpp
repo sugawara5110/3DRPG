@@ -81,33 +81,12 @@ MovieSoundManager::Sound_::Sound_(int no){
 		break;
 	}
 
-	LPSTR lstr = fname;
 	BSTR bstr;
-	//BSTRに必要なバッファサイズを求める(directshow用)
-	int bstrlen = (int)MultiByteToWideChar(
-		CP_ACP,		 // コードページ ANSI コードページ
-		0,			// 文字の種類を指定するフラグ
-		lstr,	   // マップ元文字列のアドレス
-		strlen(lstr), // マップ元文字列のバイト数
-		NULL,		 // マップ先ワイド文字列を入れるバッファのアドレス
-		0			// バッファのサイズ
-		);
-
-	//バッファを確保する
-	bstr = SysAllocStringLen(NULL, bstrlen);
-
-	//BSTRに複製
-	MultiByteToWideChar(
-		CP_ACP,
-		0,
-		lstr,
-		strlen(lstr),
-		bstr,      //RenderFileの引数に使う
-		bstrlen
-		);
+	BSTR_Convert(fname, &bstr);
 
 	// Graphを生成
 	pMediaControl->RenderFile(bstr);
+	SysFreeString(bstr);//bstr解放
 
 	pVideoWindow->put_AutoShow(OAFALSE);  //自動表示しないようにする
 

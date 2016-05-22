@@ -218,8 +218,8 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 
 	case LEFT:
 		src_theta = src_theta - m;
-		cay2 = cay1 - (int)(cos(src_theta * 3.14f / 180.0f) * 50.0f);
-		cax2 = cax1 + (int)(sin(src_theta * 3.14f / 180.0f) * 50.0f);
+		cay2 = cay1 - (int)(cos(src_theta * 3.14f / 180.0f) * 70.0f);
+		cax2 = cax1 + (int)(sin(src_theta * 3.14f / 180.0f) * 70.0f);
 		if (src_theta <= m_theta){
 			src_theta = m_theta;
 			moving = FALSE;
@@ -231,8 +231,8 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 
 	case RIGHT:
 		src_theta = src_theta + m;
-		cay2 = cay1 - (int)(cos(src_theta * 3.14f / 180.0f) * 50.0f);
-		cax2 = cax1 + (int)(sin(src_theta * 3.14f / 180.0f) * 50.0f);
+		cay2 = cay1 - (int)(cos(src_theta * 3.14f / 180.0f) * 70.0f);
+		cax2 = cax1 + (int)(sin(src_theta * 3.14f / 180.0f) * 70.0f);
 		if (src_theta >= m_theta){
 			src_theta = m_theta;
 			moving = FALSE;
@@ -248,7 +248,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			cay1 -= m; cay2 -= m;
 			if (stepy >= cay1){
 				cay1 = stepy;
-				cay2 = cay1 - 50.0f;
+				cay2 = cay1 - 70.0f;
 				movf = TRUE;
 			}
 		}
@@ -256,7 +256,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			cax1 += m; cax2 += m;
 			if (stepx <= cax1){
 				cax1 = stepx;
-				cax2 = cax1 + 50.0f;
+				cax2 = cax1 + 70.0f;
 				movf = TRUE;
 			}
 		}
@@ -264,7 +264,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			cay1 += m; cay2 += m;
 			if (stepy <= cay1){
 				cay1 = stepy;
-				cay2 = cay1 + 50.0f;
+				cay2 = cay1 + 70.0f;
 				movf = TRUE;
 			}
 		}
@@ -272,7 +272,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			cax1 -= m; cax2 -= m;
 			if (stepx >= cax1){
 				cax1 = stepx;
-				cax2 = cax1 - 50.0f;
+				cax2 = cax1 - 70.0f;
 				movf = TRUE;
 			}
 		}
@@ -313,7 +313,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			cay1 += m; cay2 += m;
 			if (stepy <= cay1){
 				cay1 = stepy;
-				cay2 = cay1 - 50.0f;
+				cay2 = cay1 - 70.0f;
 				movf = TRUE;
 			}
 		}
@@ -321,7 +321,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			cax1 -= m; cax2 -= m;
 			if (stepx >= cax1){
 				cax1 = stepx;
-				cax2 = cax1 + 50.0f;
+				cax2 = cax1 + 70.0f;
 				movf = TRUE;
 			}
 		}
@@ -329,7 +329,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			cay1 -= m; cay2 -= m;
 			if (stepy >= cay1){
 				cay1 = stepy;
-				cay2 = cay1 + 50.0f;
+				cay2 = cay1 + 70.0f;
 				movf = TRUE;
 			}
 		}
@@ -337,7 +337,7 @@ Encount Map::Move(MapState *mapstate, Directionkey direction){
 			cax1 += m; cax2 += m;
 			if (stepx <= cax1){
 				cax1 = stepx;
-				cax2 = cax1 - 50.0f;
+				cax2 = cax1 - 70.0f;
 				movf = TRUE;
 			}
 		}

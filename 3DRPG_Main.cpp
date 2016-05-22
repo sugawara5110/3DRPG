@@ -10,7 +10,6 @@
 #include <time.h>
 #include "Dx11Process.h"
 #include "DxText.h"
-#include <new>
 #include "Map.h"
 #include "Control.h"
 #include "InstanceCreate.h"
@@ -75,7 +74,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
 // アプリケーションのエントリポイント
 // 引数
 //		hInstance     : 現在のインスタンスのハンドル
-//		hPrevInstance : 以前のインスタンスのハンドル
+//		hPrevInstance : 以前のインスタンスのハンドル(win16での別インスタンス確認用win32では常にNULL)
 //		lpCmdLine	  : コマンドラインパラメータ
 //		nCmdShow	  : ウィンドウの表示状態
 // 戻り値
@@ -130,44 +129,67 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	Dx11Process::InstanceCreate();
 	//Dx11Processオブジェクト取得
 	Dx11Process *dx = Dx11Process::GetInstance();
-	//DirectX初期化
-	if (dx->Initialize(hWnd) == E_FAIL)return -1;
+	try{
+		//DirectX初期化
+		dx->Initialize(hWnd);
+	}
+	catch (char *E_mes){
+		ErrorMessage(E_mes);
+		Dx11Process::DeleteInstance();
+		return E_FAIL;
+	}
 	//DxTextオブジェクト生成
 	DxText::InstanceCreate();
+	//プレイヤー
+	Hero *hero = NULL;
 	//スレッド生成
 	InstanceCreate::CreateThread_R();
+	InstanceCreate::CreateThread_H();
 	double i = 300.0;
 	bool down = TRUE;
-	while (1){
-		if (InstanceCreate::Resource_load_f() == TRUE)break;
-		dx->Sclear();
-		DxText::GetInstance()->Drawtext(L"ＮｏｗＬｏａｄｉｎｇ", 215.0f, (float)i, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
-		dx->Drawscreen();
-		if (down == TRUE)i += 0.01;
-		if (down == FALSE)i -= 0.01;
-		if (i > 320.0)down = FALSE;
-		if (i < 280.0)down = TRUE;
+	bool res_f = FALSE;
+	try{
+		while (1){
+			if (hero == NULL)hero = InstanceCreate::HeroCreate_f();
+			if (res_f == FALSE)res_f = InstanceCreate::Resource_load_f();
+			if (res_f == TRUE && hero != NULL){
+				InstanceCreate::DeleteThread_R();
+				dx->GetTexture(); break;
+			}
+			dx->Sclear();
+			DxText::GetInstance()->Drawtext(L"ＮｏｗＬｏａｄｉｎｇ", 215.0f, (float)i, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+			dx->Drawscreen();
+			if (down == TRUE)i += 0.01;
+			if (down == FALSE)i -= 0.01;
+			if (i > 320.0)down = FALSE;
+			if (i < 280.0)down = TRUE;
+		}
 	}
-	//スレッド解放
-	InstanceCreate::DeleteThread_R();
-	dx->GetTexture();
-	bool battle_flg = FALSE;
+	catch (char *E_mes){
+		ErrorMessage(E_mes);
+		DxText::DeleteInstance();
+		Dx11Process::DeleteInstance();
+		return E_FAIL;
+	}
+
+	bool battle_flg[3] = { FALSE, FALSE, FALSE };
+	float view_rev = 0.0f;
 	Control control;
-	Hero *hero = NULL;
-	Map::SetBossKilled(-1, 0);//ボス撃破履歴初期化
 	int map_no = 0;
-	InstanceCreate::MapCreate();
+	InstanceCreate::MapCreate();//タイトルに出力するマップ
 	InstanceCreate::MapObjSet();
 	StateMenu statemenu;
 	Encount encount = NOENCOUNT;
 	bool menu = FALSE;
 	bool title = TRUE;
 	bool title_in = TRUE;
+	bool heroInput = FALSE;
 	Result result = WIN;
 	MapState mapstate = NORMAL_MAP;
 	Ending *ending = NULL;
 	bool endingflg = FALSE;
 	int  rnd;
+	T_float tfloat;
 	//FPS計算用
 	DWORD time = 0;
 	int frame = 0;
@@ -184,7 +206,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				DispatchMessage(&msg);
 			}
 		}
-		if (FAILED(dx->Sclear()))break;
+		dx->Sclear();
 
 		//FPS計測
 		frame++;
@@ -204,38 +226,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				title_in = statemenu.TitleMenu(control.Direction());
 			}
 			if (title_in == FALSE){
-				if (hero == NULL){
-					hero = new Hero[4];
-					for (int i = 0; i < 4; i++)new(hero + i) Hero(statemenu.SetP_Data(i), i);//配列をplacement newを使って初期化する
-				}
-				if (InstanceCreate::GetHANDLE_M() == NULL){
+				if (heroInput == NULL){
+					for (int i = 0; i < 4; i++)hero[i].P_DataInput(statemenu.SetP_Data(i));//パラメーターインプット
+					heroInput = TRUE;
 					Map::SetMapNo(statemenu.SetMap_No());
 					for (int i = 0; i < 5; i++)Map::SetBossKilled(i, statemenu.Set_boss_kil(i));
-					InstanceCreate::SetInstanceParameter_M(statemenu.SetH_Pos());
-					InstanceCreate::CreateThread_M();
-					map_no = Map::GetMapNo();
 				}
-				if (InstanceCreate::GetHANDLE_M() != NULL && InstanceCreate::MapCreate_f() == TRUE){
-					InstanceCreate::MapObjSet();
-					InstanceCreate::DeleteThread_M();
-					title = FALSE;
-				}
+				title = InstanceCreate::CreateMapIns(statemenu.SetH_Pos(), &hero[0], &map_no);
 			}
 		}
 
 		encount = InstanceCreate::GetInstance_M()->Mapdraw(&mapstate, control.Direction(TRUE), encount, menu, title, endingflg);
 
 		if (mapstate == CHANGE_MAP){
-			if (InstanceCreate::GetHANDLE_M() == NULL){
-				InstanceCreate::SetInstanceParameter_M(NULL);
-				InstanceCreate::CreateThread_M();
-				map_no = Map::GetMapNo();
-			}
-			if (InstanceCreate::GetHANDLE_M() != NULL && InstanceCreate::MapCreate_f() == TRUE){
-				InstanceCreate::MapObjSet();
-				InstanceCreate::DeleteThread_M();
-				mapstate = NORMAL_MAP;
-			}
+			bool m_flg = InstanceCreate::CreateMapIns(NULL, &hero[0], &map_no);
+			if (!m_flg)mapstate = NORMAL_MAP;
 		}
 
 		if (mapstate == RECOV_MAP){
@@ -248,7 +253,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		if (endingflg == FALSE && title == FALSE && encount == NOENCOUNT && menu == FALSE && control.Direction() == ENTER)menu = TRUE;
 
 		if (endingflg == FALSE && title == FALSE && encount != NOENCOUNT && menu == FALSE){
-			if (battle_flg == FALSE){
+			if (battle_flg[2] == FALSE){
 				if (encount == SIDE){
 					int LV = (hero[0].s_LV() + hero[1].s_LV() + hero[2].s_LV() + hero[3].s_LV()) / 4;
 					//レベルによって敵出現数制限
@@ -258,26 +263,41 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					if ((map_no + 1) * 7 < LV)rnd = rand() % 4;
 				}
 				else rnd = 0;
-
-				if (InstanceCreate::GetHANDLE_B() == NULL){
-					InstanceCreate::SetInstanceParameter_B(InstanceCreate::GetInstance_M()->Getposition(rnd),
-						InstanceCreate::GetInstance_M()->Getposition(), encount, map_no, rnd + 1);
-					InstanceCreate::CreateThread_B();
+				Position::H_Pos *h_pos = InstanceCreate::GetInstance_M()->Getposition();
+				float cx = h_pos->cx1 + h_pos->cx1 - h_pos->cx2;//視点
+				float cy = h_pos->cy1 + h_pos->cy1 - h_pos->cy2;//視点
+				float view_x = 0.0f;
+				float view_y = 0.0f;
+				switch ((int)h_pos->theta){
+				case 360:
+				case 0:
+					view_y = -view_rev;
+					break;
+				case 90:
+					view_x = view_rev;
+					break;
+				case 180:
+					view_y = view_rev;
+					break;
+				case 270:
+					view_x = -view_rev;
+					break;
 				}
-
-				if (InstanceCreate::GetHANDLE_B() != NULL){
-					bool bf = InstanceCreate::BattleCreate_f();
-					if (bf == TRUE){
-						battle_flg = TRUE;
-						InstanceCreate::DeleteThread_B();
-					}
+				dx->Cameraset(cx + view_x, h_pos->cx2 + view_x, cy + view_y, h_pos->cy2 + view_y, (float)h_pos->pz * 100.0f + 35.0f);
+				hero[0].OBJWalkDraw(h_pos->cx1, h_pos->cy1, h_pos->pz*100.0f, 0, 0, 0, h_pos->theta, -1);
+				battle_flg[0] = InstanceCreate::CreateBattleIns(hero, encount, map_no, rnd);
+				if (battle_flg[0] == TRUE)battle_flg[1] = TRUE;
+				if ((view_rev += tfloat.Add(0.2f)) >= 80.0f && battle_flg[1] == TRUE){
+					battle_flg[1] = FALSE;
+					battle_flg[2] = TRUE;
+					view_rev = 0.0f;
 				}
-
+				battle_flg[0] = FALSE;
 			}
-			if (battle_flg != FALSE)result = InstanceCreate::GetInstance_B()->Fight(hero, control.Direction(), result);
-			if (result == WIN && battle_flg != FALSE){
+			if (battle_flg[2] != FALSE)result = InstanceCreate::GetInstance_B()->Fight(hero, control.Direction(), result);
+			if (result == WIN && battle_flg[2] != FALSE){
 				InstanceCreate::BattleDelete();
-				battle_flg = FALSE;
+				battle_flg[2] = FALSE;
 				if (encount == BOSS)Map::SetBossKilled(map_no, 1);//ボス撃破履歴更新
 				encount = NOENCOUNT;
 			}
@@ -304,14 +324,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	MovieSoundManager::ObjDelete();
 	InstanceCreate::BattleDelete();
 	InstanceCreate::MapDelete();
-	if (hero != NULL){
-		delete[] hero;
-		hero = NULL;
-	}
-	if (ending != NULL){
-		delete ending;
-		ending = NULL;
-	}
+	ARR_DELETE(hero);
+	S_DELETE(ending);
 	DxText::DeleteInstance();
 	Dx11Process::DeleteInstance();
 	return (int)msg.wParam;

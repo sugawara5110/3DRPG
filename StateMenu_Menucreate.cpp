@@ -55,7 +55,7 @@ void StateMenu::Menucreate(){
 	state.d3varray[3].z = 0.9f;
 	state.d3varray[3].color = clr;
 
-	state.D2primitive(TRUE, TRUE);
+	state.Draw(TRUE, TRUE);
 
 	clr.as(0.6f, 0.6f, 0.6f, 0.5f);
 
@@ -79,7 +79,7 @@ void StateMenu::Menucreate(){
 	state.d3varray[3].z = 0.8f;
 	state.d3varray[3].color = clr;
 
-	state.D2primitive(TRUE, TRUE);
+	state.Draw(TRUE, TRUE);
 }
 
 void StateMenu::St_create(){
@@ -106,7 +106,7 @@ void StateMenu::St_create(){
 	s_state.d3varray[3].z = 0.7f;
 	s_state.d3varray[3].color = clr;
 
-	s_state.D2primitive(TRUE, TRUE);
+	s_state.Draw(TRUE, TRUE);
 
 	clr.as(0.6f, 0.6f, 0.6f, 0.5f);
 
@@ -130,7 +130,7 @@ void StateMenu::St_create(){
 	s_state.d3varray[3].z = 0.6f;
 	s_state.d3varray[3].color = clr;
 
-	s_state.D2primitive(TRUE, TRUE);
+	s_state.Draw(TRUE, TRUE);
 }
 
 void StateMenu::Re_create(){
@@ -157,7 +157,7 @@ void StateMenu::Re_create(){
 	r_state.d3varray[3].z = 0.7f;
 	r_state.d3varray[3].color = clr;
 
-	r_state.D2primitive(TRUE, TRUE);
+	r_state.Draw(TRUE, TRUE);
 
 	clr.as(0.6f, 0.6f, 0.6f, 0.5f);
 
@@ -181,7 +181,7 @@ void StateMenu::Re_create(){
 	r_state.d3varray[3].z = 0.6f;
 	r_state.d3varray[3].color = clr;
 
-	r_state.D2primitive(TRUE, TRUE);
+	r_state.Draw(TRUE, TRUE);
 }
 
 void StateMenu::Re_create1(){
@@ -208,7 +208,7 @@ void StateMenu::Re_create1(){
 	r_state1.d3varray[3].z = 0.5f;
 	r_state1.d3varray[3].color = clr;
 
-	r_state1.D2primitive(TRUE, TRUE);
+	r_state1.Draw(TRUE, TRUE);
 
 	clr.as(0.6f, 0.6f, 0.6f, 0.5f);
 
@@ -232,7 +232,7 @@ void StateMenu::Re_create1(){
 	r_state1.d3varray[3].z = 0.4f;
 	r_state1.d3varray[3].color = clr;
 
-	r_state1.D2primitive(TRUE, TRUE);
+	r_state1.Draw(TRUE, TRUE);
 }
 
 StateMenu::~StateMenu(){

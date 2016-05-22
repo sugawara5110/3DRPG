@@ -11,6 +11,8 @@
 #include "Position.h"
 #include "DxText.h"
 #define METER_MAX 25000
+#define DrawYMAX -160
+#define DrawYMIN -180
 
 //前方宣言
 class Map;
@@ -33,15 +35,15 @@ private:
 	EnemySide *enemyside;
 	EnemyBoss *enemyboss;
 	int e_num;            //敵出現数
-	bool command_run_first_flg;//コマンド選択権無の状態 == FALSE
-	bool time_stop_flg;       //バトル中時間ストップフラグ
+	bool command_run_first_flg;//コマンド選択権無の状態 == FALSE、コマンド選択後TRUEとなる。1体ずつ
+	bool time_stop_flg;       //時間ストップフラグ, 1連のアクション～HPMP増減は1体ずつ処理なのでフラグは1個でok
 	float Escape_f;          //エスケープ表示フラグ,座標
 	bool Escape_s;          //エスケープ成功
 	bool battlefirst;      //出現完了フラグ
 	float battlefirsttime;//戦闘開始時間
 
 	CommandSelect com_select;   //コマンド入力
-	CommandSelect E_com_select;//敵用
+	CommandSelect E_com_select;//敵用(テンプレート関数使用の為引数揃える)
 	MagicSelect MAG_select;   //選択したマジック
 	MagicSelect E_MAG_select;//敵用
 	int select_obj;           //選択対象番号敵,プレイヤー共通,エフェクト選択(4==全体)
@@ -51,11 +53,13 @@ private:
 		float AGmeter;        //メーター
 		Action action;
 		MagicSelect Magrun;//選択マジック
-		float RCVdrawY;       //回復表示フラグ,表示座標
+		float RCVdrawY;     //回復表示フラグ,表示座標
 		int RCVdata;       //回復数保管
-		float DMdrawY;      //ダメージ表示フラグ,表示座標
+		bool Recov_f;      //リカバリー開始フラグ終了時FALSE
+		float DMdrawY;    //ダメージ表示フラグ,表示座標Yの上下量
 		int DMdata;      //ダメージ数保管
-		float draw_x;
+		float draw_x;   //数字表示位置
+		float draw_y;   //数字表示位置
 		bool command_run;  //コマンドアクセス権状態,攻撃スタートフラグ
 		bool LOST_fin;    //LOSTアクション終了フラグ(敵のみ)
 		MenuSelect manu;//現選択メニュー(以下コマンド選択関連)
@@ -81,6 +85,37 @@ private:
 	CommandSelect Menu_RCV(Hero *hero, int i, Directionkey direction);
 	CommandSelect H_AT_select(Hero *hero, int i, Directionkey direction);
 	bool Escapedraw();
+	void E_drawPos(int i);
+	void H_drawPos(int i);
+
+	template<typename T_rcv>
+	void ValueDraw(T_rcv *rcv, Draw *dm, Draw *rc, int dmI, int rcI){
+		//↓攻撃対象又は回復対象のアクション,データ処理開始
+		int draw_count = 0;
+		for (int i1 = 0; i1 < dmI; i1++){
+			if (dm[i1].DMdata >= 0){
+				dm[i1].action = DAMAGE;//対象がダメージ受けたのでこの後ダメージ処理
+				dm[i1].DMdrawY = DrawYMIN;//パラメーター間違えると数字表示されないので注意,フラグオン
+				draw_count++;
+			}
+		}
+		for (int i1 = 0; i1 < rcI; i1++){
+			if (rc[i1].RCVdata >= 0){
+				if (rc[i1].Recov_f == TRUE){
+					rcv[i1].Dieflg(FALSE);
+					rc[i1].action = RECOVER;//対象がリカバリーを受けたのでこの後処理
+					rc[i1].LOST_fin = FALSE;
+				}
+				else{
+					rc[i1].action = rcv[i1].Normal_act_get();//対象が回復受けたのでこの後回復処理(回復用actは無い)
+				}
+				rc[i1].RCVdrawY = DrawYMIN;//パラメーター間違えると数字表示されないので注意,フラグオン
+				rc[i1].Recov_f = FALSE;//actionにRECOVERが入った時点でもう用無し,これをここでやらない場合はHEALに追加必要
+				draw_count++;
+			}
+		}
+		if (draw_count == 0)time_stop_flg = FALSE;//何も行動無しなのでストップ解除
+	}
 
 	template<typename T_dm, typename T_att>
 	void ATprocess(T_dm *dm, T_att *att, Draw *d, Draw *at){
@@ -163,9 +198,7 @@ private:
 			//戦闘不能者選択:復活  それ以外選択:小回復
 			p_at[*select_ob].RCVdata = att->GetMagic(RECOV, 1);
 			if (p_att[*select_ob].Dieflg() == TRUE){
-				p_att[*select_ob].Dieflg(FALSE);
-				p_at[*select_ob].action = RECOVER;
-				p_at[*select_ob].LOST_fin = FALSE;
+				p_at[*select_ob].Recov_f = TRUE;//リカバリーフラグ
 			}
 			break;
 		}
@@ -174,14 +207,14 @@ private:
 	}
 
 	template<typename T_rcv>
-	void RCVdraw(T_rcv *rcv, Draw *at, float DMdrawYMAX, float adjustY){
+	void RCVdraw(T_rcv *rcv, Draw *at, float adjustX, float adjustY){
 		if (at->RCVdrawY != 0){
-			if ((at->RCVdrawY += tfloat.Add(0.1f)) < DMdrawYMAX){
-				text->DrawValue(at->RCVdata, at->draw_x, at->RCVdrawY + adjustY, 30.0f, 5, { 0.3f, 1.0f, 0.3f, 1.0f });
+			if ((at->RCVdrawY += tfloat.Add(0.1f)) < DrawYMAX){
+				text->DrawValue(at->RCVdata, at->draw_x + adjustX, at->draw_y + at->RCVdrawY + adjustY, 30.0f, 5, { 0.3f, 1.0f, 0.3f, 1.0f });
 			}
 			else{
-				if (at->RCVdrawY >= DMdrawYMAX && at->RCVdrawY < DMdrawYMAX + 20){
-					text->DrawValue(at->RCVdata, at->draw_x, DMdrawYMAX + adjustY, 30.0f, 5, { 0.3f, 1.0f, 0.3f, 1.0f });
+				if (at->RCVdrawY >= DrawYMAX && at->RCVdrawY < DrawYMAX + 20.0f){
+					text->DrawValue(at->RCVdata, at->draw_x + adjustX, at->draw_y + DrawYMAX + adjustY, 30.0f, 5, { 0.3f, 1.0f, 0.3f, 1.0f });
 				}
 				else {
 					rcv->UpHP(at->RCVdata);
@@ -193,14 +226,14 @@ private:
 	}
 
 	template<typename T_dm>
-	void DMdraw(T_dm *dm, Draw *d, float DMdrawYMAX, float adjustY){
+	void DMdraw(T_dm *dm, Draw *d, float adjustX, float adjustY){
 		if (d->DMdrawY != 0){
-			if ((d->DMdrawY += tfloat.Add(0.1f)) < DMdrawYMAX){
-				text->DrawValue(d->DMdata, d->draw_x, d->DMdrawY + adjustY, 30.0f, 5, { 1.0f, 0.3f, 0.3f, 1.0f });
+			if ((d->DMdrawY += tfloat.Add(0.1f)) < DrawYMAX){
+				text->DrawValue(d->DMdata, d->draw_x + adjustX, d->draw_y + d->DMdrawY + adjustY, 30.0f, 5, { 1.0f, 0.3f, 0.3f, 1.0f });
 			}
 			else{
-				if (d->DMdrawY >= DMdrawYMAX && d->DMdrawY < DMdrawYMAX + 20){
-					text->DrawValue(d->DMdata, d->draw_x, DMdrawYMAX + adjustY, 30.0f, 5, { 1.0f, 0.3f, 0.3f, 1.0f });
+				if (d->DMdrawY >= DrawYMAX && d->DMdrawY < DrawYMAX + 20.0f){
+					text->DrawValue(d->DMdata, d->draw_x + adjustX, d->draw_y + DrawYMAX + adjustY, 30.0f, 5, { 1.0f, 0.3f, 0.3f, 1.0f });
 				}
 				else {
 					dm->DownHP(d->DMdata);
@@ -212,7 +245,7 @@ private:
 	}
 
 public:
-	Battle(Position::E_Pos *e_pos, Position::H_Pos *h_pos, Encount encount, int no, int e_nu);
+	Battle(Hero *he, Position::E_Pos *e_pos, Position::H_Pos *h_pos, Encount encount, int no, int e_nu);
 	Result Fight(Hero *he, Directionkey direction, Result result);
 	bool GetH_DM(int element);
 	bool GetH_RCV(int element);

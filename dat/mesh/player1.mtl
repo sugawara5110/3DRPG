@@ -1,0 +1,79 @@
+# Blender MTL File: 'player1.blend'
+# Material Count: 7
+
+newmtl obj:Eyebrow001:eyebrow001
+Ns 500.000000
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd eyebrow001.png
+map_Kd 92
+
+newmtl obj:HighPolyEyes:Eye_brown
+Ns 1000.000000
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd brown_eye.png
+map_Kd 90
+
+newmtl obj:Jacket:jacket01
+Ns 98.039216
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.003922 0.023530 0.003922
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd jacket01_diffuse.png
+map_Kd 93
+
+newmtl obj:Skin
+Ns 700.000000
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.203900 0.184300 0.184300
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd young_lightskinned_male_diffuse.png
+map_Kd 96
+
+newmtl obj:classicshoes_hres:BrownClassicShoesMaterial
+Ns 398.039216
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.278400 0.278400 0.278400
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd classicshoes_texture_diffuse.png
+map_Kd 91
+
+newmtl obj:jeans01:short01Material
+Ns 500.000000
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd jeans01_black_diffuse.png
+map_Kd 94
+
+newmtl obj:mhair01:mhair01black
+Ns 960.784314
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.047060 0.047060 0.047060
+Ni 1.000000
+d 0.000000
+illum 2
+//map_Kd male01_diffuse_black.png
+map_Kd 95

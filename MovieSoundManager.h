@@ -46,7 +46,7 @@ private:
 	static Movie *f_wall;
 	static Sound_ *dungeon_so[5];
 	static Sound_ *rain_so;
-	static Sound_ *enemy_so;
+	static Sound_ *enemy_so[2];
 	static Sound_ *title_so;
 	static Sound_ *die_so;
 	static Sound_ *att_so, *flame_so, *heal_so, *magic_so;
