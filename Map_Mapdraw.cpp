@@ -36,7 +36,10 @@ Encount Map::Mapdraw(MapState *mapstate, Directionkey direction, Encount encount
 	if (title == FALSE && map_no == 1)MovieSoundManager::Rain_sound(TRUE);
 
 	//視点
-	if (encount == NOENCOUNT)dx->Cameraset(cax1 + cax1 - cax2, cax2, cay1 + cay1 - cay2, cay2, (float)posz * 100.0f + 35.0f + elevator_step);
+	float cx = cax1 + cax1 - cax2;
+	float cy = cay1 + cay1 - cay2;
+	float cz = (float)posz * 100.0f + 40.0f + elevator_step;
+	if (encount == NOENCOUNT)dx->Cameraset(cx, cax2, cy, cay2, cz, cz);
 
 	//ポイントライト暗い部分明るさ
 	dx->P_ShadowBright(0.3f);
@@ -357,38 +360,10 @@ Position::H_Pos *Map::Getposition(){
 	h_pos.py = posy;
 	h_pos.pz = posz;
 	h_pos.theta = src_theta;
-
-	//戦闘中各オブジェクト配置位置
-	for (int i = 0; i < 4; i++){
-		float ajst = ((float)i - 1.5f) * 20.0f;
-		switch ((int)h_pos.theta){
-		case 360:
-		case 0:
-			h_pos.BtPos_x[i] = h_pos.cx1 + ajst;
-			h_pos.BtPos_x1[i] = h_pos.cx2 + ajst;
-			h_pos.BtPos_y[i] = h_pos.cy1;
-			h_pos.BtPos_y1[i] = h_pos.cy2;
-			break;
-		case 90:
-			h_pos.BtPos_x[i] = h_pos.cx1;
-			h_pos.BtPos_x1[i] = h_pos.cx2;
-			h_pos.BtPos_y[i] = h_pos.cy1 + ajst;
-			h_pos.BtPos_y1[i] = h_pos.cy2 + ajst;
-			break;
-		case 180:
-			h_pos.BtPos_x[i] = h_pos.cx1 - ajst;
-			h_pos.BtPos_x1[i] = h_pos.cx2 - ajst;
-			h_pos.BtPos_y[i] = h_pos.cy1;
-			h_pos.BtPos_y1[i] = h_pos.cy2;
-			break;
-		case 270:
-			h_pos.BtPos_x[i] = h_pos.cx1;
-			h_pos.BtPos_x1[i] = h_pos.cx2;
-			h_pos.BtPos_y[i] = h_pos.cy1 - ajst;
-			h_pos.BtPos_y1[i] = h_pos.cy2 - ajst;
-			break;
-		}
-	}
+	h_pos.cx = cax1 + cax1 - cax2;
+	h_pos.cy = cay1 + cay1 - cay2;
+	h_pos.cz = posz * 100.0f + 40.0f;
+	
 	return &h_pos;
 }
 

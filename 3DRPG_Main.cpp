@@ -67,7 +67,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
 		Control::directionkey = NOTPRESS;
 		break;
 	}
-	return DefWindowProc(hWnd, msg, wParam, lParam);
+	return DefWindowProc(hWnd, msg, wParam, lParam);//アプリケーションが処理しないウィンドウメッセージに対しての既定の処理実行
 }
 
 //-------------------------------------------------------------
@@ -103,8 +103,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	wcex.hIconSm = NULL;                          //小アイコン			   
 
 	//ウインドウクラスの登録(RegisterClassEx関数)
-	if (!RegisterClassEx(&wcex))
-		return E_FAIL;
+	if (!RegisterClassEx(&wcex))return -1;
 
 	//ウインドウ生成ウインドウモード
 	if (!(hWnd = CreateWindow(clsName, //登録クラス名
@@ -118,7 +117,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		NULL,         //メニュー,子ウインドウハンドル
 		hInstance,   //アプリケーションインスタンスハンドル
 		NULL)))     //ウインドウ作成データ
-		return E_FAIL;
+		return -1;
 
 	// ウィンドウの表示
 	ShowWindow(hWnd, nCmdShow);
@@ -136,7 +135,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	catch (char *E_mes){
 		ErrorMessage(E_mes);
 		Dx11Process::DeleteInstance();
-		return E_FAIL;
+		return -1;
 	}
 	//DxTextオブジェクト生成
 	DxText::InstanceCreate();
@@ -150,6 +149,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	bool res_f = FALSE;
 	try{
 		while (1){
+			if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+				if (msg.message == WM_QUIT) {	// PostQuitMessage()が呼ばれた(×押された)
+					Dx11Process::DeleteInstance();
+					return -1;	//アプリ終了
+				}
+				else {
+					// メッセージの翻訳とディスパッチWindowProc呼び出し
+					TranslateMessage(&msg);
+					DispatchMessage(&msg);
+				}
+			}
 			if (hero == NULL)hero = InstanceCreate::HeroCreate_f();
 			if (res_f == FALSE)res_f = InstanceCreate::Resource_load_f();
 			if (res_f == TRUE && hero != NULL){
@@ -169,11 +179,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		ErrorMessage(E_mes);
 		DxText::DeleteInstance();
 		Dx11Process::DeleteInstance();
-		return E_FAIL;
+		return -1;
 	}
 
 	bool battle_flg[3] = { FALSE, FALSE, FALSE };
-	float view_rev = 0.0f;
 	Control control;
 	int map_no = 0;
 	InstanceCreate::MapCreate();//タイトルに出力するマップ
@@ -190,36 +199,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	bool endingflg = FALSE;
 	int  rnd;
 	T_float tfloat;
-	//FPS計算用
-	DWORD time = 0;
-	int frame = 0;
-	char str[50];
 
 	while (1){//アプリ実行中ループ
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-			if (msg.message == WM_QUIT) {	// PostQuitMessage()が呼ばれた
+			if (msg.message == WM_QUIT) {	// PostQuitMessage()が呼ばれた(×押された)
 				break;	//ループの終了
 			}
 			else {
-				// メッセージの翻訳とディスパッチ
+				// メッセージの翻訳とディスパッチWindowProc呼び出し
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
 		}
 		dx->Sclear();
-
-		//FPS計測
-		frame++;
-		sprintf(str, "     Ctrl:決定  Delete:キャンセル  fps=%d", frame);
-		if (timeGetTime() - time > 1000)
-		{
-			time = timeGetTime();
-			frame = 0;
-			char Name[100] = { 0 };
-			GetClassNameA(hWnd, Name, sizeof(Name));
-			strcat(Name, str);
-			SetWindowTextA(hWnd, Name);
-		}
 
 		if (title == TRUE){
 			if (title_in == TRUE){
@@ -263,34 +255,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					if ((map_no + 1) * 7 < LV)rnd = rand() % 4;
 				}
 				else rnd = 0;
-				Position::H_Pos *h_pos = InstanceCreate::GetInstance_M()->Getposition();
-				float cx = h_pos->cx1 + h_pos->cx1 - h_pos->cx2;//視点
-				float cy = h_pos->cy1 + h_pos->cy1 - h_pos->cy2;//視点
-				float view_x = 0.0f;
-				float view_y = 0.0f;
-				switch ((int)h_pos->theta){
-				case 360:
-				case 0:
-					view_y = -view_rev;
-					break;
-				case 90:
-					view_x = view_rev;
-					break;
-				case 180:
-					view_y = view_rev;
-					break;
-				case 270:
-					view_x = -view_rev;
-					break;
-				}
-				dx->Cameraset(cx + view_x, h_pos->cx2 + view_x, cy + view_y, h_pos->cy2 + view_y, (float)h_pos->pz * 100.0f + 35.0f);
-				hero[0].OBJWalkDraw(h_pos->cx1, h_pos->cy1, h_pos->pz*100.0f, 0, 0, 0, h_pos->theta, -1);
+				Position::H_Pos *h_posIn = InstanceCreate::GetInstance_M()->Getposition();
+				Position::H_Pos h_posOut;
+
+				bool f = Position::CamAdvance(h_posIn, &h_posOut, tfloat.Add(0.2f));
+
+				dx->Cameraset(h_posOut.cx, h_posOut.cx2, h_posOut.cy, h_posOut.cy2, h_posOut.cz, h_posOut.cz);
+				hero[0].OBJWalkDraw(h_posIn->cx1, h_posIn->cy1, h_posIn->cz - 35.0f, 0, 0, 0, h_posIn->theta, -1);
 				battle_flg[0] = InstanceCreate::CreateBattleIns(hero, encount, map_no, rnd);
 				if (battle_flg[0] == TRUE)battle_flg[1] = TRUE;
-				if ((view_rev += tfloat.Add(0.2f)) >= 80.0f && battle_flg[1] == TRUE){
+				if (f == TRUE && battle_flg[1] == TRUE){
 					battle_flg[1] = FALSE;
 					battle_flg[2] = TRUE;
-					view_rev = 0.0f;
+					Position::CamAdvance(NULL, NULL, 0);//初期化
 				}
 				battle_flg[0] = FALSE;
 			}
@@ -317,7 +294,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				map_no, Map::GetBossKilled(), hero, control.Direction());
 		}
 
-		T_float::GetTime();
+		T_float::GetTime(hWnd);
 		dx->Drawscreen();
 	}
 

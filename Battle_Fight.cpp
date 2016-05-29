@@ -17,44 +17,35 @@
 
 Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 
-	float view_rev = 80.0f - (battlefirsttime / 12.5f);
-	float view_x = 0.0f;
-	float view_y = 0.0f;
-	switch ((int)h_pos->theta){
-	case 360:
-	case 0:
-		view_y = -view_rev;
-		break;
-	case 90:
-		view_x = view_rev;
-		break;
-	case 180:
-		view_y = view_rev;
-		break;
-	case 270:
-		view_x = -view_rev;
-		break;
-	}
-	float cx1 = h_pos->cx1 + h_pos->cx1 - h_pos->cx2 + view_x;//視点
-	float cy1 = h_pos->cy1 + h_pos->cy1 - h_pos->cy2 + view_y;//視点
-	float cx2 = h_pos->cx2 + view_x;//注視点
-	float cy2 = h_pos->cy2 + view_y;//注視点
-	float cz = h_pos->pz * 100.0f + 35.0f;
-	int i1 = -1;
-	for (int i = 0; i < 4; i++){
-		if (h_draw[i].command_run == TRUE){
-			i1 = i;
-			break;
-		}
-	}
-	if (i1 != -1){
-		cx1 = h_pos->BtPos_x[i1] + h_pos->BtPos_x[i1] - h_pos->BtPos_x1[i1];
-		cy1 = h_pos->BtPos_y[i1] + h_pos->BtPos_y[i1] - h_pos->BtPos_y1[i1];
-		cx2 = h_pos->BtPos_x1[i1];
-		cy2 = h_pos->BtPos_y1[i1];
+	Position::H_Pos h_posOut;//視点変換後用
+	//視点初期値
+	h_posOut.cx = h_pos->cx;//視点
+	h_posOut.cy = h_pos->cy;//視点
+	h_posOut.cx2 = h_pos->cx2;//注視点
+	h_posOut.cy2 = h_pos->cy2;//注視点
+	h_posOut.cz = h_pos->cz;
+	h_posOut.theta = h_pos->theta;
+
+	//戦闘開始直後視点
+	if (!battlefirst){
+		battlefirst = Position::CamRecession(h_pos, &h_posOut, tfloat.Add(0.1f));
+		if (battlefirst)Position::CamRecession(NULL, NULL, 0);//初期化(初期化しておかないと次回戦闘時機能しない)
 	}
 
-	dx->Cameraset(cx1, cx2, cy1, cy2, cz);
+	if (CamActInd != -1){
+		Position::CamActionBackView(&b_pos[CamActInd], &h_posOut, tfloat.Add(0.1f), CamActOn, h_draw[CamActInd].action);
+		char lr;
+		if (CamActInd == 0 || CamActInd == 1)lr = 'L'; else lr = 'R';
+		Position::CamActionRoundView(&b_pos[CamActInd], &h_posOut, tfloat.Add(0.3f), CamActOn, h_draw[CamActInd].action, lr);
+	}
+
+	float cx = h_posOut.cx;//視点
+	float cy = h_posOut.cy;//視点
+	float cx2 = h_posOut.cx2;//注視点
+	float cy2 = h_posOut.cy2;//注視点
+	float cz = h_posOut.cz;
+		
+	dx->Cameraset(cx, cx2, cy, cy2, cz, cz);
 	Act_fin_flg act;
 	//敵戦闘不能アクションフラグ
 	//LOSTは発生したらずっとなので注意
@@ -65,7 +56,7 @@ Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 			act = enemy[i].Enemydraw(this, &E_select_obj, e_draw[i].action, e_draw[i].Magrun);
 			switch (act){
 			case AT_FIN://敵側攻撃,回復終了
-				ValueDraw<Enemy>(enemy, h_draw, e_draw, 4, e_num);
+				ValueDraw<Enemy>(enemy, h_draw, e_draw, 4, e_num);//フラグ, action = DAMAGE or RECOVER
 				break;
 			case LOST_FIN://敵側戦闘不能アクション終了
 				e_draw[i].LOST_fin = TRUE;
@@ -83,7 +74,8 @@ Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 		act = hero[i].Statedraw(this, &select_obj, h_pos, e_pos, h_draw[i].AGmeter / METER_MAX, h_draw[i].command_run, h_draw[i].action, h_draw[i].Magrun);
 		switch (act){
 		case AT_FIN://プレイヤー側攻撃,回復終了
-			ValueDraw<Hero>(hero, e_draw, h_draw, e_num, 4);
+			ValueDraw<Hero>(hero, e_draw, h_draw, e_num, 4);//フラグ, action = DAMAGE or RECOVER
+			CamActOn = FALSE;
 			break;
 		case LOST_FIN:
 			h_draw[i].LOST_fin = TRUE;
@@ -102,34 +94,31 @@ Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 
 	MovieSoundManager::Enemy_sound(TRUE);
 
-	//戦闘開始時間
-	if (battlefirst == FALSE){
-		if ((battlefirsttime += tfloat.Add(1.0f)) < 1000.0f)return IN_BATTLE;
-		battlefirst = TRUE;
-	}
+	//初期視点終了まで繰り返し
+	if (!battlefirst)return IN_BATTLE;
 
-	//敵攻撃パターン決定
-	E_com_select = E_AT_select(hero);//行動は即決定するがテンプレート関数使用の関係でプレイヤー側と合わせている。
+	//敵攻撃パターン決定1体ずつ
+	E_com_select = E_AT_select(hero);//メーターMAX時行動は即決定するがテンプレート関数使用の関係でプレイヤー側と合わせている。
 
 	//敵攻撃
 	if (time_stop_flg == FALSE && E_com_select != NOSELECT && E_com_select != OTHER){//上に同じ
 		//数値保管初期化
 		for (int i = 0; i < 4; i++)h_draw[i].DMdata = -1;
 		for (int i = 0; i < e_num; i++)e_draw[i].RCVdata = -1;
-		
+
 		if (E_com_select == ATT){
 			for (int i = 0; i < e_num; i++){
-				if (enemy[i].Dieflg() == FALSE && e_draw[i].command_run == TRUE){
-					//↓time_stop始まり
+				if (enemy[i].Dieflg() == FALSE && e_draw[i].command_run == TRUE){//command_run == TRUEは1体しかならない
+					//↓time_stop始まり, action = ATTACK
 					ATprocess<Hero, Enemy>(&hero[E_select_obj], &enemy[i], &h_draw[E_select_obj], &e_draw[i]);
-					break;
+					break;//1体検出したら後は無いので抜ける
 				}
 			}
 		}
 		if (E_com_select == MAG){
 			for (int i = 0; i < e_num; i++){
 				if (enemy[i].Dieflg() == FALSE && e_draw[i].command_run == TRUE){
-					//↓time_stop始まり
+					//↓time_stop始まり, action = MAGIC
 					MAGprocess<Hero, Enemy>(hero, enemy, &enemy[i], &e_draw[i], e_draw, h_draw, &E_select_obj, &E_MAG_select, E_ATT);
 					break;
 				}
@@ -139,13 +128,13 @@ Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 	}
 	//敵回復
 	for (int i = 0; i < e_num; i++){
-		E_drawPos(i);
-		RCVdraw<Enemy>(&enemy[i], &e_draw[i], -50.0f, 0.0f);//←time_stop終わり
+		E_drawPos(i);//↓の文字表示の位置計算
+		RCVdraw<Enemy>(&enemy[i], &e_draw[i], -50.0f, 0.0f);//←time_stop終わり, フラグある限り全て実行
 	}
 	//プレイヤーダメージ
 	for (int i = 0; i < 4; i++){
 		H_drawPos(i);
-		DMdraw<Hero>(&hero[i], &h_draw[i], -100.0f, 0.0f);//←time_stop終わり
+		DMdraw<Hero>(&hero[i], &h_draw[i], -100.0f, 0.0f);//←time_stop終わり, フラグある限り全て実行
 	}
 
 	//プレイヤー全滅
@@ -167,7 +156,9 @@ Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 	}
 
 	//コマンド入力
-	if (com_select == NOSELECT || com_select == OTHER){//敵行動中でも選択可能状態に入ってる場合は選択のみ実行できる
+	//行動中(time_stop_flg == TRUE)でも選択可能状態に入ってる場合は選択のみ実行できる
+	//コマンド入力後,行動終(time_stop_flg == FALSE)になるまでは↓に入れない(com_select != NOSELECTの為)
+	if (com_select == NOSELECT || com_select == OTHER){
 		for (int i = 0; i < 4; i++){
 			com_select = H_AT_select(hero, i, direction);
 			if (com_select != NOSELECT)break;
@@ -179,12 +170,16 @@ Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 		//数値保管初期化
 		for (int i = 0; i < e_num; i++)e_draw[i].DMdata = -1;
 		for (int i = 0; i < 4; i++)h_draw[i].RCVdata = -1;
-		
+
 		if (com_select == ATT){
 			for (int i = 0; i < 4; i++){
 				if (hero[i].Dieflg() == FALSE && h_draw[i].command_run == TRUE){
-					//↓time_stop始まり
+					//↓time_stop始まり, action = ATTACK
 					ATprocess<Enemy, Hero>(&enemy[select_obj], &hero[i], &e_draw[select_obj], &h_draw[i]);
+					bool f = FALSE;
+					if (rand() % 2 == 0)f = TRUE;
+					CamActOn = f;
+					CamActInd = i;
 					//選択権移動これやらないと他のメンバがコマンド選択できない
 					SelectPermissionMove(hero);
 					break;
@@ -194,8 +189,12 @@ Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 		if (com_select == MAG){
 			for (int i = 0; i < 4; i++){
 				if (hero[i].Dieflg() == FALSE && h_draw[i].command_run == TRUE){
-					//↓time_stop始まり
+					//↓time_stop始まり, action = MAGIC
 					MAGprocess<Enemy, Hero>(enemy, hero, &hero[i], &h_draw[i], h_draw, e_draw, &select_obj, &MAG_select, H_ATT);
+					bool f = FALSE;
+					if (rand() % 2 == 0)f = TRUE;
+					CamActOn = f;
+					CamActInd = i;
 					//選択権移動これやらないと他のメンバがコマンド選択できない
 					SelectPermissionMove(hero);
 					break;
@@ -228,17 +227,17 @@ Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 			SelectPermissionMove(hero);
 			for (int i = 0; i < 4; i++)h_draw[i].AGmeter = 0;
 		}
-		com_select = NOSELECT;
+		com_select = NOSELECT;//これを実行しないとコマンド入力入れない
 	}
 	//プレイヤー回復
 	for (int i = 0; i < 4; i++){
 		H_drawPos(i);
-		RCVdraw<Hero>(&hero[i], &h_draw[i], -100.0f, 0.0f);//←time_stop終わり
+		RCVdraw<Hero>(&hero[i], &h_draw[i], -100.0f, 0.0f);//←time_stop終わり, フラグある限り全て実行
 	}
 	//敵ダメージ
 	for (int i = 0; i < e_num; i++){
 		E_drawPos(i);
-		DMdraw<Enemy>(&enemy[i], &e_draw[i], -50.0f, 0.0f);//←time_stop終わり
+		DMdraw<Enemy>(&enemy[i], &e_draw[i], -50.0f, 0.0f);//←time_stop終わり, フラグある限り全て実行
 	}
 
 	//エスケープ表示
@@ -271,6 +270,42 @@ Result Battle::Fight(Hero *hero, Directionkey direction, Result result){
 	return IN_BATTLE;
 }
 
+Position::Bt_H_Pos *Battle::GetBtPos(Position::H_Pos *h_p){
+	//戦闘中各オブジェクト配置位置
+	static Position::Bt_H_Pos b_p[4];
+	for (int i = 0; i < 4; i++){
+		float ajst = ((float)i - 1.5f) * 20.0f;
+		switch ((int)h_p->theta){
+		case 360:
+		case 0:
+			b_p[i].BtPos_x1 = h_p->cx1 + ajst;
+			b_p[i].BtPos_x2 = h_p->cx2 + ajst;
+			b_p[i].BtPos_y1 = h_p->cy1;
+			b_p[i].BtPos_y2 = h_p->cy2;
+			break;
+		case 90:
+			b_p[i].BtPos_x1 = h_p->cx1;
+			b_p[i].BtPos_x2 = h_p->cx2;
+			b_p[i].BtPos_y1 = h_p->cy1 + ajst;
+			b_p[i].BtPos_y2 = h_p->cy2 + ajst;
+			break;
+		case 180:
+			b_p[i].BtPos_x1 = h_p->cx1 - ajst;
+			b_p[i].BtPos_x2 = h_p->cx2 - ajst;
+			b_p[i].BtPos_y1 = h_p->cy1;
+			b_p[i].BtPos_y2 = h_p->cy2;
+			break;
+		case 270:
+			b_p[i].BtPos_x1 = h_p->cx1;
+			b_p[i].BtPos_x2 = h_p->cx2;
+			b_p[i].BtPos_y1 = h_p->cy1 - ajst;
+			b_p[i].BtPos_y2 = h_p->cy2 - ajst;
+			break;
+		}
+	}
+	return b_p;
+}
+
 void Battle::E_drawPos(int i){
 	VECTOR3 p3;
 	p3.as(e_pos[i].x, e_pos[i].y, e_pos[i].z);
@@ -281,7 +316,7 @@ void Battle::E_drawPos(int i){
 
 void Battle::H_drawPos(int i){
 	VECTOR3 p3;
-	p3.as(h_pos->BtPos_x[i], h_pos->BtPos_y[i], h_pos->pz * 100.0f);
+	p3.as(b_pos[i].BtPos_x1, b_pos[i].BtPos_y1, h_pos->pz * 100.0f);
 	PolygonData2D::Pos2DCompute(&p3);
 	h_draw[i].draw_x = p3.x;
 	h_draw[i].draw_y = p3.y;

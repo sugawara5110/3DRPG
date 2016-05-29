@@ -41,8 +41,6 @@ int Map::GetBossKilled(int map_no){
 	return boss_killed[map_no];
 }
 
-Map::Map(){}
-
 Map::Map(Position::H_Pos *h_p,Hero *hero){
 
 	map_no = map_no_s;

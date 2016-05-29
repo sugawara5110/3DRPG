@@ -49,12 +49,12 @@ private:
 	int lightcount;
 
 	float cax1;//現在位置
-	float cax2;//現在位置
-	float cay1;//注視点
+	float cax2;//注視点
+	float cay1;//現在位置
 	float cay2;//注視点
 	float src_theta;//現在の向いてる方向
 
-	int posx;
+	int posx;//マップフィルター位置
 	int posy;
 	int posz;
 	int woodcount;     //木個数
@@ -103,7 +103,7 @@ private:
 	int walkI;//移動用
 
 	void Debug();//デバック用
-	Map();
+	Map(){};
 	void Mapfilter_p(int k, int j, int i, int idx1, int idx2, int *cnt);
 	void Mapfilter(Position::H_Pos *h_p);
 	void Mapdraw_Wood();

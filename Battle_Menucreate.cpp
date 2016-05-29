@@ -12,8 +12,6 @@
 #include "Battle.h"
 #include "Hero.h"
 
-Battle::Battle(){}
-
 Battle::Battle(Hero *he, Position::E_Pos *e_po, Position::H_Pos *h_po, Encount encount, int no, int e_nu){
 
 	dx = Dx11Process::GetInstance();
@@ -21,13 +19,15 @@ Battle::Battle(Hero *he, Position::E_Pos *e_po, Position::H_Pos *h_po, Encount e
 	e_num = e_nu;//敵出現数
 	e_pos = e_po;//ポジションアドレス
 	h_pos = h_po;//ポジションアドレス
+	b_pos = GetBtPos(h_pos);//アドレスで渡す
 	command.GetVBarray2D(1);
 	h_select.GetVBarray2D(1);
 	Escape_f = 0;
 	Escape_s = FALSE;
 	E_select.GetVBarray(SQUARE, 1);
 	battlefirst = FALSE;
-	battlefirsttime = 0.0f;
+	CamActOn = FALSE;
+	CamActInd = -1;
 
 	srand((unsigned)time(NULL));
 
@@ -116,10 +116,6 @@ Battle::Battle(Hero *he, Position::E_Pos *e_po, Position::H_Pos *h_po, Encount e
 		h_draw[i].R_select = 0;
 		H_drawPos(i);
 	}
-
-	//ロード時間による遅延分のリセット
-	T_float::GetTime();
-	T_float::GetTime();
 }
 
 void Battle::Menucreate(){
@@ -315,7 +311,7 @@ void Battle::SelectPermissionMove(Hero *hero){
 		else if (hero[2].Dieflg() == FALSE && h_draw[2].AGmeter > METER_MAX)h_draw[2].command_run = TRUE;
 		else if (hero[3].Dieflg() == FALSE && h_draw[3].AGmeter > METER_MAX)h_draw[3].command_run = TRUE;
 		else if (hero[0].Dieflg() == FALSE && h_draw[0].AGmeter > METER_MAX)h_draw[0].command_run = TRUE;
-		else command_run_first_flg = FALSE;
+		else command_run_first_flg = FALSE;//誰も選択権無し
 		return;
 	}
 	if (h_draw[1].command_run == TRUE){

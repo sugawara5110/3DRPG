@@ -9,7 +9,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include "Hero.h"
-#include "Battle.h"
 
 void Hero::OBJWalkDraw(float x, float y, float z, float r, float g, float b, float theta, int walkI){
 	if (walkI == -1){
@@ -53,6 +52,8 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 	if (o_no == 1)x = 190.0f;
 	if (o_no == 2)x = 370.0f;
 	if (o_no == 3)x = 540.0f;
+
+	Position::Bt_H_Pos *b_pos = battle->GetBtPos(h_pos);
 
 	//NORMAL,LOST以外のアクション中にNORMAL,LOST以外のアクション発生時の初期化
 	if (action != NORMAL&& action != LOST){
@@ -112,12 +113,12 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 		m = tfloat.Add(0.15f);
 		float mx, my;
 		MovieSoundManager::Magic_sound(TRUE);
-		mag.Draw(h_pos->BtPos_x[o_no], h_pos->BtPos_y[o_no], (float)h_pos->pz * 100.0f, 0, 0, 0, count += m, TRUE, FALSE, 0);
+		mag.Draw(b_pos[o_no].BtPos_x1, b_pos[o_no].BtPos_y1, (float)h_pos->pz * 100.0f, 0, 0, 0, count += m, TRUE, FALSE, 0);
 		VECTOR3 p3;
-		p3.as(h_pos->BtPos_x[o_no], h_pos->BtPos_y[o_no], (float)h_pos->pz * 100.0f);
+		p3.as(b_pos[o_no].BtPos_x1, b_pos[o_no].BtPos_y1, (float)h_pos->pz * 100.0f + 20.0f);
 		PolygonData2D::Pos2DCompute(&p3);
 		mx = p3.x - 130.0f;//位置補正
-		my = p3.y - 180.0f;//位置補正
+		my = p3.y - 200.0f;//位置補正
 		switch (H_Magrun){
 		case FLAME:
 			text->Drawtext(L"フレイムＬＶ", mx, my, 30.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
@@ -207,7 +208,7 @@ Act_fin_flg Hero::Statedraw(Battle *battle, int *select_obj, Position::H_Pos *h_
 		LA_x = 0.0f;
 		break;
 	}
-	p_att[p_att_Ind].Draw(h_pos->BtPos_x[o_no] + mov_x, h_pos->BtPos_y[o_no] + mov_y, (float)h_pos->pz * 100.0f + mov_z + LA / 9.0f, 0, 0, 0, h_pos->theta, LA_y, LA_x, 2.0f, 0.1f);
+	p_att[p_att_Ind].Draw(b_pos[o_no].BtPos_x1 + mov_x, b_pos[o_no].BtPos_y1 + mov_y, (float)h_pos->pz * 100.0f + mov_z + LA / 9.0f, 0, 0, 0, h_pos->theta, LA_y, LA_x, 2.0f, 0.1f);
 
 	Statecreate(command_run);
 	text->Drawtext(L"囚人Ｎｏ", x, 470.0f, 15.0f, { 1.0f, 1.0f, 1.0f, 1.0f });

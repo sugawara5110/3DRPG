@@ -21,10 +21,12 @@ CommandSelect Battle::H_AT_select(Hero *hero, int i, Directionkey direction){
 	if (hero[i].Dieflg() == TRUE){ h_draw[i].AGmeter = 0; return NOSELECT; }
 	if (h_draw[i].AGmeter > METER_MAX || time_stop_flg == FALSE && (h_draw[i].AGmeter += tfloat.Add(hero[i].GetAgility())) > METER_MAX){
 		h_draw[i].AGmeter = METER_MAX + 1;//範囲外防止(コマンド選択保留で増え続けるから)
+		//選択権誰も無しの状態から最初の選択権取得者の場合ここで選択権取得
 		if (command_run_first_flg == FALSE){
 			h_draw[i].command_run = TRUE;
-			command_run_first_flg = TRUE;
+			command_run_first_flg = TRUE;//これやらないと毎回選択権移動しまくる
 		}
+		//選択権有のみ実行, 1体ずつとなる
 		if (h_draw[i].command_run == TRUE){
 			switch (h_draw[i].manu){
 			case MAIN_M:

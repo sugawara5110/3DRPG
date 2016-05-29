@@ -39,10 +39,11 @@ private:
 	bool time_stop_flg;       //時間ストップフラグ, 1連のアクション～HPMP増減は1体ずつ処理なのでフラグは1個でok
 	float Escape_f;          //エスケープ表示フラグ,座標
 	bool Escape_s;          //エスケープ成功
-	bool battlefirst;      //出現完了フラグ
-	float battlefirsttime;//戦闘開始時間
+	bool battlefirst;      //開始直後のカメラ移動完了フラグ
+	bool CamActOn;        //
+	int CamActInd;
 
-	CommandSelect com_select;   //コマンド入力
+	CommandSelect com_select;   //コマンド入力(1ループに付き1体ずつなので1個でok↓も同様)
 	CommandSelect E_com_select;//敵用(テンプレート関数使用の為引数揃える)
 	MagicSelect MAG_select;   //選択したマジック
 	MagicSelect E_MAG_select;//敵用
@@ -61,7 +62,8 @@ private:
 		float draw_x;   //数字表示位置
 		float draw_y;   //数字表示位置
 		bool command_run;  //コマンドアクセス権状態,攻撃スタートフラグ
-		bool LOST_fin;    //LOSTアクション終了フラグ(敵のみ)
+		bool LOST_fin;    //LOSTアクション終了フラグ
+		//↓コマンド入力
 		MenuSelect manu;//現選択メニュー(以下コマンド選択関連)
 		int M_select;    //メインメニューカーソル位置
 		int A_select;   //攻撃対象カーソル位置
@@ -71,9 +73,10 @@ private:
 	Draw *h_draw, *e_draw;
 	Position::E_Pos *e_pos;
 	Position::H_Pos *h_pos;
+	Position::Bt_H_Pos *b_pos;
 
 	void Debug(Enemy *enemy);//デバック用
-	Battle();                //引数無し生成禁止
+	Battle(){};                //引数無し生成禁止
 	void Menucreate();
 	void Cursor_h(int no);
 	void Cursor_e(int select);
@@ -91,12 +94,12 @@ private:
 	template<typename T_rcv>
 	void ValueDraw(T_rcv *rcv, Draw *dm, Draw *rc, int dmI, int rcI){
 		//↓攻撃対象又は回復対象のアクション,データ処理開始
-		int draw_count = 0;
+		bool draw_flg = FALSE;
 		for (int i1 = 0; i1 < dmI; i1++){
 			if (dm[i1].DMdata >= 0){
 				dm[i1].action = DAMAGE;//対象がダメージ受けたのでこの後ダメージ処理
 				dm[i1].DMdrawY = DrawYMIN;//パラメーター間違えると数字表示されないので注意,フラグオン
-				draw_count++;
+				draw_flg = TRUE;
 			}
 		}
 		for (int i1 = 0; i1 < rcI; i1++){
@@ -111,10 +114,10 @@ private:
 				}
 				rc[i1].RCVdrawY = DrawYMIN;//パラメーター間違えると数字表示されないので注意,フラグオン
 				rc[i1].Recov_f = FALSE;//actionにRECOVERが入った時点でもう用無し,これをここでやらない場合はHEALに追加必要
-				draw_count++;
+				draw_flg = TRUE;
 			}
 		}
-		if (draw_count == 0)time_stop_flg = FALSE;//何も行動無しなのでストップ解除
+		if (draw_flg == FALSE)time_stop_flg = FALSE;//何も行動無しなのでストップ解除(MP足りない場合)
 	}
 
 	template<typename T_dm, typename T_att>
@@ -156,7 +159,7 @@ private:
 			//全体攻撃
 			if (*select_ob == 4){
 				for (int i = 0; i < dm_n; i++){
-					if (p_dm[i].Dieflg() == FALSE)cnt++;
+					if (p_dm[i].Dieflg() == FALSE)cnt++;//対象人数でダメージ変化
 				}
 				for (int i = 0; i < dm_n; i++){
 					if (p_dm[i].Dieflg() == TRUE)continue;
@@ -247,6 +250,7 @@ private:
 public:
 	Battle(Hero *he, Position::E_Pos *e_pos, Position::H_Pos *h_pos, Encount encount, int no, int e_nu);
 	Result Fight(Hero *he, Directionkey direction, Result result);
+	Position::Bt_H_Pos *GetBtPos(Position::H_Pos *h_p);
 	bool GetH_DM(int element);
 	bool GetH_RCV(int element);
 	bool GetE_DM(int element);

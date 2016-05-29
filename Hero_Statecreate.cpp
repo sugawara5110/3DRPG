@@ -5,7 +5,6 @@
 //*****************************************************************************************//
 
 #include "Hero.h"
-#include "Battle.h"
 
 Hero::Hero(){}
 
@@ -350,20 +349,22 @@ bool Hero::Effectdraw(Battle *battle, int *select_obj, Position::H_Pos *h_pos, P
 			}
 		}
 	}
+
+	Position::Bt_H_Pos *b_pos = battle->GetBtPos(h_pos);
 	if (effect.tex_no == 2 || effect.tex_no == 3){
 		MovieSoundManager::Heal_sound(TRUE);
 		float r, g, b;
 		if (effect.tex_no == 2){ r = 0.2f, g = 0.7f, b = 0.3f; }
 		if (effect.tex_no == 3){ r = 0.2f, g = 0.3f, b = 0.7f; }
 		if (*select_obj != 4){
-			effect.Draw(h_pos->BtPos_x[*select_obj], h_pos->BtPos_y[*select_obj], (float)h_pos->pz * 100.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
-			dx->PointLightPosSet(3, h_pos->BtPos_x[*select_obj], h_pos->BtPos_y[*select_obj], (float)h_pos->pz * 100.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
+			effect.Draw(b_pos[*select_obj].BtPos_x1, b_pos[*select_obj].BtPos_y1, (float)h_pos->pz * 100.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
+			dx->PointLightPosSet(3, b_pos[*select_obj].BtPos_x1, b_pos[*select_obj].BtPos_y1, (float)h_pos->pz * 100.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
 		}
 		else{
 			for (int i = 0; i < 4; i++){
 				if (battle->GetH_RCV(i) == FALSE)continue;
-				effect.Draw(h_pos->BtPos_x[i], h_pos->BtPos_y[i], (float)h_pos->pz * 100.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
-				dx->PointLightPosSet(i + 3, h_pos->BtPos_x[i], h_pos->BtPos_y[i], (float)h_pos->pz * 100.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
+				effect.Draw(b_pos[i].BtPos_x1, b_pos[i].BtPos_y1, (float)h_pos->pz * 100.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
+				dx->PointLightPosSet(i + 3, b_pos[i].BtPos_x1, b_pos[i].BtPos_y1, (float)h_pos->pz * 100.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
 			}
 		}
 	}

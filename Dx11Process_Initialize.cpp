@@ -35,10 +35,6 @@ void Dx11Process::DeleteInstance(){
 	}
 }
 
-Dx11Process::Dx11Process(){}
-Dx11Process::Dx11Process(const Dx11Process &obj) {}      // コピーコンストラクタ禁止
-void Dx11Process::operator=(const Dx11Process& obj) {} // 代入演算子禁止
-
 //hlslファイルを読み込みシェーダーを作成する
 void Dx11Process::MakeShader(LPSTR szFileName, size_t size, LPSTR szFuncName, LPSTR szProfileName, void** ppShader, ID3DBlob** ppBlob){
 	ID3DBlob *pErrors = NULL;
@@ -591,17 +587,17 @@ void Dx11Process::Sclear(){//スクリーンクリア
 	pDeviceContext->ClearDepthStencilView(pDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);//デプスステンシルバッファクリア
 }
 
-void Dx11Process::Cameraset(float cax1, float cax2, float cay1, float cay2, float caz){//カメラセット
+void Dx11Process::Cameraset(float cx1, float cx2, float cy1, float cy2, float cz1, float cz2){//カメラセット
 
 	//カメラの位置と方向を設定
 	MatrixLookAtLH(&View,
-		cax1, cay1, caz,   //カメラの位置
-		cax2, cay2, caz,   //カメラの方向を向ける点
+		cx1, cy1, cz1,   //カメラの位置
+		cx2, cy2, cz2,   //カメラの方向を向ける点
 		0.0f, 0.0f, 1.0f); //カメラの上の方向(通常視点での上方向を1.0fにする)
-	//シェーダー計算用座標登録
-	cx = cax1;
-	cy = cay1;
-	cz = caz;
+	//シェーダー計算用座標登録(視点からの距離で使う)
+	cx = cx1;
+	cy = cy1;
+	cz = cz1;
 }
 
 void Dx11Process::ResetPointLight(){
@@ -875,10 +871,26 @@ Dx11Process::~Dx11Process(){
 //移動量一定化
 DWORD T_float::f = timeGetTime();
 DWORD T_float::time = 0;
+DWORD T_float::time_fps = 0;//FPS計測用
+int T_float::frame = 0;     //FPS計測使用
+char T_float::str[50];     //ウインドウ枠文字表示使用
 
-void T_float::GetTime(){
+void T_float::GetTime(HWND hWnd){
 	time = timeGetTime() - f;
 	f = timeGetTime();
+
+	//FPS計測
+	frame++;
+	sprintf(str, "     Ctrl:決定  Delete:キャンセル  fps=%d", frame);
+	if (timeGetTime() - time_fps > 1000)
+	{
+		time_fps = timeGetTime();
+		frame = 0;
+		char Name[100] = { 0 };
+		GetClassNameA(hWnd, Name, sizeof(Name));
+		strcat(Name, str);
+		SetWindowTextA(hWnd, Name);
+	}
 }
 
 float T_float::Add(float f){

@@ -185,6 +185,8 @@ bool Enemy::Effectdraw(Battle *battle, int *E_select_obj){
 			}
 		}
 	}
+
+	Position::Bt_H_Pos *b_pos = battle->GetBtPos(h_pos);
 	if (effect.tex_no == 0 || effect.tex_no == 1){
 		if (effect.tex_no == 0)MovieSoundManager::Att_sound(TRUE);
 		if (effect.tex_no == 1)MovieSoundManager::Flame_sound(TRUE);
@@ -192,14 +194,14 @@ bool Enemy::Effectdraw(Battle *battle, int *E_select_obj){
 		if (effect.tex_no == 0){ r = 1.0f, g = 1.0f, b = 1.0f; }
 		if (effect.tex_no == 1){ r = 0.7f, g = 0.3f, b = 0.2f; }
 		if (*E_select_obj != 4){
-			effect.Draw(h_pos->BtPos_x[*E_select_obj], h_pos->BtPos_y[*E_select_obj], (float)h_pos->pz * 100.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
-			dx->PointLightPosSet(3, h_pos->BtPos_x[*E_select_obj], h_pos->BtPos_y[*E_select_obj], (float)h_pos->pz * 100.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
+			effect.Draw(b_pos[*E_select_obj].BtPos_x1, b_pos[*E_select_obj].BtPos_y1, (float)h_pos->pz * 100.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
+			dx->PointLightPosSet(3, b_pos[*E_select_obj].BtPos_x1, b_pos[*E_select_obj].BtPos_y1, (float)h_pos->pz * 100.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
 		}
 		else{
 			for (int i = 0; i < 4; i++){
 				if (battle->GetH_DM(i) == FALSE)continue;
-				effect.Draw(h_pos->BtPos_x[i], h_pos->BtPos_y[i], (float)h_pos->pz * 100.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
-				dx->PointLightPosSet(i + 3, h_pos->BtPos_x[i], h_pos->BtPos_y[i], (float)h_pos->pz * 100.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
+				effect.Draw(b_pos[i].BtPos_x1, b_pos[i].BtPos_y1, (float)h_pos->pz * 100.0f, 0, 0, 0, h_pos->theta, TRUE, TRUE, 0);
+				dx->PointLightPosSet(i + 3, b_pos[i].BtPos_x1, b_pos[i].BtPos_y1, (float)h_pos->pz * 100.0f, r, g, b, 1.0f, 50.0f, 20.0f, 2.0f, TRUE);
 			}
 		}
 	}

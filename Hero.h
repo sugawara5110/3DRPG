@@ -9,6 +9,7 @@
 
 #include "Parameter.h"
 #include "Position.h"
+#include "Battle.h"
 
 //‘O•ûéŒ¾
 class Battle;

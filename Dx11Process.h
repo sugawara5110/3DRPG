@@ -181,9 +181,9 @@ private:
 
 	static Dx11Process *dx;//クラス内でオブジェクト生成し使いまわす
 
-	Dx11Process();//外部からのオブジェクト生成禁止
-	Dx11Process(const Dx11Process &obj);     // コピーコンストラクタ禁止
-	void operator=(const Dx11Process& obj);// 代入演算子禁止
+	Dx11Process(){};//外部からのオブジェクト生成禁止
+	Dx11Process(const Dx11Process &obj){};     // コピーコンストラクタ禁止
+	void operator=(const Dx11Process& obj){};// 代入演算子禁止
 	~Dx11Process();
 	void TextureBinaryDecode(char *Bpass, int i);//暗号化済み画像バイナリデコード
 	void MakeShader(LPSTR szFileName, size_t size, LPSTR szFuncName, LPSTR szProfileName, void** ppShader, ID3DBlob** ppBlob);
@@ -197,7 +197,7 @@ public:
 	static void DeleteInstance();
 	void Initialize(HWND hWnd);
 	void Sclear();
-	void Cameraset(float cax1, float cax2, float cay1, float cay2, float caz);
+	void Cameraset(float cx1, float cx2, float cy1, float cy2, float cz1, float cz2);
 	void ResetPointLight();
 	void P_ShadowBright(float val);
 	void PointLightPosSet(int Idx, float x, float y, float z, float r, float g, float b, float a, float range,
@@ -417,14 +417,17 @@ public:
 	void Draw(bool a, bool lock);
 };
 
-//**************移動量一定化*************//
+//**************移動量一定化,FPS計算*************//
 class T_float{
 
 private:
 	static DWORD f, time;
+	static DWORD time_fps;//FPS計測用
+	static int frame;    //FPS計測使用
+	static char str[50];//ウインドウ枠文字表示使用
 
 public:
-	static void GetTime();//常に実行
+	static void GetTime(HWND hWnd);//常に実行
 	float Add(float f);
 };
 
